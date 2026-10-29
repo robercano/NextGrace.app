@@ -1,0 +1,43 @@
+# Descarga el pack de iconos desde eldenring.wiki.gg y lo guarda en icons/ (commit directo a main).
+# Solo se ejecuta si el repo es PRIVADO: los iconos son arte de FromSoftware y no deben publicarse.
+name: icons
+on:
+  workflow_dispatch:
+    inputs:
+      kinds:
+        description: "Grupos a descargar (vacío = todos; p. ej. 'weapon Armor talisman')"
+        default: ""
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    permissions:
+      contents: write
+    steps:
+      - name: Comprobar que el repo es privado
+        if: ${{ !github.event.repository.private }}
+        run: |
+          echo "::error::El repo es público. Ponlo en privado antes de guardar iconos en él."
+          exit 1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests pillow
+      - name: Descargar iconos
+        run: python tools/fetch_icons.py --kinds ${{ github.event.inputs.kinds }}
+      - name: Regenerar índice
+        run: python tools/icons_index.py
+      - name: Commit
+        run: |
+          git config user.name "icons-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add icons
+          git diff --cached --quiet && echo "Sin cambios" || (git commit -m "icons: actualizar pack desde la wiki" && git push)
+      - name: Subir informe de fallos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: missing
+          path: missing.txt
+          if-no-files-found: ignore

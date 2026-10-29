@@ -1,22 +1,20 @@
 #!/usr/bin/env python3
 """
-fetch_icons.py — builds an icon pack for Tarnished Ledger from eldenring.wiki.gg (MediaWiki API).
+fetch_icons.py — descarga el pack de iconos para Tarnished Ledger desde eldenring.wiki.gg (API MediaWiki).
 
-Usage (run on your own PC, Python 3.9+):
+Lista todos los ficheros "ER Icon <grupo> <nombre>.png" de la wiki, los descarga (miniatura 64 px),
+los convierte a WebP y los guarda como icons/<slug>.webp (el mismo nombre que usa la página).
+
+Uso:
     pip install requests pillow
-    python fetch_icons.py                      # weapons only (default)
-    python fetch_icons.py --kinds weapon armor talisman aow goods
-    python fetch_icons.py --size 64 --out icons
+    python tools/fetch_icons.py                       # todos los grupos
+    python tools/fetch_icons.py --kinds weapon Armor  # solo algunos (ver --list)
+    python tools/fetch_icons.py --list                # muestra grupos y cantidades
 
-It needs items.json (from this project) next to it. Output: icons/<id>.webp plus er-icons.zip,
-ready to load with "Cargar iconos" in the page. The pack stays on your devices; don't redistribute it:
-the icons are FromSoftware's artwork, hosted on the wiki under fair use.
-
-Be polite to the wiki: one request per second, identified User-Agent, resumable (already downloaded
-ids are skipped), and robots.txt is checked before starting.
+Reanudable: los que ya están en icons/ se saltan. Ritmo: 1 petición/segundo, User-Agent identificado.
+Los iconos son arte de FromSoftware alojado en la wiki; son para tu uso personal, no los redistribuyas.
 """
-import argparse, io, json, os, re, sys, time, zipfile
-from urllib.parse import quote
+import argparse, io, os, re, sys, time
 
 try:
     import requests
@@ -24,19 +22,10 @@ try:
 except ImportError:
     sys.exit("Instala las dependencias: pip install requests pillow")
 
-WIKI = "https://eldenring.wiki.gg"
-API = WIKI + "/api.php"
-UA = "TarnishedLedgerIconFetch/1.0 (personal icon pack; python-requests)"
-DELAY = 1.0  # seconds between requests
-
-KINDS = {  # kind in items.json -> which ids to include
-    "weapon": lambda i, e: i % 10000 == 0 and e["n"] != "Unarmed",
-    "armor": lambda i, e: True,
-    "talisman": lambda i, e: True,
-    "aow": lambda i, e: True,
-    "goods": lambda i, e: not re.search(r" \+\d+$", e["n"]),  # skip "Mimic Tear Ashes +3" style levels
-    "ammo": lambda i, e: True,
-}
+WIKI = os.environ.get("TL_WIKI", "https://eldenring.wiki.gg")
+UA = "TarnishedLedgerIconFetch/2.0 (personal icon pack; python-requests)"
+DELAY = float(os.environ.get("TL_DELAY", "1.0"))
+NAME_RE = re.compile(r"^ER Icon ([^ ]+) (.+)\.(png|webp|jpe?g)$", re.I)
 
 session = requests.Session()
 session.headers["User-Agent"] = UA
@@ -48,136 +37,78 @@ def get(url, **params):
     if wait > 0:
         time.sleep(wait)
     _last[0] = time.time()
-    r = session.get(url, params=params or None, timeout=30)
+    r = session.get(url, params=params or None, timeout=60)
     r.raise_for_status()
     return r
 
 
 def api(**params):
     params.update(format="json", formatversion="2")
-    return get(API, **params).json()
+    return get(WIKI + "/api.php", **params).json()
 
 
-def check_robots():
-    try:
-        txt = get(WIKI + "/robots.txt").text
-    except Exception as e:
-        print("No se pudo leer robots.txt:", e)
-        return
-    block = []
-    agent_all = False
-    for line in txt.splitlines():
-        line = line.strip()
-        if line.lower().startswith("user-agent:"):
-            agent_all = line.split(":", 1)[1].strip() == "*"
-        elif agent_all and line.lower().startswith("disallow:"):
-            block.append(line.split(":", 1)[1].strip())
-    for path in ("/api.php", "/images/"):
-        if any(b and path.startswith(b) for b in block):
-            sys.exit(f"robots.txt no permite {path}; no sigo.")
+def slug(n):
+    return re.sub(r"^_|_$", "", re.sub(r"[^a-z0-9]+", "_", n.lower()))
 
 
-def chunks(seq, n):
-    for i in range(0, len(seq), n):
-        yield seq[i:i + n]
+def list_icons():
+    files, cont = [], {}
+    while True:
+        r = api(action="query", list="allimages", aiprefix="ER Icon ", ailimit=500, aiprop="url", **cont)
+        for f in r["query"]["allimages"]:
+            name = f["name"].replace("_", " ")
+            m = NAME_RE.match(name)
+            if m:
+                files.append({"kind": m.group(1), "item": m.group(2), "url": f["url"], "name": name})
+        cont = r.get("continue")
+        if not cont:
+            return files
 
 
 def main():
+    root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
     ap = argparse.ArgumentParser()
-    ap.add_argument("--kinds", nargs="+", default=["weapon"], choices=list(KINDS))
-    ap.add_argument("--size", type=int, default=64, help="icon size in px (server-side thumbnail)")
-    ap.add_argument("--out", default="icons")
-    ap.add_argument("--items", default=os.path.join(os.path.dirname(os.path.abspath(__file__)), "items.json"))
-    ap.add_argument("--aliases", default="aliases.json", help='optional {"DB name": "Wiki page title"} overrides')
-    ap.add_argument("--limit", type=int, default=0, help="stop after N items (for testing)")
+    ap.add_argument("--kinds", nargs="*", default=None, help="grupos a bajar (por defecto todos)")
+    ap.add_argument("--size", type=int, default=64)
+    ap.add_argument("--out", default=os.path.join(root, "icons"))
+    ap.add_argument("--list", action="store_true")
+    ap.add_argument("--limit", type=int, default=0)
     a = ap.parse_args()
 
-    db = json.load(open(a.items, encoding="utf-8"))["items"]
-    aliases = json.load(open(a.aliases, encoding="utf-8")) if os.path.exists(a.aliases) else {}
-    os.makedirs(a.out, exist_ok=True)
+    files = list_icons()
+    groups = {}
+    for f in files:
+        groups.setdefault(f["kind"], []).append(f)
+    print(f"{len(files)} iconos en la wiki:", ", ".join(f"{k} ({len(v)})" for k, v in sorted(groups.items(), key=lambda kv: -len(kv[1]))))
+    if a.list:
+        return
+    if a.kinds:
+        want = {k.lower() for k in a.kinds}
+        files = [f for f in files if f["kind"].lower() in want]
 
-    # id -> page title (one per distinct name)
-    wanted = {}
-    for sid, e in db.items():
-        i = int(sid)
-        if e["k"] in a.kinds and KINDS[e["k"]](i, e):
-            wanted[i] = aliases.get(e["n"], e["n"])
-    done = {int(f.split(".")[0]) for f in os.listdir(a.out) if f.split(".")[0].isdigit()}
-    todo = [(i, t) for i, t in wanted.items() if i not in done]
+    os.makedirs(a.out, exist_ok=True)
+    have = {os.path.splitext(n)[0] for n in os.listdir(a.out)}
+    todo = [f for f in files if slug(f["item"]) not in have]
     if a.limit:
         todo = todo[:a.limit]
-    print(f"{len(wanted)} objetos, {len(done)} ya descargados, {len(todo)} pendientes")
-    if not todo:
-        return pack(a.out)
+    print(f"{len(files)} seleccionados, {len(files) - len(todo)} ya descargados, {len(todo)} pendientes")
 
-    check_robots()
-    missing = []
-    by_title = {}
-    for i, t in todo:
-        by_title.setdefault(t, []).append(i)
-
-    # 1) page -> ER_Icon_* image
-    page_icon = {}
-    titles = list(by_title)
-    for batch in chunks(titles, 50):
-        r = api(action="query", titles="|".join(batch), prop="images", imlimit=500, redirects=1)
-        redirect_to = {x["from"]: x["to"] for x in r.get("query", {}).get("redirects", [])}
-        normalized = {x["from"]: x["to"] for x in r.get("query", {}).get("normalized", [])}
-        found = {}
-        for p in r.get("query", {}).get("pages", []):
-            imgs = [im["title"] for im in p.get("images", []) if re.match(r"File:ER[ _]Icon", im["title"], re.I)]
-            if imgs:
-                found[p["title"]] = imgs[0]
-        for t in batch:
-            key = redirect_to.get(normalized.get(t, t), normalized.get(t, t))
-            if key in found:
-                page_icon[t] = found[key]
-            else:
-                missing.append(t)
-        print(f"  páginas {len(page_icon)}/{len(titles)}", end="\r")
-    print()
-
-    # 2) image -> thumbnail url
-    files = sorted(set(page_icon.values()))
-    url_of = {}
-    for batch in chunks(files, 50):
-        r = api(action="query", titles="|".join(batch), prop="imageinfo", iiprop="url", iiurlwidth=a.size)
-        for p in r.get("query", {}).get("pages", []):
-            ii = p.get("imageinfo")
-            if ii:
-                url_of[p["title"]] = ii[0].get("thumburl") or ii[0]["url"]
-
-    # 3) download + convert
-    n = 0
-    for t, f in page_icon.items():
-        url = url_of.get(f)
-        if not url:
-            missing.append(t)
-            continue
+    failed = []
+    for i, f in enumerate(todo, 1):
         try:
-            data = get(url).content
+            # thumbnail via the standard MediaWiki thumb path keeps bandwidth low; fall back to full file
+            data = get(f["url"]).content
             im = Image.open(io.BytesIO(data)).convert("RGBA")
             im.thumbnail((a.size, a.size))
-            for i in by_title[t]:
-                im.save(os.path.join(a.out, f"{i}.webp"), "WEBP", quality=85, method=6)
-            n += 1
-            print(f"  {n}/{len(page_icon)} {t}", end="\r")
+            im.save(os.path.join(a.out, slug(f["item"]) + ".webp"), "WEBP", quality=85, method=6)
         except Exception as e:
-            missing.append(f"{t} ({e})")
-    print()
-    if missing:
-        with open("missing.txt", "w", encoding="utf-8") as fh:
-            fh.write("\n".join(missing))
-        print(f"{len(missing)} sin icono -> missing.txt (puedes mapearlos en aliases.json)")
-    pack(a.out)
-
-
-def pack(out):
-    files = [f for f in os.listdir(out) if f.endswith(".webp")]
-    with zipfile.ZipFile("er-icons.zip", "w", zipfile.ZIP_DEFLATED) as z:
-        for f in files:
-            z.write(os.path.join(out, f), f)
-    print(f"er-icons.zip: {len(files)} iconos, {os.path.getsize('er-icons.zip') // 1024} KB")
+            failed.append(f"{f['name']} ({e})")
+        if i % 25 == 0 or i == len(todo):
+            print(f"  {i}/{len(todo)}  ({len(failed)} fallos)", flush=True)
+    if failed:
+        with open(os.path.join(root, "missing.txt"), "w", encoding="utf-8") as fh:
+            fh.write("\n".join(failed))
+        print(f"{len(failed)} fallos -> missing.txt")
 
 
 if __name__ == "__main__":

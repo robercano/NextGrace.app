@@ -1,9 +1,13 @@
 # icons/
 
-Carpeta para tu pack de iconos (uso personal, no se redistribuye con el repo público).
+Pack de iconos para uso personal. **No subas iconos a un repo público**: son arte de FromSoftware.
 
-1. Genera `er-icons.zip` con `tools/tl-icons.js` (pegado en la consola del navegador en eldenring.wiki.gg).
-2. Descomprime aquí los `.webp`.
-3. Ejecuta `python tools/icons_index.py` para regenerar `icons/index.json` (la página lo lee al arrancar).
+Opción A (automática): con el repo en **privado**, Actions → **icons** → Run workflow. Descarga los iconos
+de eldenring.wiki.gg (1 petición/segundo, ~1 h para todos), los convierte a WebP de 64 px, regenera
+`index.json` y hace commit a `main`. Se puede relanzar: solo baja los que faltan.
 
-Si prefieres no subir los iconos al repo, descomenta `icons/*.webp` en `.gitignore` y usa el botón "Cargar iconos" de la página (se guardan en el navegador).
+Opción B (manual): `tools/tl-icons.js` pegado en la consola del navegador en la wiki genera `er-icons.zip`;
+descomprímelo aquí y ejecuta `python tools/icons_index.py`.
+
+Nombres: `<slug del objeto>.webp` (p. ej. `dagger.webp`, `verdigris_helm.webp`). La página busca por
+nombre base sin afinidad ni +N.
