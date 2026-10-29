@@ -64,7 +64,6 @@ async function main(DB){
   let group = "Armas", limit = 250;
 
   function stoneCounts(c) { const m = {}; for (const it of c.all) if (STONE[it.name] !== undefined) m[it.name] = (m[it.name] || 0) + it.qty; return m; }
-  function stoneShort(n) { const m = n.match(/^(Somber )?Smithing Stone \[(\d)\]$/); if (m) return (m[1] ? "S" : "") + "[" + m[2] + "]"; return n.startsWith("Somber") ? "S·Drag" : "Drag"; }
 
   function renderChar(c) {
     CUR = c;
@@ -87,8 +86,9 @@ async function main(DB){
 
     // stones
     const sc = stoneCounts(c);
-    const order = [1,2,3,4,5,6,7,8].map(n => "Smithing Stone [" + n + "]").concat(["Ancient Dragon Smithing Stone"], [1,2,3,4,5,6,7,8,9].map(n => "Somber Smithing Stone [" + n + "]"), ["Somber Ancient Dragon Smithing Stone"]);
-    $("#stones").innerHTML = order.map(n => `<div class="${sc[n] ? "" : "zero"}" title="${esc(n)}"><b>${sc[n] || 0}</b><span>${stoneShort(n)}</span></div>`).join("");
+    const tile = (n, lbl) => `<div class="${sc[n] ? "" : "zero"}" title="${esc(n)}"><b>${sc[n] || 0}</b><span>${lbl}</span></div>`;
+    $("#stonesN").innerHTML = [1,2,3,4,5,6,7,8].map(n => tile("Smithing Stone [" + n + "]", "[" + n + "]")).join("") + tile("Ancient Dragon Smithing Stone", "Dragón");
+    $("#stonesS").innerHTML = [1,2,3,4,5,6,7,8,9].map(n => tile("Somber Smithing Stone [" + n + "]", "[" + n + "]")).join("") + tile("Somber Ancient Dragon Smithing Stone", "Dragón");
 
     // weapons sorted: not maxed first, highest level first
     const weapons = c.all.filter(i => i.kind === "weapon" && i.maxLevel > 0 && !["arrows_and_bolts"].includes(i.cat));
