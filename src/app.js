@@ -69,7 +69,22 @@ async function main(DB){
   // ---- rendering ---------------------------------------------------------
   const CAT_ES = { melee_armaments: "Armas", ranged_and_catalysts: "Arcos y catalizadores", shields: "Escudos", arrows_and_bolts: "Munición", head: "Cascos", chest: "Pechos", arms: "Brazos", legs: "Piernas", talismans: "Talismanes", ashes_of_war: "Cenizas de guerra", ashes: "Cenizas espirituales", sorceries: "Hechicerías", incantations: "Encantamientos", tools: "Herramientas", key_items: "Objetos clave", crafting_materials: "Materiales", bolstering_materials: "Mejora", info: "Información", gestures: "Gestos" };
   const GROUPS = [["Todo", null], ["Armas", ["melee_armaments", "ranged_and_catalysts", "shields", "arrows_and_bolts"]], ["Armadura", ["head", "chest", "arms", "legs"]], ["Talismanes", ["talismans"]], ["Cenizas", ["ashes_of_war", "ashes"]], ["Magia", ["sorceries", "incantations"]], ["Consumibles", ["tools", "crafting_materials", "bolstering_materials"]], ["Clave", ["key_items", "info", "gestures"]]];
-  let group = "Armas", limit = 250;
+  let group = "Armas", limit = 250, mode = "have";
+  // Catálogo de coleccionables para "No tengo"
+  const CATALOG_CATS = new Set(["melee_armaments", "ranged_and_catalysts", "shields", "head", "chest", "arms", "legs", "talismans", "ashes_of_war", "ashes", "sorceries", "incantations", "key_items"]);
+  const baseKey = i => { let n = i.name || ""; if (i.kind === "weapon" && i.infusion && i.infusion !== "Standard" && n.startsWith(i.infusion + " ")) n = n.slice(i.infusion.length + 1); if (i.kind !== "talisman") n = n.replace(/\s*\+\d+$/, ""); return n.toLowerCase(); };
+  const CATALOG = [];
+  for (const [id, e] of Object.entries(DB.items)) {
+    if (e.f || !CATALOG_CATS.has(e.c)) continue;
+    if (e.k === "weapon" && (+id) % 10000) continue;
+    if (e.c === "ashes" && /\s\+\d+$/.test(e.n)) continue;
+    CATALOG.push({ id: +id, name: e.n, display: e.n, kind: e.k, cat: e.c, sub: e.s || "", dlc: !!e.dlc, qty: 0, missing: true });
+  }
+  CATALOG.sort((a, b) => a.cat.localeCompare(b.cat) || a.name.localeCompare(b.name));
+  function missingFor(c) {
+    if (!c.missing) { const have = new Set(c.all.map(baseKey)); c.missing = CATALOG.filter(i => !have.has(baseKey(i))); }
+    return c.missing;
+  }
 
   function stoneCounts(c) { const m = {}; for (const it of c.all) if (STONE[it.name] !== undefined) m[it.name] = (m[it.name] || 0) + it.qty; return m; }
 
@@ -133,9 +148,11 @@ async function main(DB){
     const c = CUR; if (!c) return;
     const q = ($("#q").value || "").trim().toLowerCase();
     const cats = GROUPS.find(g => g[0] === group)[1];
-    let items = c.all.filter(i => (!cats || cats.includes(i.cat)) && (!q || i.name.toLowerCase().includes(q) || (i.aow || "").toLowerCase().includes(q)));
+    const src = mode === "missing" ? missingFor(c) : c.all;
+    let items = src.filter(i => (!cats || cats.includes(i.cat)) && (!q || i.name.toLowerCase().includes(q) || (i.aow || "").toLowerCase().includes(q)));
     items = items.slice().sort((a, b) => a.cat.localeCompare(b.cat) || a.name.localeCompare(b.name));
-    $("#count").textContent = items.length + " objetos";
+    if (mode === "missing") { const tot = CATALOG.filter(i => !cats || cats.includes(i.cat)).length; $("#count").textContent = `${items.length} por conseguir de ${tot}` + (q ? " (filtrado)" : ""); }
+    else $("#count").textContent = items.length + " objetos";
     let lastCat = null, html = "";
     for (const i of items.slice(0, limit)) {
       if (i.cat !== lastCat) { lastCat = i.cat; html += `<div class="row"><div class="m" style="grid-column:1/-1;padding-top:6px;color:var(--accent);text-transform:uppercase;letter-spacing:.1em">${esc(CAT_ES[i.cat] || i.cat || "Otros")}</div></div>`; }
@@ -146,6 +163,9 @@ async function main(DB){
     $("#inv").innerHTML = html;
   }
 
+  function modeChips() { $("#mode").innerHTML = [["have", "Tengo"], ["missing", "No tengo"]].map(([m, l]) => `<button class="chip" aria-pressed="${m === mode}" data-m="${m}">${l}</button>`).join(""); }
+  $("#mode").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; mode = b.dataset.m; limit = 250; modeChips(); renderInv(); });
+  modeChips();
   function chips() { $("#chips").innerHTML = GROUPS.map(g => `<button class="chip" aria-pressed="${g[0] === group}" data-g="${g[0]}">${g[0]}</button>`).join(""); }
   $("#chips").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; group = b.dataset.g; limit = 250; chips(); renderInv(); });
   $("#upgradeable").addEventListener("click", e => { if (e.target.closest("a")) return; const r = e.target.closest("[data-w]"); if (!r) return; $("#planWeapon").value = r.dataset.w; planUpdate(true); $("#planWeapon").scrollIntoView({ block: "center", behavior: "smooth" }); });
@@ -198,7 +218,7 @@ async function main(DB){
       try { localStorage.setItem("tl.last", JSON.stringify({ name: file.name, when, chars: save.chars.map(slim) })); } catch (e) {}
     }).catch(e => { $("#msg").innerHTML = `<span class="err">${esc(e.message || e)}</span>`; });
   }
-  function slim(c) { if (c.error) return c; const o = Object.assign({}, c); delete o.gaMap; delete o.inventory; delete o.storage; delete o.equipHandles; delete o.equipIndex; delete o.equipIds; delete o.weapons; return o; }
+  function slim(c) { if (c.error) return c; const o = Object.assign({}, c); delete o.gaMap; delete o.inventory; delete o.storage; delete o.equipHandles; delete o.equipIndex; delete o.equipIds; delete o.weapons; delete o.missing; return o; }
 
   $("#file").addEventListener("change", e => { if (e.target.files[0]) loadFile(e.target.files[0]); });
 
