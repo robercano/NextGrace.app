@@ -33,7 +33,14 @@ jobs:
           git config user.name "icons-bot"
           git config user.email "actions@users.noreply.github.com"
           git add icons
-          git diff --cached --quiet && echo "Sin cambios" || (git commit -m "icons: actualizar pack desde la wiki" && git push)
+          if git diff --cached --quiet; then echo "Sin cambios"; exit 0; fi
+          git commit -m "icons: actualizar pack desde la wiki"
+          # main puede haber avanzado durante la descarga: rebase y reintento
+          for i in 1 2 3 4 5; do
+            git fetch origin main && git rebase origin/main && git push origin HEAD:main && exit 0
+            git rebase --abort 2>/dev/null || true; sleep 10
+          done
+          exit 1
       - name: Subir informe de fallos
         if: always()
         uses: actions/upload-artifact@v4
