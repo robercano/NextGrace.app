@@ -8,10 +8,16 @@ async function main(DB){
   const ICONS = new Map(); // key -> object URL
   const slug = n => n.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
   const iconKey = i => i.kind === "weapon" ? String(i.id - (i.id % 10000)) : String(i.id);
+  function iconCandidates(i) {
+    const c = [iconKey(i), slug(i.name)];
+    if (i.kind === "weapon" && i.infusion && i.infusion !== "Standard" && i.name.startsWith(i.infusion + " ")) c.push(slug(i.name.slice(i.infusion.length + 1)));
+    const plain = i.name.replace(/\s*\+\d+$/, ""); if (plain !== i.name) c.push(slug(plain));
+    return c;
+  }
   function ic(i) {
     if (!ICONS.size) return "";
-    const u = ICONS.get(iconKey(i)) || ICONS.get(slug(i.name));
-    return u ? `<img class="ico" src="${u}" alt="" loading="lazy">` : `<span class="ico" aria-hidden="true"></span>`;
+    let u = null; for (const k of iconCandidates(i)) if ((u = ICONS.get(k))) break;
+    return u ? `<img class="ico" src="${u}" alt="" loading="lazy">` : "";
   }
   function idb() { return new Promise((res, rej) => { const r = indexedDB.open("tl", 1); r.onupgradeneeded = () => r.result.createObjectStore("icons"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
   async function iconsLoad() {
