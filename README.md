@@ -45,8 +45,13 @@ y abre `http://localhost:8080`. Al cambiar ficheros, sube `VERSION` en `sw.js` p
 ## Hoja de ruta
 
 - [x] v1: estado, equipo, inventario, forja (qué armas mejorar y qué piedras faltan)
-- [ ] v2: "qué me queda": jefes, gracias, misiones a partir de los event flags
+- [x] v2: progreso (gracias y jefes desde los event flags), "No tengo" contra el catálogo, mapa con lugares de la wiki y objetos pendientes por lugar, editor de marcadores propio (exportable)
+- [ ] v2.1: más lugares y coordenadas exactas aportadas por usuarios (`data/user_markers.json`)
 - [ ] v3: MCP (Worker) para planificación con Claude a partir del save
+
+## Mapa
+
+`map.html` usa los marcadores del mapa interactivo de [eldenring.wiki.gg](https://eldenring.wiki.gg) (`tools/fetch_map.py` → `data/map.json`, licencia CC BY-NC-SA) y sitúa cada objeto que te falta en el lugar que nombra su texto de ubicación (`tools/build_places.py` → `data/places.json`). Los marcadores que añadas en la página se guardan en tu navegador; con "Copiar JSON" puedes volcarlos en `data/user_markers.json` para compartirlos. Los fondos (`icons/map/*.webp`) son arte del juego: solo en repo privado.
 
 ## Créditos
 

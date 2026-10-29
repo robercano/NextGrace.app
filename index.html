@@ -42,7 +42,7 @@ button{cursor:pointer}
   padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
   display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .bar h1{font-size:1rem;flex:1 1 auto;min-width:0;white-space:nowrap}
-.bar .btn{padding:6px 10px;white-space:nowrap}
+.bar .btn{padding:6px 10px;white-space:nowrap;text-decoration:none}
 .bar select{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:6px 8px;max-width:42vw;text-overflow:ellipsis}
 .btn{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:6px 12px}
 .btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:700}
@@ -125,6 +125,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:.9rem}
 <div class="bar">
   <h1>Tarnished Ledger</h1>
   <select id="charSel" hidden aria-label="Personaje"></select>
+  <a class="btn" href="map.html" id="mapLink" hidden>Mapa</a>
   <label class="btn primary" for="file" id="barOpen" hidden>Abrir otro .sl2</label>
 </div>
 
@@ -150,6 +151,12 @@ details summary{cursor:pointer;color:var(--muted);font-size:.9rem}
       </div>
       <div class="gauges" id="gauges"></div>
       <div class="kv" id="kv"></div>
+    </section>
+
+    <section>
+      <h2>Progreso</h2>
+      <p class="help">Gracias descubiertas y jefes vencidos, leídos de los event flags de la partida. <a class="wl" href="map.html">Ver en el mapa</a>.</p>
+      <div id="progress"></div>
     </section>
 
     <section>

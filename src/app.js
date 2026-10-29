@@ -1,5 +1,5 @@
 /* app.js — Tarnished Ledger UI. Expects window.ERSave (src/ersave.js) and the items DB passed to main(). */
-async function main(DB){
+async function main(DB, FLAGS){
   const $ = s => document.querySelector(s);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   let SAVE = null, CUR = null, FILENAME = "";
@@ -99,6 +99,7 @@ async function main(DB){
     $("#gauges").innerHTML = gauge("HP", c.hp, c.maxHp, "var(--hp)") + gauge("FP", c.fp, c.maxFp, "var(--fp)") + gauge("SP", c.sp, c.maxSp, "var(--sp)");
     const kv = [["Runas", c.runes.toLocaleString("es")], ["Runas totales", c.totalRunes.toLocaleString("es")], ["Frascos", `${c.crimsonFlasks} carmesí · ${c.ceruleanFlasks} cerúleo`], ["Nivel de arma (matchmaking)", "+" + c.matchmakingWpnLvl], ["Regalo inicial", c.giftName], ["Runa mayor", c.greatRuneActive ? "activa" : "inactiva"]];
     $("#kv").innerHTML = kv.map(([k, v]) => `<div><b>${esc(v)}</b><span>${k}</span></div>`).join("");
+    renderProgress(c);
     const S = c.stats, names = { vigor: "Vig", mind: "Men", endurance: "Res", strength: "Fue", dexterity: "Des", intelligence: "Int", faith: "Fe", arcane: "Arc" };
     $("#stats").innerHTML = Object.keys(names).map(k => `<div><b>${S[k]}</b><span>${names[k]}</span></div>`).join("");
 
@@ -129,6 +130,23 @@ async function main(DB){
     $("#upgradeable").innerHTML = (pending.map(wrow).join("") || `<p class="muted small">Ninguna arma a medias: todo lo que has tocado está al máximo.</p>`) + (maxed.length ? `<details><summary>${maxed.length} armas al máximo</summary><div class="list">${maxed.map(wrow).join("")}</div></details>` : "");
 
     renderInv();
+  }
+
+  function renderProgress(c) {
+    const el = $("#progress"); if (!c.progress) { el.innerHTML = `<p class="muted small">Sin datos de progreso (vuelve a abrir el .sl2).</p>`; return; }
+    const gv = new Set(c.progress.graces), bd = new Set(c.progress.bosses);
+    const byRegion = {};
+    for (const g of FLAGS.graces) { const r = byRegion[g.region] = byRegion[g.region] || { total: 0, done: 0, pending: [] }; r.total++; if (gv.has(g.id)) r.done++; else r.pending.push(g); }
+    const regions = Object.entries(byRegion).sort((a, b) => (a[1].total - a[1].done) - (b[1].total - b[1].done) === 0 ? a[0].localeCompare(b[0]) : (b[1].total - b[1].done) - (a[1].total - a[1].done));
+    const main = FLAGS.bosses.filter(b => b.type === "main"), field = FLAGS.bosses.filter(b => b.type !== "main");
+    const pend = FLAGS.bosses.filter(b => !bd.has(b.id));
+    el.innerHTML = `<div class="kv">
+      <div><b>${gv.size} / ${FLAGS.graces.length}</b><span>Gracias</span></div>
+      <div><b>${main.filter(b => bd.has(b.id)).length} / ${main.length}</b><span>Jefes principales</span></div>
+      <div><b>${field.filter(b => bd.has(b.id)).length} / ${field.length}</b><span>Jefes de campo</span></div>
+      <div><b>${FLAGS.bosses.filter(b => b.rem && bd.has(b.id)).length} / ${FLAGS.bosses.filter(b => b.rem).length}</b><span>Remembranzas</span></div></div>
+      <details><summary>Jefes pendientes (${pend.length})</summary><div class="list">${pend.map(b => `<div class="row"><div class="n">${link({ name: b.name, kind: "boss" }, esc(b.name))}${b.rem ? '<span class="tag">remembranza</span>' : ""}</div><div class="q">${esc(b.region)}</div></div>`).join("") || '<p class="muted small">Ninguno.</p>'}</div></details>
+      <details><summary>Gracias pendientes por región (${FLAGS.graces.length - gv.size})</summary><div class="list">${regions.filter(([, r]) => r.pending.length).map(([name, r]) => `<div class="row"><div class="n">${esc(name)}</div><div class="q">${r.done} / ${r.total}</div><div class="m">${r.pending.map(g => esc(g.name)).join(" · ")}</div></div>`).join("") || '<p class="muted small">Todas descubiertas.</p>'}</div></details>`;
   }
 
   function planUpdate(init) {
@@ -182,6 +200,11 @@ async function main(DB){
       if (c.error) continue;
       c.enriched = ERSave.enrich(c, DB);
       c.all = c.enriched.inventory.concat(c.enriched.keyItems, c.enriched.storage, c.enriched.storageKeys).filter(real);
+      if (c.eventFlags) {
+        const flag = ERSave.makeFlagReader(FLAGS.bst, c.eventFlags);
+        c.progress = { graces: FLAGS.graces.filter(g => flag(g.id)).map(g => g.id), bosses: FLAGS.bosses.filter(b => flag(b.id)).map(b => b.id) };
+        delete c.eventFlags;
+      }
     }
   }
   function showSave(save, name, when) {
@@ -197,7 +220,7 @@ async function main(DB){
     const bad = save.chars.filter(c => c.error);
     $("#msg").innerHTML = bad.length ? `<span class="err">No se pudo leer ${bad.length} slot(s): ${esc(bad[0].error)}</span>` : "";
     if (!chars.length) { $("#msg").innerHTML = `<span class="err">No hay personajes legibles en este archivo.</span>`; return; }
-    $("#app").hidden = false; $("#dropSec").hidden = true; $("#barOpen").hidden = false;
+    $("#app").hidden = false; $("#dropSec").hidden = true; $("#barOpen").hidden = false; $("#mapLink").hidden = false;
     $("#foot").textContent = `${name} · ${when}`;
     pick(chars, chars[0].slot);
   }
@@ -219,7 +242,7 @@ async function main(DB){
       try { localStorage.setItem("tl.last", JSON.stringify({ name: file.name, when, chars: save.chars.map(slim) })); } catch (e) {}
     }).catch(e => { $("#msg").innerHTML = `<span class="err">${esc(e.message || e)}</span>`; });
   }
-  function slim(c) { if (c.error) return c; const o = Object.assign({}, c); delete o.gaMap; delete o.inventory; delete o.storage; delete o.equipHandles; delete o.equipIndex; delete o.equipIds; delete o.weapons; delete o.missing; return o; }
+  function slim(c) { if (c.error) return c; const o = Object.assign({}, c); delete o.gaMap; delete o.inventory; delete o.storage; delete o.equipHandles; delete o.equipIndex; delete o.equipIds; delete o.weapons; delete o.missing; delete o.eventFlags; return o; }
 
   $("#file").addEventListener("change", e => { if (e.target.files[0]) loadFile(e.target.files[0]); });
 
@@ -239,5 +262,5 @@ async function main(DB){
   } catch (e) {}
 }
 
-fetch("data/items.json").then(r => r.json()).then(main).catch(e => { document.getElementById("msg").textContent = "No se pudo cargar la base de datos de objetos: " + e.message; });
+Promise.all([fetch("data/items.json").then(r => r.json()), fetch("data/flags.json").then(r => r.json())]).then(([db, fl]) => main(db, fl)).catch(e => { document.getElementById("msg").textContent = "No se pudo cargar la base de datos de objetos: " + e.message; });
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});

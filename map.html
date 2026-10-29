@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1f1e25">
+<title>Tarnished Ledger · Mapa</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600&family=Alegreya+Sans:wght@400;500;700&display=swap">
+<style>
+:root{--bg:#17161b;--panel:#1f1e25;--panel-2:#26252e;--line:#35343f;--fg:#e8e2d3;--muted:#9a948a;--accent:#d6a93d;--accent-fg:#1a1508;--ok:#6fb37e;--bad:#d4605a;--user:#5e8fd6;
+  --display:"Cinzel",Georgia,serif;--body:"Alegreya Sans","Segoe UI",system-ui,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+[hidden]{display:none!important}
+.bar{display:flex;gap:8px;align-items:center;padding:8px max(12px,env(safe-area-inset-right,0px)) 8px max(12px,env(safe-area-inset-left,0px));background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.bar h1{font-family:var(--display);font-size:1rem;margin:0;flex:1;white-space:nowrap}
+.btn,select,input{font:inherit;color:inherit;background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.btn{cursor:pointer;text-decoration:none}
+.btn.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:700}
+.btn[aria-pressed=true]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+#map{flex:1;min-height:0;background:#0f0e12}
+.tools{display:flex;gap:6px;flex-wrap:wrap;padding:6px max(12px,env(safe-area-inset-right,0px)) 6px max(12px,env(safe-area-inset-left,0px));background:var(--panel);border-bottom:1px solid var(--line);align-items:center}
+.chip{border:1px solid var(--line);background:var(--panel-2);border-radius:999px;padding:4px 10px;font-size:.85rem;cursor:pointer;color:var(--fg)}
+.chip[aria-pressed=true]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:700}
+.chip i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+#q{flex:1;min-width:140px}
+.leaflet-container{font-family:var(--body)}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:var(--panel);color:var(--fg);box-shadow:0 4px 18px #000a}
+.leaflet-popup-content{margin:10px 12px;font-size:14px;line-height:1.35;max-height:50vh;overflow:auto}
+.leaflet-popup-content a{color:var(--accent)}
+.leaflet-control-zoom a{background:var(--panel);color:var(--fg);border-color:var(--line)}
+.pin{width:14px;height:14px;border-radius:50%;border:2px solid #000c;box-shadow:0 0 0 1px #fff5}
+.pin.grace{background:var(--ok)}.pin.grace.todo{background:var(--accent)}
+.pin.place{background:#8a8577;width:10px;height:10px}
+.pin.miss{background:var(--bad);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:11px}
+.pin.user{background:var(--user)}
+.pin.boss{background:#c267c2}.pin.boss.todo{background:#ff6ad5}
+.popup h4{margin:0 0 4px;font-family:var(--display);font-size:.95rem}
+.popup .m{color:var(--muted);font-size:.85rem}
+.popup ul{margin:6px 0 0;padding-left:18px}
+.popup li.have{color:var(--muted);text-decoration:line-through}
+.sheet{position:fixed;inset:auto 0 0 0;background:var(--panel);border-top:1px solid var(--line);padding:12px max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));z-index:1000;display:flex;flex-direction:column;gap:8px;box-shadow:0 -6px 24px #000a;max-height:70vh;overflow:auto}
+.sheet h3{margin:0;font-family:var(--display);font-size:1rem}
+.sheet .row{display:flex;gap:8px;flex-wrap:wrap}
+.sheet input,.sheet select{flex:1;min-width:0}
+.muted{color:var(--muted)}.small{font-size:.85rem}
+.hint{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:900;background:var(--accent);color:var(--accent-fg);padding:6px 12px;border-radius:999px;font-weight:700;box-shadow:0 2px 10px #0008}
+.legend{position:absolute;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:800;background:#1f1e25d9;border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:.78rem;color:var(--muted);display:flex;flex-direction:column;gap:2px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.wrap{position:relative;flex:1;min-height:0;display:flex;flex-direction:column}
+</style>
+</head>
+<body>
+<div class="bar">
+  <h1>Mapa</h1>
+  <select id="charSel" aria-label="Personaje" hidden></select>
+  <select id="layerSel" aria-label="Capa">
+    <option value="tlb">Tierras Intermedias</option>
+    <option value="gugr">Subsuelo</option>
+    <option value="sote">Reino de las Sombras</option>
+  </select>
+  <a class="btn" href="./">Ficha</a>
+</div>
+<div class="tools">
+  <input id="q" type="search" placeholder="Buscar lugar, gracia u objeto…" autocomplete="off">
+  <button class="chip" data-l="grace" aria-pressed="true"><i style="background:var(--ok)"></i>Gracias</button>
+  <button class="chip" data-l="boss" aria-pressed="true"><i style="background:#c267c2"></i>Jefes</button>
+  <button class="chip" data-l="place" aria-pressed="false"><i style="background:#8a8577"></i>Lugares</button>
+  <button class="chip" data-l="miss" aria-pressed="true"><i style="background:var(--bad)"></i>Me faltan</button>
+  <button class="chip" data-l="user" aria-pressed="true"><i style="background:var(--user)"></i>Añadidos</button>
+  <button class="btn" id="addBtn">+ Añadir</button>
+</div>
+<div class="wrap">
+  <div id="map"></div>
+  <div class="hint" id="hint" hidden>Toca el mapa donde está el objeto</div>
+  <div class="legend"><span><i style="background:var(--ok)"></i>gracia visitada</span><span><i style="background:var(--accent)"></i>gracia pendiente</span><span><i style="background:#c267c2"></i>jefe vencido · <i style="background:#ff6ad5"></i>pendiente</span><span><i style="background:var(--bad)"></i>objetos que te faltan</span></div>
+</div>
+
+<div class="sheet" id="sheet" hidden>
+  <h3>Nuevo marcador</h3>
+  <div class="row"><input id="mItem" list="items" placeholder="Objeto (empieza a escribir)" autocomplete="off"><datalist id="items"></datalist></div>
+  <div class="row"><input id="mNote" placeholder="Nota (opcional): cofre, enemigo, cómo llegar…"></div>
+  <div class="row"><button class="btn primary" id="mSave">Guardar</button><button class="btn" id="mCancel">Cancelar</button></div>
+  <p class="muted small" style="margin:0">Se guarda en este navegador. Desde <b>Añadidos → Exportar</b> puedes copiar el JSON y enviarlo al repo para compartirlo.</p>
+</div>
+
+<div class="sheet" id="userSheet" hidden>
+  <h3>Marcadores añadidos</h3>
+  <div id="userList" class="small"></div>
+  <div class="row"><button class="btn" id="exportBtn">Copiar JSON</button><label class="btn" for="importFile">Importar JSON</label><input id="importFile" type="file" accept=".json,application/json" hidden><button class="btn" id="userClose">Cerrar</button></div>
+  <p class="muted small" style="margin:0" id="exportMsg"></p>
+</div>
+
+<script src="vendor/leaflet/leaflet.js"></script>
+<script>
+(async function () {
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const WIKI = "https://eldenring.wiki.gg/wiki/";
+  const wl = (name, text) => `<a href="${WIKI}${encodeURIComponent(name.replace(/ /g, "_"))}" target="_blank" rel="noopener">${text || esc(name)}</a>`;
+  const W = 9645, H = 9119;
+
+  const [DB, P, F, MAPMETA] = await Promise.all(["data/items.json", "data/places.json", "data/flags.json", "data/map.json"].map(u => fetch(u).then(r => r.json())));
+  let community = []; try { community = await fetch("data/user_markers.json").then(r => r.ok ? r.json() : []); } catch (e) {}
+
+  // ---- save data (written by index page) ---------------------------------
+  let last = null; try { last = JSON.parse(localStorage.getItem("tl.last") || "null"); } catch (e) {}
+  const chars = (last && last.chars || []).filter(c => !c.error);
+  const sel = $("#charSel");
+  if (chars.length) { sel.innerHTML = chars.map((c, i) => `<option value="${i}">${esc(c.name)} · ${c.level}</option>`).join(""); sel.hidden = chars.length < 2; }
+  let CUR = chars[0] || null;
+
+  const baseKey = i => { let n = i.name || ""; if (i.kind === "weapon" && i.infusion && i.infusion !== "Standard" && n.startsWith(i.infusion + " ")) n = n.slice(i.infusion.length + 1); if (i.kind !== "talisman") n = n.replace(/\s*\+\d+$/, ""); return n.toLowerCase(); };
+  const CATS = new Set(["melee_armaments", "ranged_and_catalysts", "shields", "head", "chest", "arms", "legs", "talismans", "ashes_of_war", "ashes", "sorceries", "incantations", "key_items"]);
+  const CATALOG = Object.entries(DB.items).filter(([id, e]) => !e.f && CATS.has(e.c) && !(e.k === "weapon" && (+id) % 10000) && !(e.c === "ashes" && /\s\+\d+$/.test(e.n))).map(([id, e]) => ({ id: +id, name: e.n, kind: e.k, cat: e.c, loc: e.loc || "" }));
+  const haveSet = c => new Set((c.all || []).map(baseKey));
+
+  // ---- map -----------------------------------------------------------------
+  const map = L.map("map", { crs: L.CRS.Simple, minZoom: -4, maxZoom: 2, zoomSnap: 0.25, attributionControl: true });
+  map.attributionControl.setPrefix("").addAttribution('Lugares: <a href="https://eldenring.wiki.gg" target="_blank" rel="noopener">eldenring.wiki.gg</a> (CC BY-NC-SA)');
+  const bounds = [[0, 0], [H, W]];
+  const bgs = { tlb: "icons/map/tlb.webp", gugr: "icons/map/gugr.webp", sote: "icons/map/sote.webp" };
+  let bgLayer = null;
+  function setBg(k) { if (bgLayer) map.removeLayer(bgLayer); bgLayer = L.imageOverlay(bgs[k], bounds).addTo(map); }
+  setBg("tlb"); map.fitBounds(bounds);
+  $("#layerSel").onchange = e => { setBg(e.target.value); render(); };
+  const layers = { grace: L.layerGroup().addTo(map), boss: L.layerGroup().addTo(map), place: L.layerGroup(), miss: L.layerGroup().addTo(map), user: L.layerGroup().addTo(map) };
+  const vis = { grace: true, boss: true, place: false, miss: true, user: true };
+  const pin = (cls, label) => L.divIcon({ className: "", html: `<div class="pin ${cls}">${label || ""}</div>`, iconSize: cls.includes("miss") ? [22, 22] : [14, 14], iconAnchor: cls.includes("miss") ? [11, 11] : [7, 7] });
+  const at = (p) => [p.y, p.x];
+
+  // place lookups
+  const placeByName = new Map(P.places.map(p => [p.name.toLowerCase(), p]));
+  const norm = s => s.toLowerCase().replace(/\s*\(.*\)\s*$/, "");
+  const findPlace = name => placeByName.get(name.toLowerCase()) || placeByName.get(norm(name)) || null;
+  const layerOf = p => (p.layer || "").includes("GUGR") ? "gugr" : (p.layer || "").includes("SOTE") ? "sote" : "tlb";
+
+  // user markers
+  let userMarkers = []; try { userMarkers = JSON.parse(localStorage.getItem("tl.markers") || "[]"); } catch (e) {}
+  const saveUser = () => { try { localStorage.setItem("tl.markers", JSON.stringify(userMarkers)); } catch (e) {} };
+
+  let q = "";
+  function render() {
+    for (const k in layers) layers[k].clearLayers();
+    const layer = $("#layerSel").value;
+    const have = CUR ? haveSet(CUR) : null;
+    const gv = new Set(CUR && CUR.progress ? CUR.progress.graces : []), bd = new Set(CUR && CUR.progress ? CUR.progress.bosses : []);
+    const match = s => !q || s.toLowerCase().includes(q);
+
+    // graces: from flags DB, placed by wiki place of same name
+    const graceNames = new Set();
+    for (const g of F.graces) { const p = findPlace(g.name); if (!p || layerOf(p) !== layer) continue; graceNames.add(p.name.toLowerCase()); if (!match(g.name)) continue;
+      const done = gv.has(g.id);
+      L.marker(at(p), { icon: pin("grace" + (done ? "" : " todo")) }).bindPopup(`<div class="popup"><h4>${wl(g.name)}</h4><div class="m">Gracia · ${esc(g.region)} · ${done ? "visitada" : "pendiente"}</div></div>`).addTo(layers.grace); }
+    // bosses: placed by region/place name
+    for (const b of F.bosses) { const p = findPlace(b.region) || findPlace(b.name); if (!p || layerOf(p) !== layer || !match(b.name)) continue; const done = bd.has(b.id);
+      L.marker(at(p), { icon: pin("boss" + (done ? "" : " todo")) }).bindPopup(`<div class="popup"><h4>${wl(b.name)}</h4><div class="m">Jefe · ${esc(b.region)} · ${done ? "vencido" : "pendiente"}${b.rem ? " · remembranza" : ""}</div></div>`).addTo(layers.boss); }
+    // places
+    for (const p of P.places) { if (p.region || layerOf(p) !== layer || graceNames.has(p.name.toLowerCase()) || !match(p.name)) continue;
+      L.marker(at(p), { icon: pin("place") }).bindPopup(`<div class="popup"><h4>${wl(p.article || p.name, esc(p.name))}</h4><div class="m">${esc(p.group)}</div></div>`).addTo(layers.place); }
+    // missing items grouped by place
+    if (have) {
+      const byPlace = new Map();
+      for (const it of CATALOG) { if (have.has(baseKey({ name: it.name, kind: it.kind }))) continue; const pls = P.items[it.id]; if (!pls) continue;
+        for (const pi of pls) { const p = P.places[pi]; if (p.region || layerOf(p) !== layer) continue; if (!match(it.name) && !match(p.name)) continue; (byPlace.get(pi) || byPlace.set(pi, []).get(pi)).push(it); } }
+      for (const [pi, list] of byPlace) { const p = P.places[pi];
+        L.marker(at(p), { icon: pin("miss", list.length), zIndexOffset: 500 }).bindPopup(`<div class="popup"><h4>${esc(p.name)}</h4><div class="m">${list.length} objeto${list.length > 1 ? "s" : ""} que te faltan</div><ul>${list.map(it => `<li>${wl(it.name)}<div class="m">${esc(it.loc)}</div></li>`).join("")}</ul></div>`, { maxWidth: 320 }).addTo(layers.miss); }
+    }
+    // user + community markers
+    for (const m of community.concat(userMarkers)) { if ((m.layer || "tlb") !== layer || !match(m.item || "") && !match(m.note || "")) continue; const own = have ? have.has((m.item || "").toLowerCase().replace(/\s*\+\d+$/, "")) : false;
+      L.marker([m.y, m.x], { icon: pin("user") }).bindPopup(`<div class="popup"><h4>${m.item ? wl(m.item) : "Marcador"}</h4><div class="m">${esc(m.note || "")}${own ? " · ya lo tienes" : ""}${m.by ? " · por " + esc(m.by) : ""}</div></div>`).addTo(layers.user); }
+    for (const k in layers) { if (vis[k]) map.addLayer(layers[k]); else map.removeLayer(layers[k]); }
+  }
+  for (const b of document.querySelectorAll(".chip[data-l]")) b.onclick = () => { const k = b.dataset.l; vis[k] = !vis[k]; b.setAttribute("aria-pressed", vis[k]); if (k === "user" && vis[k]) openUser(); render(); };
+  $("#q").oninput = e => { q = e.target.value.trim().toLowerCase(); render(); };
+  sel.onchange = () => { CUR = chars[+sel.value]; render(); };
+
+  // ---- editor --------------------------------------------------------------
+  $("#items").innerHTML = CATALOG.map(i => `<option value="${esc(i.name)}">`).join("");
+  let adding = false, pending = null;
+  $("#addBtn").onclick = () => { adding = !adding; $("#hint").hidden = !adding; $("#addBtn").setAttribute("aria-pressed", adding); };
+  map.on("click", e => { if (!adding) return; pending = { x: Math.round(e.latlng.lng * 10) / 10, y: Math.round(e.latlng.lat * 10) / 10, layer: $("#layerSel").value }; $("#mItem").value = ""; $("#mNote").value = ""; $("#sheet").hidden = false; $("#mItem").focus(); });
+  $("#mCancel").onclick = () => { $("#sheet").hidden = true; };
+  $("#mSave").onclick = () => { if (!pending) return; const item = $("#mItem").value.trim(); if (!item) { $("#mItem").focus(); return; }
+    userMarkers.push(Object.assign(pending, { item, note: $("#mNote").value.trim(), at: new Date().toISOString().slice(0, 10) })); saveUser(); $("#sheet").hidden = true; adding = false; $("#hint").hidden = true; $("#addBtn").setAttribute("aria-pressed", "false"); render(); };
+  function openUser() { $("#userList").innerHTML = userMarkers.length ? userMarkers.map((m, i) => `<div>${esc(m.item)} <span class="muted">(${m.x}, ${m.y}, ${m.layer})${m.note ? " · " + esc(m.note) : ""}</span> <button class="chip" data-del="${i}">quitar</button></div>`).join("") : `<span class="muted">Todavía no has añadido marcadores. Pulsa “+ Añadir” y toca el mapa.</span>`; $("#userSheet").hidden = false; }
+  $("#userList").onclick = e => { const b = e.target.closest("[data-del]"); if (!b) return; userMarkers.splice(+b.dataset.del, 1); saveUser(); openUser(); render(); };
+  $("#userClose").onclick = () => { $("#userSheet").hidden = true; };
+  $("#exportBtn").onclick = async () => { const txt = JSON.stringify(userMarkers, null, 1); try { await navigator.clipboard.writeText(txt); $("#exportMsg").textContent = "Copiado. Pégalo en data/user_markers.json del repo (o en un issue)."; } catch (e) { $("#exportMsg").textContent = txt; } };
+  $("#importFile").onchange = async e => { const f = e.target.files[0]; if (!f) return; try { const arr = JSON.parse(await f.text()); if (Array.isArray(arr)) { userMarkers = userMarkers.concat(arr.filter(m => typeof m.x === "number" && typeof m.y === "number")); saveUser(); openUser(); render(); } } catch (err) { $("#exportMsg").textContent = "JSON no válido."; } };
+
+  render();
+  if (!CUR) { L.popup().setLatLng([H / 2, W / 2]).setContent('<div class="popup"><h4>Sin partida cargada</h4><div class="m">Abre tu .sl2 en la <a href="./">ficha</a> y vuelve: verás gracias, jefes y objetos pendientes.</div></div>').openOn(map); }
+})();
+</script>
+</body>
+</html>

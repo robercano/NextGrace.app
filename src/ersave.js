@@ -140,13 +140,14 @@
     r.skip(0x408); // tutorial
     r.skip(3); const deaths = r.u32(); r.skip(4); r.skip(1); r.skip(4); const lastGrace = r.u32(); r.skip(1); r.skip(8);
     const eventFlagsOffset = r.pos - start; // 0x1BF99F bytes follow
+    const eventFlags = new Uint8Array(buf, r.pos, 0x1BF99F);
 
     return {
       ver, mapId, name, level, runes, totalRunes, stats, hp, maxHp, baseMaxHp, fp, maxFp, baseMaxFp, sp, maxSp, baseMaxSp,
       buildups, gender, archetype, className: CLASSES[archetype] || ("#" + archetype), voice, gift, giftName: GIFTS[gift] || ("#" + gift),
       talismanSlots, matchmakingWpnLvl, greatRuneActive: !!greatRuneActive, crimsonFlasks, ceruleanFlasks,
       armStyle, activeSlots, equipIndex, equipIds, equipHandles, inventory, storage, spells, quick, pouch, physick, regions,
-      clearCount, deaths, lastGrace, eventFlagsOffset, gaMap,
+      clearCount, deaths, lastGrace, eventFlagsOffset, eventFlags, gaMap,
     };
   }
 
@@ -236,10 +237,21 @@
     return { inventory: inv, keyItems: keys, storage: sto, storageKeys: stoKeys, equipped, spells, quick, pouch };
   }
 
+  // Event flag lookup: block = id/1000 via BST table; byte = pos*125 + (id%1000)/8; bit = 7 - (id%1000)%8
+  function makeFlagReader(bst, eventFlags) {
+    return function (id) {
+      const pos = bst[Math.floor(id / 1000)];
+      if (pos === undefined) return null;
+      const r = id % 1000, byte = pos * 125 + (r >> 3);
+      if (byte >= eventFlags.length) return null;
+      return !!(eventFlags[byte] & (1 << (7 - (r & 7))));
+    };
+  }
+
   function fmtTime(sec) {
     const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60);
     return h + "h " + (m < 10 ? "0" : "") + m + "m";
   }
 
-  return { parse, parseSlot, makeResolver, enrich, fmtTime, CLASSES, INFUSIONS, GIFTS };
+  return { parse, parseSlot, makeResolver, enrich, makeFlagReader, fmtTime, CLASSES, INFUSIONS, GIFTS };
 });
