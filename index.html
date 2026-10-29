@@ -102,7 +102,7 @@ section{display:flex;flex-direction:column;gap:10px;min-width:0}
 .plan{background:var(--panel);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
 .plan .sel{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center}
 .plan select,.plan input{background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:6px 8px;min-width:0}
-.plan input{width:4.5em;text-align:center}
+.plan input{width:4.5em;text-align:center;font-weight:700}
 .need{display:flex;flex-direction:column;gap:4px}
 .need div{display:grid;grid-template-columns:1fr auto;gap:10px;font-variant-numeric:tabular-nums}
 .need .no{color:var(--bad)}.need .yes{color:var(--ok)}
@@ -161,8 +161,8 @@ details summary{cursor:pointer;color:var(--muted);font-size:.9rem}
       <div class="plan">
         <div class="sel">
           <select id="planWeapon" aria-label="Arma a mejorar"></select>
-          <span class="muted">→ +</span>
-          <input id="planTo" type="number" min="1" max="25" aria-label="Nivel objetivo">
+          <label for="planTo" class="muted small" style="white-space:nowrap">hasta +</label>
+          <input id="planTo" type="number" inputmode="numeric" min="1" max="25" aria-label="Nivel objetivo">
         </div>
         <div class="need" id="need"></div>
       </div>

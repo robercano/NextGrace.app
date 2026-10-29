@@ -95,7 +95,8 @@ async function main(DB){
     weapons.sort((a, b) => (a.level >= a.maxLevel) - (b.level >= b.maxLevel) || b.level - a.level || a.name.localeCompare(b.name));
     const sel = $("#planWeapon");
     sel.innerHTML = weapons.map((w, i) => `<option value="${i}">${esc(w.display)} (máx +${w.maxLevel})</option>`).join("");
-    sel.onchange = planUpdate; $("#planTo").oninput = planUpdate;
+    sel.onchange = planUpdate;
+    $("#planTo").oninput = () => planUpdate("typing"); $("#planTo").onchange = planUpdate;
     sel.selectedIndex = Math.max(0, weapons.findIndex(w => w.level > 0 && w.level < w.maxLevel));
     c.weapons = weapons; planUpdate(true);
 
@@ -110,7 +111,9 @@ async function main(DB){
     const c = CUR; if (!c || !c.weapons.length) { $("#need").innerHTML = ""; return; }
     const w = c.weapons[$("#planWeapon").value | 0];
     const toEl = $("#planTo"); toEl.max = w.maxLevel; toEl.min = w.level + 1;
-    if (init === true || +toEl.value <= w.level || +toEl.value > w.maxLevel) toEl.value = w.maxLevel;
+    const v = +toEl.value;
+    if (init === true) toEl.value = w.maxLevel;
+    else if (init !== "typing" && (!v || v <= w.level || v > w.maxLevel)) toEl.value = w.maxLevel; // clamp only when editing ends
     const to = Math.min(w.maxLevel, Math.max(w.level + 1, +toEl.value || w.maxLevel));
     const need = costRange(w.level, to, w.maxLevel <= 10), have = stoneCounts(c);
     const lines = Object.entries(need).map(([n, q]) => { const h = have[n] || 0; return `<div class="${h >= q ? "yes" : "no"}"><span>${esc(n)}</span><span>${h} / ${q}</span></div>`; });
