@@ -32,7 +32,8 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
 img{max-width:100%}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--panel)}
 h1,h2,h3{font-family:var(--display);font-weight:600;margin:0;text-wrap:balance;letter-spacing:.02em}
-h2{font-size:.82rem;text-transform:uppercase;letter-spacing:.14em;color:var(--accent);padding-top:22px;border-top:1px solid var(--line)}
+h2{font-size:.82rem;text-transform:uppercase;letter-spacing:.14em;color:var(--accent);margin-top:14px;padding-top:26px;border-top:1px solid var(--line)}
+section:first-child h2{margin-top:0;padding-top:0;border-top:0}
 h3.sub{font-family:var(--body);font-weight:600;font-size:.95rem;color:var(--fg);margin-top:8px}
 .help{color:var(--muted);font-size:.9rem;margin:0}
 button,input,select{font:inherit;color:inherit}
