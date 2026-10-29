@@ -24,7 +24,7 @@ except ImportError:
 
 WIKI = os.environ.get("TL_WIKI", "https://eldenring.wiki.gg")
 UA = "TarnishedLedgerIconFetch/2.0 (personal icon pack; python-requests)"
-DELAY = float(os.environ.get("TL_DELAY", "1.0"))
+DELAY = float(os.environ.get("TL_DELAY", "2.0"))
 NAME_RE = re.compile(r"^ER Icon ([^ ]+) (.+)\.(png|webp|jpe?g)$", re.I)
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 try:
@@ -51,11 +51,22 @@ _last = [0.0]
 
 
 def get(url, **params):
-    wait = DELAY - (time.time() - _last[0])
-    if wait > 0:
-        time.sleep(wait)
-    _last[0] = time.time()
-    r = session.get(url, params=params or None, timeout=60)
+    backoff = 30
+    for attempt in range(8):
+        wait = DELAY - (time.time() - _last[0])
+        if wait > 0:
+            time.sleep(wait)
+        _last[0] = time.time()
+        r = session.get(url, params=params or None, timeout=60)
+        if r.status_code in (429, 503):
+            ra = r.headers.get("Retry-After")
+            pause = int(ra) if ra and ra.isdigit() else backoff
+            print(f"  {r.status_code}: espero {pause}s", flush=True)
+            time.sleep(pause)
+            backoff = min(backoff * 2, 600)
+            continue
+        r.raise_for_status()
+        return r
     r.raise_for_status()
     return r
 
