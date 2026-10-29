@@ -51,3 +51,5 @@ y abre `http://localhost:8080`. Al cambiar ficheros, sube `VERSION` en `sw.js` p
 ## Créditos
 
 Formato del save reconstruido a partir de [ClayAmore/ER-Save-Editor](https://github.com/ClayAmore/ER-Save-Editor), [Ariescyn/EldenRing-Save-Manager](https://github.com/Ariescyn/EldenRing-Save-Manager) y la especificación de [oisis/EldenRing-SaveForge](https://github.com/oisis/EldenRing-SaveForge). Base de datos de objetos derivada de SaveForge y ER-Save-Editor. Elden Ring es una marca de FromSoftware / Bandai Namco; este proyecto no está afiliado.
+
+<!-- deploy: 2026-10-29T16:18:37Z -->
