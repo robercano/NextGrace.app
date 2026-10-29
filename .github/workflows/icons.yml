@@ -28,7 +28,8 @@ jobs:
           python-version: "3.12"
       - run: pip install requests pillow
       - name: Descargar iconos
-        run: python tools/fetch_icons.py --kinds ${{ github.event.inputs.kinds }} --limit ${{ github.event.inputs.limit || 0 }}
+        # 280 min como mucho; lo descargado hasta entonces se guarda y la siguiente ejecución continúa
+        run: timeout 280m python tools/fetch_icons.py --kinds ${{ github.event.inputs.kinds }} --limit ${{ github.event.inputs.limit || 0 }} || echo "::warning::Tiempo agotado o error; se guarda lo descargado"
       - name: Regenerar índice
         run: python tools/icons_index.py
       - name: Commit
