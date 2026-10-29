@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Demo icono wiki</title>
+<style>
+  body{font-family:system-ui,sans-serif;margin:0;padding:20px;background:#17161b;color:#e8e2d3;line-height:1.45}
+  input,button{font:inherit;padding:8px 12px;border-radius:8px;border:1px solid #444}
+  input{background:#26252e;color:inherit;width:100%;box-sizing:border-box;margin-bottom:10px}
+  button{background:#d6a93d;color:#1a1508;font-weight:700;border-color:#d6a93d}
+  .card{background:#1f1e25;border-radius:12px;padding:14px;margin-top:16px}
+  .ok{color:#6fb37e}.bad{color:#d4605a}.muted{color:#9a948a}
+  img{width:64px;height:64px;background:#26252e;border-radius:8px;vertical-align:middle;margin-right:10px}
+  pre{white-space:pre-wrap;word-break:break-all;font-size:12px;color:#9a948a}
+</style>
+</head>
+<body>
+<h2>Demo: icono desde eldenring.wiki.gg</h2>
+<p class="muted">Prueba si el navegador puede (1) consultar la API y (2) leer los bytes de la imagen (CORS). Si lo segundo funciona, el pack se puede generar entero desde el móvil.</p>
+<input id="name" value="Dagger" aria-label="Nombre del arma">
+<button id="go">Probar</button>
+
+<div class="card" id="api"><b>1. API</b><div class="muted">pendiente</div></div>
+<div class="card" id="img"><b>2. Mostrar con &lt;img&gt;</b><div class="muted">pendiente</div></div>
+<div class="card" id="cors"><b>3. Leer bytes (fetch CORS)</b><div class="muted">pendiente</div></div>
+<div class="card" id="canvas"><b>4. Leer vía canvas (img crossorigin)</b><div class="muted">pendiente</div></div>
+<pre id="log"></pre>
+
+<script>
+const WIKI = "https://eldenring.wiki.gg";
+const $ = s => document.querySelector(s);
+const log = (...a) => { $("#log").textContent += a.join(" ") + "\n"; };
+const set = (id, cls, html) => { $(id).querySelector("div").className = cls; $(id).querySelector("div").innerHTML = html; };
+
+async function api(params) {
+  const u = new URL(WIKI + "/api.php");
+  Object.entries(Object.assign({ format: "json", formatversion: 2, origin: "*" }, params)).forEach(([k, v]) => u.searchParams.set(k, v));
+  log("GET", u.toString());
+  const r = await fetch(u, { mode: "cors" });
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  return r.json();
+}
+
+$("#go").onclick = async () => {
+  $("#log").textContent = "";
+  for (const id of ["#api", "#img", "#cors", "#canvas"]) set(id, "muted", "pendiente");
+  const name = $("#name").value.trim();
+  let thumb;
+  try {
+    const q = await api({ action: "query", titles: name, prop: "images", imlimit: 500, redirects: 1 });
+    const page = (q.query.pages || [])[0];
+    const titles = (page && page.images || []).map(i => i.title);
+    log("imágenes de la página:", titles.join(" | ") || "(ninguna)");
+    const file = titles.find(t => /^File:ER[ _]Icon/i.test(t)) || titles.find(t => /\.(png|webp)$/i.test(t));
+    if (!file) throw new Error("La página no tiene imágenes (¿título distinto?)");
+    const ii = await api({ action: "query", titles: file, prop: "imageinfo", iiprop: "url", iiurlwidth: 64 });
+    const info = ii.query.pages[0].imageinfo[0];
+    thumb = info.thumburl || info.url;
+    set("#api", "ok", `OK · ${file}<br><span class="muted">${thumb}</span>`);
+  } catch (e) { set("#api", "bad", "Falla: " + e.message); return; }
+
+  // 2) plain img
+  await new Promise(res => { const im = new Image(); im.onload = () => { set("#img", "ok", ""); $("#img div").appendChild(im); $("#img div").append(" OK: la imagen se ve"); res(); }; im.onerror = () => { set("#img", "bad", "La imagen no carga"); res(); }; im.src = thumb; });
+
+  // 3) fetch bytes
+  try {
+    const r = await fetch(thumb, { mode: "cors" });
+    const b = await r.blob();
+    const url = URL.createObjectURL(b);
+    set("#cors", "ok", `<img src="${url}"> OK: ${b.size} bytes legibles (${b.type}). <b>Se puede generar el pack desde el móvil.</b>`);
+  } catch (e) {
+    set("#cors", "bad", "Falla (CORS bloqueado): " + e.message);
+    // 4) canvas route
+    await new Promise(res => {
+      const im = new Image(); im.crossOrigin = "anonymous";
+      im.onload = () => { try { const c = document.createElement("canvas"); c.width = im.naturalWidth; c.height = im.naturalHeight; c.getContext("2d").drawImage(im, 0, 0); c.toBlob(b => { set("#canvas", "ok", `OK vía canvas: ${b.size} bytes`); res(); }, "image/webp", .85); } catch (err) { set("#canvas", "bad", "Falla: " + err.message); res(); } };
+      im.onerror = () => { set("#canvas", "bad", "Falla: el servidor no envía cabeceras CORS para imágenes"); res(); };
+      im.src = thumb;
+    });
+    return;
+  }
+  set("#canvas", "muted", "no necesario");
+};
+</script>
+</body>
+</html>

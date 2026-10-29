@@ -1,0 +1,15 @@
+# Regenera icons/index.json automáticamente cuando cambian los iconos.
+name: icons-index
+on:
+  push:
+    paths: ["icons/**", "!icons/index.json"]
+jobs:
+  index:
+    runs-on: ubuntu-latest
+    permissions: { contents: write }
+    steps:
+      - uses: actions/checkout@v4
+      - run: python tools/icons_index.py
+      - run: |
+          git config user.name "icons-index"; git config user.email "actions@users.noreply.github.com"
+          git add icons/index.json; git diff --cached --quiet || git commit -m "icons: regenerate index" && git push
