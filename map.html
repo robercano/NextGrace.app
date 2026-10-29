@@ -111,7 +111,9 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px
   const chars = (last && last.chars || []).filter(c => !c.error);
   const sel = $("#charSel");
   if (chars.length) { sel.innerHTML = chars.map((c, i) => `<option value="${i}">${esc(c.name)} · ${c.level}</option>`).join(""); sel.hidden = chars.length < 2; }
-  let CUR = chars[0] || null;
+  let curSlot = null; try { curSlot = localStorage.getItem("tl.cur"); } catch (e) {}
+  let CUR = chars.find(c => String(c.slot) === curSlot) || chars[0] || null;
+  if (CUR) sel.value = String(chars.indexOf(CUR));
 
   const baseKey = i => { let n = i.name || ""; if (i.kind === "weapon" && i.infusion && i.infusion !== "Standard" && n.startsWith(i.infusion + " ")) n = n.slice(i.infusion.length + 1); if (i.kind !== "talisman") n = n.replace(/\s*\+\d+$/, ""); return n.toLowerCase(); };
   const CATS = new Set(["melee_armaments", "ranged_and_catalysts", "shields", "head", "chest", "arms", "legs", "talismans", "ashes_of_war", "ashes", "sorceries", "incantations", "key_items"]);
@@ -176,7 +178,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px
   }
   for (const b of document.querySelectorAll(".chip[data-l]")) b.onclick = () => { const k = b.dataset.l; vis[k] = !vis[k]; b.setAttribute("aria-pressed", vis[k]); if (k === "user" && vis[k]) openUser(); render(); };
   $("#q").oninput = e => { q = e.target.value.trim().toLowerCase(); render(); };
-  sel.onchange = () => { CUR = chars[+sel.value]; render(); };
+  sel.onchange = () => { CUR = chars[+sel.value]; try { localStorage.setItem("tl.cur", String(CUR.slot)); } catch (e) {} render(); };
 
   // ---- editor --------------------------------------------------------------
   $("#items").innerHTML = CATALOG.map(i => `<option value="${esc(i.name)}">`).join("");
@@ -193,6 +195,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px
   $("#importFile").onchange = async e => { const f = e.target.files[0]; if (!f) return; try { const arr = JSON.parse(await f.text()); if (Array.isArray(arr)) { userMarkers = userMarkers.concat(arr.filter(m => typeof m.x === "number" && typeof m.y === "number")); saveUser(); openUser(); render(); } } catch (err) { $("#exportMsg").textContent = "JSON no válido."; } };
 
   render();
+  if (CUR && !CUR.progress) { L.popup().setLatLng([H / 2, W / 2]).setContent('<div class="popup"><h4>Falta el progreso</h4><div class="m">Esta copia de la partida se guardó con una versión anterior. Vuelve a abrir tu .sl2 en la <a href="./">ficha</a> para ver gracias y jefes visitados.</div></div>').openOn(map); }
   if (!CUR) { L.popup().setLatLng([H / 2, W / 2]).setContent('<div class="popup"><h4>Sin partida cargada</h4><div class="m">Abre tu .sl2 en la <a href="./">ficha</a> y vuelve: verás gracias, jefes y objetos pendientes.</div></div>').openOn(map); }
 })();
 </script>

@@ -226,7 +226,7 @@ async function main(DB, FLAGS){
   }
   function pick(chars, slot) {
     const c = chars.find(x => x.slot == slot); if (!c) return;
-    $("#charSel").value = slot;
+    $("#charSel").value = slot; try { localStorage.setItem("tl.cur", String(slot)); } catch (e) {}
     for (const b of document.querySelectorAll("#chars [data-slot]")) b.setAttribute("aria-pressed", b.dataset.slot == slot);
     group = "Armas"; limit = 250; $("#q").value = ""; chips();
     renderChar(c);
