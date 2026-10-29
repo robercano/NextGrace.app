@@ -3,6 +3,14 @@ async function main(DB){
   const $ = s => document.querySelector(s);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   let SAVE = null, CUR = null, FILENAME = "";
+  const WIKI = "https://eldenring.wiki.gg/wiki/";
+  function wikiName(i) {
+    let n = i.name || "";
+    if (i.kind === "weapon" && i.infusion && i.infusion !== "Standard" && n.startsWith(i.infusion + " ")) n = n.slice(i.infusion.length + 1);
+    if (i.kind !== "talisman") n = n.replace(/\s*\+\d+$/, "");
+    return n;
+  }
+  const link = (i, text) => `<a class="wl" href="${WIKI}${encodeURIComponent(wikiName(i).replace(/ /g, "_"))}" target="_blank" rel="noopener">${text}</a>`;
 
   // ---- icon pack (user supplied, stored in IndexedDB) --------------------
   const ICONS = new Map(); // key -> object URL
@@ -79,9 +87,9 @@ async function main(DB){
     $("#stats").innerHTML = Object.keys(names).map(k => `<div><b>${S[k]}</b><span>${names[k]}</span></div>`).join("");
 
     const E = c.enriched.equipped;
-    const item = it => (it && real(it)) ? ic(it) + esc(it.display) + (it.aow ? `<span class="tag">${esc(it.aow)}</span>` : "") : `<span class="muted">—</span>`;
+    const item = it => (it && real(it)) ? ic(it) + link(it, esc(it.display)) + (it.aow ? `<span class="tag">${esc(it.aow)}</span>` : "") : `<span class="muted">—</span>`;
     const multi = arr => arr.filter(x => x && real(x)).map(item).join("<br>") || `<span class="muted">—</span>`;
-    const rows = [["Mano dcha", multi(E.rh)], ["Mano izq", multi(E.lh)], ["Flechas", multi(E.arrows.concat(E.bolts))], ["Cabeza", item(E.head)], ["Pecho", item(E.chest)], ["Brazos", item(E.arms)], ["Piernas", item(E.legs)], ["Talismanes", multi(E.talismans)], ["Acceso rápido", multi(c.enriched.quick)], ["Bolsa", multi(c.enriched.pouch)], ["Hechizos", c.enriched.spells.map(s => esc(s.display)).join("<br>") || `<span class="muted">—</span>`], ["Físico", c.physick.map(id => { const e = DB.items[id]; return e ? esc(e.n) : null; }).filter(Boolean).join("<br>") || `<span class="muted">—</span>`]];
+    const rows = [["Mano dcha", multi(E.rh)], ["Mano izq", multi(E.lh)], ["Flechas", multi(E.arrows.concat(E.bolts))], ["Cabeza", item(E.head)], ["Pecho", item(E.chest)], ["Brazos", item(E.arms)], ["Piernas", item(E.legs)], ["Talismanes", multi(E.talismans)], ["Acceso rápido", multi(c.enriched.quick)], ["Bolsa", multi(c.enriched.pouch)], ["Hechizos", c.enriched.spells.map(s => link(s, esc(s.display))).join("<br>") || `<span class="muted">—</span>`], ["Físico", c.physick.map(id => { const e = DB.items[id]; return e ? link({ name: e.n, kind: e.k }, esc(e.n)) : null; }).filter(Boolean).join("<br>") || `<span class="muted">—</span>`]];
     $("#eq").innerHTML = rows.map(([k, v]) => `<span>${k}</span><div>${v}</div>`).join("");
 
     // stones
@@ -100,7 +108,7 @@ async function main(DB){
     sel.selectedIndex = Math.max(0, weapons.findIndex(w => w.level > 0 && w.level < w.maxLevel));
     c.weapons = weapons; planUpdate(true);
 
-    const wrow = w => `<div class="row${w.stored ? " stored" : ""}" data-w="${weapons.indexOf(w)}" role="button" tabindex="0" style="cursor:pointer"><div class="n">${ic(w)}${esc(w.display)}${w.level >= w.maxLevel ? '<span class="tag max">máx</span>' : ""}${w.aow ? `<span class="tag">${esc(w.aow)}</span>` : ""}<span class="lvlbar"><b style="width:${100 * w.level / w.maxLevel}%"></b></span></div><div class="q">+${w.level} / ${w.maxLevel}</div></div>`;
+    const wrow = w => `<div class="row${w.stored ? " stored" : ""}" data-w="${weapons.indexOf(w)}" role="button" tabindex="0" style="cursor:pointer"><div class="n">${ic(w)}${link(w, esc(w.display))}${w.level >= w.maxLevel ? '<span class="tag max">máx</span>' : ""}${w.aow ? `<span class="tag">${esc(w.aow)}</span>` : ""}<span class="lvlbar"><b style="width:${100 * w.level / w.maxLevel}%"></b></span></div><div class="q">+${w.level} / ${w.maxLevel}</div></div>`;
     const pending = weapons.filter(w => w.level > 0 && w.level < w.maxLevel), maxed = weapons.filter(w => w.level >= w.maxLevel);
     $("#upgradeable").innerHTML = (pending.map(wrow).join("") || `<p class="muted small">Ninguna arma a medias: todo lo que has tocado está al máximo.</p>`) + (maxed.length ? `<details><summary>${maxed.length} armas al máximo</summary><div class="list">${maxed.map(wrow).join("")}</div></details>` : "");
 
@@ -132,7 +140,7 @@ async function main(DB){
     for (const i of items.slice(0, limit)) {
       if (i.cat !== lastCat) { lastCat = i.cat; html += `<div class="row"><div class="m" style="grid-column:1/-1;padding-top:6px;color:var(--accent);text-transform:uppercase;letter-spacing:.1em">${esc(CAT_ES[i.cat] || i.cat || "Otros")}</div></div>`; }
       const meta = [i.sub, i.infusion && i.infusion !== "Standard" ? i.infusion : null, i.aow ? "AoW: " + i.aow : null].filter(Boolean).join(" · ");
-      html += `<div class="row${i.stored ? " stored" : ""}"><div class="n">${ic(i)}${esc(i.display)}${i.dlc ? '<span class="tag dlc">DLC</span>' : ""}${i.kind === "weapon" && i.maxLevel ? `<span class="tag">+${i.level}/${i.maxLevel}</span>` : ""}</div><div class="q">${i.qty > 1 ? "×" + i.qty : ""}</div>${meta ? `<div class="m">${esc(meta)}</div>` : ""}</div>`;
+      html += `<div class="row${i.stored ? " stored" : ""}"><div class="n">${ic(i)}${link(i, esc(i.display))}${i.dlc ? '<span class="tag dlc">DLC</span>' : ""}${i.kind === "weapon" && i.maxLevel ? `<span class="tag">+${i.level}/${i.maxLevel}</span>` : ""}</div><div class="q">${i.qty > 1 ? "×" + i.qty : ""}</div>${meta ? `<div class="m">${esc(meta)}</div>` : ""}</div>`;
     }
     if (items.length > limit) html += `<button class="btn" id="more" style="margin-top:10px">Mostrar ${Math.min(250, items.length - limit)} más (${items.length - limit} restantes)</button>`;
     $("#inv").innerHTML = html;
@@ -140,7 +148,7 @@ async function main(DB){
 
   function chips() { $("#chips").innerHTML = GROUPS.map(g => `<button class="chip" aria-pressed="${g[0] === group}" data-g="${g[0]}">${g[0]}</button>`).join(""); }
   $("#chips").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; group = b.dataset.g; limit = 250; chips(); renderInv(); });
-  $("#upgradeable").addEventListener("click", e => { const r = e.target.closest("[data-w]"); if (!r) return; $("#planWeapon").value = r.dataset.w; planUpdate(true); $("#planWeapon").scrollIntoView({ block: "center", behavior: "smooth" }); });
+  $("#upgradeable").addEventListener("click", e => { if (e.target.closest("a")) return; const r = e.target.closest("[data-w]"); if (!r) return; $("#planWeapon").value = r.dataset.w; planUpdate(true); $("#planWeapon").scrollIntoView({ block: "center", behavior: "smooth" }); });
   $("#q").addEventListener("input", () => { limit = 250; renderInv(); });
   $("#inv").addEventListener("click", e => { if (e.target.id === "more") { limit += 250; renderInv(); } });
   chips();
