@@ -14,7 +14,7 @@ Uso:
 Reanudable: los que ya están en icons/ se saltan. Ritmo: 1 petición/segundo, User-Agent identificado.
 Los iconos son arte de FromSoftware alojado en la wiki; son para tu uso personal, no los redistribuyas.
 """
-import argparse, io, os, re, sys, time
+import argparse, io, json, os, re, sys, time
 
 try:
     import requests
@@ -26,6 +26,24 @@ WIKI = os.environ.get("TL_WIKI", "https://eldenring.wiki.gg")
 UA = "TarnishedLedgerIconFetch/2.0 (personal icon pack; python-requests)"
 DELAY = float(os.environ.get("TL_DELAY", "1.0"))
 NAME_RE = re.compile(r"^ER Icon ([^ ]+) (.+)\.(png|webp|jpe?g)$", re.I)
+ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+try:
+    DB_NAMES = set()
+    for e in json.load(open(os.path.join(ROOT, "data", "items.json"), encoding="utf-8"))["items"].values():
+        n = e["n"].lower(); DB_NAMES.add(n)
+        if ": " in n: DB_NAMES.add(n.split(": ", 1)[1])  # "Ash of War: X" -> "X", "Map: Limgrave, West" -> "Limgrave, West"
+except Exception:
+    DB_NAMES = set()
+
+
+def split_name(stem):
+    """'Ash of War Bloodhound's Step' -> ('Ash of War', "Bloodhound's Step") using the item DB when possible."""
+    words = stem.split(" ")
+    for i in range(1, len(words)):  # longest suffix that is a known item name
+        cand = " ".join(words[i:])
+        if cand.lower() in DB_NAMES:
+            return " ".join(words[:i]), cand
+    return words[0], " ".join(words[1:])
 
 session = requests.Session()
 session.headers["User-Agent"] = UA
@@ -57,16 +75,17 @@ def list_icons():
         r = api(action="query", list="allimages", aiprefix="ER Icon ", ailimit=500, aiprop="url", **cont)
         for f in r["query"]["allimages"]:
             name = f["name"].replace("_", " ")
-            m = NAME_RE.match(name)
+            m = re.match(r"^ER Icon (.+)\.(png|webp|jpe?g)$", name, re.I)
             if m:
-                files.append({"kind": m.group(1), "item": m.group(2), "url": f["url"], "name": name})
+                kind, item = split_name(m.group(1))
+                files.append({"kind": kind, "item": item, "url": f["url"], "name": name})
         cont = r.get("continue")
         if not cont:
             return files
 
 
 def main():
-    root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+    root = ROOT
     ap = argparse.ArgumentParser()
     ap.add_argument("--kinds", nargs="*", default=None, help="grupos a bajar (por defecto todos)")
     ap.add_argument("--size", type=int, default=64)
@@ -103,12 +122,16 @@ def main():
             im.save(os.path.join(a.out, slug(f["item"]) + ".webp"), "WEBP", quality=85, method=6)
         except Exception as e:
             failed.append(f"{f['name']} ({e})")
+            if len(failed) <= 15:
+                print("  FALLO", f["name"], "->", e, flush=True)
         if i % 25 == 0 or i == len(todo):
             print(f"  {i}/{len(todo)}  ({len(failed)} fallos)", flush=True)
     if failed:
-        with open(os.path.join(root, "missing.txt"), "w", encoding="utf-8") as fh:
+        with open(os.path.join(a.out, "missing.txt"), "w", encoding="utf-8") as fh:
             fh.write("\n".join(failed))
-        print(f"{len(failed)} fallos -> missing.txt")
+        print(f"{len(failed)} fallos -> icons/missing.txt")
+    elif os.path.exists(os.path.join(a.out, "missing.txt")):
+        os.remove(os.path.join(a.out, "missing.txt"))
 
 
 if __name__ == "__main__":

@@ -20,6 +20,7 @@ async function main(DB){
     const c = [iconKey(i), slug(i.name)];
     if (i.kind === "weapon" && i.infusion && i.infusion !== "Standard" && i.name.startsWith(i.infusion + " ")) c.push(slug(i.name.slice(i.infusion.length + 1)));
     const plain = i.name.replace(/\s*\+\d+$/, ""); if (plain !== i.name) c.push(slug(plain));
+    if (i.name.includes(": ")) c.push(slug(i.name.split(": ").slice(1).join(": ")));
     return c;
   }
   function ic(i) {

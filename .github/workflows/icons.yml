@@ -7,6 +7,9 @@ on:
       kinds:
         description: "Grupos a descargar (vacío = todos; p. ej. 'weapon Armor talisman')"
         default: ""
+      limit:
+        description: "Solo los N primeros (prueba rápida); vacío = todos"
+        default: ""
 jobs:
   fetch:
     runs-on: ubuntu-latest
@@ -25,7 +28,7 @@ jobs:
           python-version: "3.12"
       - run: pip install requests pillow
       - name: Descargar iconos
-        run: python tools/fetch_icons.py --kinds ${{ github.event.inputs.kinds }}
+        run: python tools/fetch_icons.py --kinds ${{ github.event.inputs.kinds }} --limit ${{ github.event.inputs.limit || 0 }}
       - name: Regenerar índice
         run: python tools/icons_index.py
       - name: Commit
@@ -41,10 +44,3 @@ jobs:
             git rebase --abort 2>/dev/null || true; sleep 10
           done
           exit 1
-      - name: Subir informe de fallos
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: missing
-          path: missing.txt
-          if-no-files-found: ignore
