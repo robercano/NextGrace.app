@@ -81,18 +81,58 @@ def slug(n):
 
 
 def list_icons():
-    files, cont = [], {}
-    while True:
-        r = api(action="query", list="allimages", aiprefix="ER Icon ", ailimit=500, aiprop="url", **cont)
-        for f in r["query"]["allimages"]:
-            name = f["name"].replace("_", " ")
-            m = re.match(r"^ER Icon (.+)\.(png|webp|jpe?g)$", name, re.I)
-            if m:
-                kind, item = split_name(m.group(1))
-                files.append({"kind": kind, "item": item, "url": f["url"], "name": name})
-        cont = r.get("continue")
-        if not cont:
-            return files
+    files, seen = [], set()
+    for prefix in ("ER Icon ", "ER_Icon_", "ER Icon_", "ER_Icon "):
+        cont = {}
+        while True:
+            r = api(action="query", list="allimages", aiprefix=prefix, ailimit=500, aiprop="url", **cont)
+            for f in r["query"]["allimages"]:
+                name = f["name"].replace("_", " ")
+                if name in seen:
+                    continue
+                m = re.match(r"^ER Icon (.+)\.(png|webp|jpe?g)$", name, re.I)
+                if m:
+                    seen.add(name)
+                    kind, item = split_name(m.group(1))
+                    files.append({"kind": kind, "item": item, "url": f["url"], "name": name})
+            cont = r.get("continue")
+            if not cont:
+                break
+        print(f"  prefijo {prefix!r}: acumulados {len(files)}", flush=True)
+    return files
+
+
+def lookup_missing(files):
+    """Para los objetos del catálogo sin icono en el listado, pregunta directamente por 'File:ER Icon <grupo> <nombre>.png'."""
+    have = {slug(f["item"]) for f in files}
+    db = json.load(open(os.path.join(ROOT, "data", "items.json"), encoding="utf-8"))["items"]
+    GROUPS = {"melee_armaments": ["weapon"], "ranged_and_catalysts": ["weapon"], "shields": ["weapon", "Shield"], "arrows_and_bolts": ["weapon", "Ammo"],
+              "head": ["Armor"], "chest": ["Armor"], "arms": ["Armor"], "legs": ["Armor"], "talismans": ["talisman", "Talisman"],
+              "ashes_of_war": ["Ash of War", "AshOfWar", "Skill"], "ashes": ["Spirit Ash", "Spirit Ashes", "item"], "sorceries": ["Sorcery", "spell"], "incantations": ["Incantation", "spell"],
+              "key_items": ["Key Item", "item"], "tools": ["item", "Tool"], "crafting_materials": ["item", "material"], "bolstering_materials": ["item", "material"], "info": ["item", "info"]}
+    todo = []
+    for sid, e in db.items():
+        if e.get("f") or e["k"] == "weapon" and int(sid) % 10000 or e["c"] == "ashes" and re.search(r" \+\d+$", e["n"]):
+            continue
+        if slug(e["n"]) in have:
+            continue
+        for g in GROUPS.get(e["c"], ["item"]):
+            todo.append((e["n"], f"File:ER Icon {g} {e['n']}.png"))
+    print(f"  {len(todo)} títulos a comprobar para {len(set(t[0] for t in todo))} objetos sin icono", flush=True)
+    found = {}
+    titles = [t for _, t in todo]
+    for i in range(0, len(titles), 50):
+        r = api(action="query", titles="|".join(titles[i:i + 50]), prop="imageinfo", iiprop="url")
+        for p in r.get("query", {}).get("pages", []):
+            ii = p.get("imageinfo")
+            if ii and not p.get("missing"):
+                name = p["title"].replace("File:", "").replace("_", " ")
+                m = re.match(r"^ER Icon (.+)\.(png|webp|jpe?g)$", name, re.I)
+                if m:
+                    kind, item = split_name(m.group(1))
+                    found[slug(item)] = {"kind": kind, "item": item, "url": ii[0]["url"], "name": name}
+    print(f"  encontrados por nombre directo: {len(found)}", flush=True)
+    return files + list(found.values())
 
 
 def main():
@@ -105,7 +145,7 @@ def main():
     ap.add_argument("--limit", type=int, default=0)
     a = ap.parse_args()
 
-    files = list_icons()
+    files = lookup_missing(list_icons())
     groups = {}
     for f in files:
         groups.setdefault(f["kind"], []).append(f)
