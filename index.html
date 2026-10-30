@@ -130,6 +130,14 @@ main{padding:14px max(14px,env(safe-area-inset-right,0px)) 40px max(14px,env(saf
 .tag{font-family:var(--display);font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border:1px solid var(--line-2);color:var(--fg-2);white-space:nowrap}
 .tag.max{border-color:var(--ok);color:var(--ok)}
 .tag.dlc{border-color:var(--fp);color:#8fb2e6}
+.btn.acct{display:flex;align-items:center;gap:6px;padding:3px 10px 3px 4px}
+.btn.acct img{width:22px;height:22px;border:1px solid var(--line-2)}
+.btn.acct.out{padding:5px 12px}
+.sheet{position:fixed;inset:auto 0 0 0;background:var(--bg);border-top:1px solid var(--gold);padding:14px 16px 24px;z-index:50;max-height:80vh;overflow:auto}
+.sheet h3{margin:0 0 8px;font-family:var(--display);font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.sheet .row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
+.sheet .row .n{flex:1;min-width:0}
+.cloudnote{font-size:.72rem;opacity:.7;margin:4px 0 0}
 .btn.mk{font-size:.62rem;padding:2px 7px;margin-left:6px}
 .btn.mk[aria-pressed=true]{border-color:var(--ok);color:var(--ok)}
 .lvlbar{display:inline-block;width:64px;height:5px;background:#000;border:1px solid var(--line);vertical-align:middle;overflow:hidden}
@@ -182,6 +190,7 @@ details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font
     <select id="charSel" hidden aria-label="Personaje"></select>
     <a class="btn" id="barSteam" href="https://store.steampowered.com/account/remotestorageapp/?appid=1245620" target="_blank" rel="noopener" hidden title="Descargar la partida de Steam Cloud">Steam</a>
     <label class="btn primary" for="file" id="barOpen" hidden>Abrir .sl2</label>
+    <button class="btn acct" id="acct" hidden title="Cuenta"></button>
   </div>
   <div class="chars" id="chars" hidden></div>
   <div class="modes" id="modes" hidden><a class="mode" aria-current="true" href="./">Ficha</a><a class="mode" href="map.html">Mapa</a></div>
@@ -282,6 +291,7 @@ details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="src/ersave.js"></script>
 <script src="src/marks.js"></script>
+<script src="src/cloud.js"></script>
 <script src="src/app.js"></script>
 </body>
 </html>

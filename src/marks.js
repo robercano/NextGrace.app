@@ -14,7 +14,7 @@
     charKey(c) { return (c.steamId || "0") + ":" + c.slot; },
     load(charKey) { const d = read()[charKey] || {}; return new Set(Object.keys(d)); },
     has(charKey, k, id) { const d = read()[charKey] || {}; return !!d[key(k, id)]; },
-    set(charKey, k, id, on) { const d = read(); d[charKey] = d[charKey] || {}; if (on) d[charKey][key(k, id)] = { k, id: String(id), s: "done", at: new Date().toISOString().slice(0, 10) }; else delete d[charKey][key(k, id)]; write(); },
+    set(charKey, k, id, on, at) { const d = read(); d[charKey] = d[charKey] || {}; if (on) d[charKey][key(k, id)] = { k, id: String(id), s: "done", at: at || new Date().toISOString().slice(0, 10) }; else delete d[charKey][key(k, id)]; write(); },
     toggle(charKey, k, id) { const on = !Marks.has(charKey, k, id); Marks.set(charKey, k, id, on); return on; },
     all(charKey) { return Object.values(read()[charKey] || {}); },
     count(charKey, k) { return Marks.all(charKey).filter(e => e.k === k).length; },

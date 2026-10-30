@@ -169,8 +169,8 @@ async function main(DB, FLAGS){
 
   function markBtn(k, id) { const on = CUR && Marks.has(Marks.charKey(CUR), k, id); return `<button class="btn mk" data-mark="${k}|${id}" aria-pressed="${!!on}" title="Marcar a mano">${on ? "✓ marcado" : "marcar"}</button>`; }
   function markName(e) { if (e.k === "boss") { const b = FLAGS.bosses.find(x => String(x.id) === e.id); return b ? b.name : e.id; } if (e.k === "grace") { const g = FLAGS.graces.find(x => String(x.id) === e.id); return g ? g.name : e.id; } if (e.k === "item") { const it = DB.items[e.id]; return it ? it.n : e.id; } return e.id; }
-  document.addEventListener("click", e => { const b = e.target.closest("[data-mark]"); if (b && CUR) { const [k, id] = b.dataset.mark.split("|"); Marks.toggle(Marks.charKey(CUR), k, id); renderProgress(CUR); return; }
-    const u = e.target.closest("[data-unmark]"); if (u && CUR) { const [k, id] = u.dataset.unmark.split("|"); Marks.set(Marks.charKey(CUR), k, id, false); renderProgress(CUR); return; }
+  document.addEventListener("click", e => { const b = e.target.closest("[data-mark]"); if (b && CUR) { const [k, id] = b.dataset.mark.split("|"); const on = Marks.toggle(Marks.charKey(CUR), k, id); cloudMark(Marks.charKey(CUR), k, id, on); renderProgress(CUR); return; }
+    const u = e.target.closest("[data-unmark]"); if (u && CUR) { const [k, id] = u.dataset.unmark.split("|"); Marks.set(Marks.charKey(CUR), k, id, false); cloudMark(Marks.charKey(CUR), k, id, false); renderProgress(CUR); return; }
     if (e.target.id === "marksExport") { const txt = Marks.export(); navigator.clipboard.writeText(txt).then(() => { e.target.textContent = "Copiado"; setTimeout(() => e.target.textContent = "Exportar", 1500); }).catch(() => { prompt("Copia este JSON:", txt); }); } });
   document.addEventListener("change", async e => { if (e.target.id === "marksImport" && e.target.files[0]) { try { Marks.import(await e.target.files[0].text()); if (CUR) renderProgress(CUR); } catch (err) { alert("JSON no válido"); } } });
   function renderProgress(c) {
@@ -195,7 +195,7 @@ async function main(DB, FLAGS){
       <details><summary>Objetos únicos pendientes (${wMissing.length})</summary><p class="help">Notas, mapas, cartas, lágrimas, recetarios, llaves… que existen una sola vez en el mundo y aún no has cogido.</p><div class="list">${wMissing.map(wRow).join("") || '<p class="help">Todo cogido.</p>'}</div></details>
       <details><summary>Jefes pendientes (${pend.length})</summary><p class="help">Según el save. Si uno está mal (p. ej. un jefe opcional ya vencido que el juego no marca), puedes marcarlo a mano.</p><div class="list">${pend.map(b => `<div class="row"><div class="n">${link({ name: b.name, kind: "boss" }, esc(b.name))}${b.rem ? '<span class="tag">remembranza</span>' : ""}</div><div class="q">${esc(b.region)} ${markBtn("boss", b.id)}</div></div>`).join("") || '<p class="muted small">Ninguno.</p>'}</div></details>
       <details><summary>Gracias pendientes por región (${FLAGS.graces.length - gv.size})</summary><div class="list">${regions.filter(([, r]) => r.pending.length).map(([name, r]) => `<div class="row"><div class="n">${esc(name)}</div><div class="q">${r.done} / ${r.total}</div><div class="m">${r.pending.map(g => esc(g.name) + " " + markBtn("grace", g.id)).join(" · ")}</div></div>`).join("") || '<p class="muted small">Todas descubiertas.</p>'}</div></details>
-      <details><summary>Marcas manuales (${Marks.all(Marks.charKey(c)).length})</summary><p class="help">Lo que has marcado a mano para este personaje (lugares en el mapa, jefes, gracias, objetos). Se guarda en este navegador; "Exportar" copia el JSON para llevarlo a otro dispositivo o, más adelante, a la nube.</p><div class="list">${Marks.all(Marks.charKey(c)).map(e => `<div class="row"><div class="n">${esc(e.k)} · ${esc(markName(e))}</div><div class="q">${e.at} <button class="btn" data-unmark="${esc(e.k)}|${esc(e.id)}">quitar</button></div></div>`).join("") || '<p class="help">Ninguna todavía.</p>'}</div><div style="display:flex;gap:8px;margin-top:8px"><button class="btn" id="marksExport">Exportar</button><label class="btn" for="marksImport">Importar</label><input id="marksImport" type="file" accept=".json" hidden></div></details>`;
+      <details><summary>Marcas manuales (${Marks.all(Marks.charKey(c)).length})</summary><p class="help">Lo que has marcado a mano para este personaje (lugares en el mapa, jefes, gracias, objetos). Se guarda en este navegador${Cloud.user() ? " y en tu cuenta (sincronizado con Steam)" : '; si entras con Steam (botón de cuenta arriba) se sincroniza entre dispositivos'}. "Exportar" copia el JSON.</p><div class="list">${Marks.all(Marks.charKey(c)).map(e => `<div class="row"><div class="n">${esc(e.k)} · ${esc(markName(e))}</div><div class="q">${e.at} <button class="btn" data-unmark="${esc(e.k)}|${esc(e.id)}">quitar</button></div></div>`).join("") || '<p class="help">Ninguna todavía.</p>'}</div><div style="display:flex;gap:8px;margin-top:8px"><button class="btn" id="marksExport">Exportar</button><label class="btn" for="marksImport">Importar</label><input id="marksImport" type="file" accept=".json" hidden></div></details>`;
   }
 
   function planUpdate(init) {
@@ -281,6 +281,7 @@ async function main(DB, FLAGS){
     for (const b of document.querySelectorAll("#chars [data-slot]")) b.setAttribute("aria-pressed", b.dataset.slot == slot);
     group = "Armas"; limit = 250; $("#q").value = ""; chips();
     renderChar(c);
+    cloudSync(c);
   }
 
   function loadFile(file) {
@@ -288,6 +289,7 @@ async function main(DB, FLAGS){
     file.arrayBuffer().then(buf => {
       const save = ERSave.parse(buf);
       prep(save);
+      Cloud.pushCharacters(save.chars).then(r => { if (r && !r.error) note("Resumen de personajes guardado en tu cuenta."); });
       const when = new Date().toLocaleString("es-ES", { dateStyle: "medium", timeStyle: "short" });
       showSave(save, file.name, when);
       try { localStorage.setItem("tl.last", JSON.stringify({ name: file.name, when, chars: save.chars.map(slim) })); } catch (e) {}
@@ -300,6 +302,45 @@ async function main(DB, FLAGS){
   const drop = $("#drop");
   drop.addEventListener("dragover", e => { e.preventDefault(); });
   drop.addEventListener("drop", e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) loadFile(f); });
+
+  // ---- account (optional) ---------------------------------------------------
+  function note(t) { const m = $("#msg"); if (!m.textContent) { m.textContent = t; setTimeout(() => { if (m.textContent === t) m.textContent = ""; }, 4000); } }
+  function cloudMark(ck, k, id, on) { if (!Cloud.user()) return; (on ? Cloud.syncMarks(ck) : Cloud.removeMark(ck, k, id)).then(r => { if (r && r.error) note("No se pudo sincronizar la marca: " + r.error); }); }
+  let synced = new Set();
+  function cloudSync(c) {
+    if (!Cloud.user() || !c) return; const ck = Marks.charKey(c); if (synced.has(ck)) return; synced.add(ck);
+    const before = Marks.all(ck).length;
+    Cloud.syncMarks(ck).then(r => { if (r && !r.error && Marks.all(ck).length !== before && CUR === c) renderProgress(c); });
+  }
+  function renderAcct() {
+    const b = $("#acct"); if (!b) return; const u = Cloud.user();
+    b.hidden = !Cloud.available();
+    if (u) { b.className = "btn acct"; b.innerHTML = `${u.avatar ? `<img src="${esc(u.avatar)}" alt="">` : ""}<span>${esc(u.name || "Steam")}</span>`; }
+    else { b.className = "btn acct out"; b.textContent = "Entrar"; }
+  }
+  function sheet(html) { let s = $("#sheet"); if (!s) { s = document.createElement("div"); s.id = "sheet"; s.className = "sheet frame"; document.body.appendChild(s); } s.innerHTML = html + `<div style="text-align:right;margin-top:10px"><button class="btn" id="sheetClose">Cerrar</button></div>`; s.hidden = false; $("#sheetClose").onclick = () => { s.hidden = true; }; return s; }
+  async function openAcct() {
+    const u = Cloud.user();
+    if (!u) {
+      sheet(`<h3>Cuenta</h3><p class="help">Entra con Steam para guardar tus marcas manuales y el resumen de tus personajes en tu cuenta, y para proponer marcadores al mapa de la comunidad. Solo usamos tu identidad pública de Steam (nombre y avatar); nunca pedimos contraseña ni accedemos a tu partida.</p><p class="help">La partida (.sl2) no se sube: todo se lee en este navegador y solo se guarda un resumen (nivel, equipo, progreso).</p><button class="btn primary" id="doLogin">Entrar con Steam</button>`);
+      $("#doLogin").onclick = () => Cloud.login(); return;
+    }
+    const s = sheet(`<h3>Cuenta</h3><div class="row"><div class="n">${u.avatar ? `<img src="${esc(u.avatar)}" alt="" style="width:28px;height:28px;vertical-align:middle;margin-right:8px">` : ""}<b>${esc(u.name || "")}</b> <span class="help">· ${u.role === "admin" ? "moderador" : "jugador"}</span></div><button class="btn" id="doLogout">Salir</button></div>
+      <div class="row"><div class="n">Marcas de este personaje${CUR ? ` (${Marks.all(Marks.charKey(CUR)).length})` : ""}</div><button class="btn" id="doSync" ${CUR ? "" : "disabled"}>Sincronizar ahora</button></div>
+      <div class="row"><div class="n">Resumen de personajes de la partida abierta</div><button class="btn" id="doPush" ${SAVE ? "" : "disabled"}>Guardar en la cuenta</button></div>
+      ${Cloud.isAdmin() ? `<h3 style="margin-top:14px">Moderación</h3><div id="modq" class="help">Cargando propuestas…</div>` : ""}`);
+    $("#doLogout").onclick = async () => { await Cloud.logout(); synced = new Set(); renderAcct(); s.hidden = true; };
+    $("#doSync").onclick = async () => { if (!CUR) return; synced.delete(Marks.charKey(CUR)); const r = await Cloud.syncMarks(Marks.charKey(CUR)); synced.add(Marks.charKey(CUR)); renderProgress(CUR); note(r && r.error ? "Error: " + r.error : "Marcas sincronizadas."); s.hidden = true; };
+    $("#doPush").onclick = async () => { if (!SAVE) return; const r = await Cloud.pushCharacters(SAVE.chars); note(r && r.error ? "Error: " + r.error : "Resumen guardado."); s.hidden = true; };
+    if (Cloud.isAdmin()) renderModQueue();
+  }
+  async function renderModQueue() {
+    const q = $("#modq"); if (!q) return; const list = await Cloud.pending();
+    q.innerHTML = list.length ? list.map(m => `<div class="row"><div class="n"><b>${esc(m.item || m.kind || "marcador")}</b> <span class="help">· ${esc(m.layer)} (${Math.round(m.x)}, ${Math.round(m.y)}) · ${esc(m.by || m.author)}</span>${m.note ? `<div class="help">${esc(m.note)}</div>` : ""}</div><button class="btn" data-rev="approve|${m.id}">✓</button><button class="btn" data-rev="reject|${m.id}">✗</button></div>`).join("") : "No hay propuestas pendientes.";
+    q.onclick = async e => { const b = e.target.closest("[data-rev]"); if (!b) return; const [a, id] = b.dataset.rev.split("|"); b.disabled = true; await Cloud.review(+id, a); renderModQueue(); };
+  }
+  $("#acct").addEventListener("click", openAcct);
+  Cloud.init().then(() => { renderAcct(); if (CUR) cloudSync(CUR); if (location.hash === "#status" && Cloud.user() && history.replaceState) { /* back from Steam login */ note("Sesión iniciada con Steam."); } });
 
   // last file, if this browser kept it
   iconsLoad().then(() => { if (CUR) renderChar(CUR); });

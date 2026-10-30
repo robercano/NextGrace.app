@@ -49,7 +49,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
 .pin.place.seen{background:#2f5a3b;color:#cfe8c9}
 .pin.place.todo{background:#8a6d1f;color:#fff}
 .pin.miss{background:#b8322a;color:#fff;box-shadow:0 0 0 1px #fff6,0 0 8px #b8322a88;border-radius:6px}
-.pin.user{background:var(--user);color:#fff}
+.pin.user{background:var(--user);color:#fff}.pin.user.todo{opacity:.75;outline:1px dashed #fff8}
 .pin.boss{background:#4d4259;color:#c9bfd6;border-radius:4px}.pin.boss.todo{background:#e0294f;color:#fff;box-shadow:0 0 0 1px #fff6,0 0 10px #e0294f99;border-radius:4px}
 .popup h4{margin:0 0 4px;font-family:var(--display);font-size:.95rem}
 .popup .m{color:var(--muted);font-size:.85rem}
@@ -99,7 +99,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   <div class="row"><input id="mItem" list="items" placeholder="Objeto (empieza a escribir)" autocomplete="off"><datalist id="items"></datalist></div>
   <div class="row"><input id="mNote" placeholder="Nota (opcional): cofre, enemigo, cómo llegar…"></div>
   <div class="row"><button class="btn primary" id="mSave">Guardar</button><button class="btn" id="mCancel">Cancelar</button></div>
-  <p class="muted small" style="margin:0">Se guarda en este navegador. Desde <b>Añadidos → Exportar</b> puedes copiar el JSON y enviarlo al repo para compartirlo.</p>
+  <p class="muted small" style="margin:0" id="sheetNote">Se guarda en este navegador. Desde <b>Añadidos → Exportar</b> puedes copiar el JSON y enviarlo al repo para compartirlo.</p>
 </div>
 
 <div class="sheet" id="userSheet" hidden>
@@ -111,6 +111,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
 
 <script src="vendor/leaflet/leaflet.js"></script>
 <script src="src/marks.js"></script>
+<script src="src/cloud.js"></script>
 <script>
 (async function () {
   const $ = s => document.querySelector(s);
@@ -121,6 +122,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
 
   const [DB, P, F, MAPMETA] = await Promise.all(["data/items.json", "data/places.json", "data/flags.json", "data/map.json"].map(u => fetch(u).then(r => r.json())));
   let community = []; try { community = await fetch("data/user_markers.json").then(r => r.ok ? r.json() : []); } catch (e) {}
+  await Cloud.init();
 
   // ---- save data (written by index page) ---------------------------------
   let last = null; try { last = JSON.parse(localStorage.getItem("tl.last") || "null"); } catch (e) {}
@@ -130,6 +132,9 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   let curSlot = null; try { curSlot = localStorage.getItem("tl.cur"); } catch (e) {}
   let CUR = chars.find(c => String(c.slot) === curSlot) || chars[0] || null;
   if (CUR) sel.value = String(chars.indexOf(CUR));
+  // account: community markers from the database + marks sync (both optional)
+  if (Cloud.available()) { try { const cm = await Cloud.markers(); community = community.concat(cm.map(m => ({ x: m.x, y: m.y, layer: m.layer, item: m.item, note: m.note, by: m.by, status: m.status, id: m.id, remote: true }))); } catch (e) {} }
+  async function syncMarks() { if (!Cloud.user() || !CUR) return; const ck = Marks.charKey(CUR), n = Marks.all(ck).length; const r = await Cloud.syncMarks(ck); if (r && !r.error && Marks.all(ck).length !== n) render(); }
 
   const baseKey = i => { let n = i.name || ""; if (i.kind === "weapon" && i.infusion && i.infusion !== "Standard" && n.startsWith(i.infusion + " ")) n = n.slice(i.infusion.length + 1); if (i.kind !== "talisman") n = n.replace(/\s*\+\d+$/, ""); return n.toLowerCase(); };
   const CATS = new Set(["melee_armaments", "ranged_and_catalysts", "shields", "head", "chest", "arms", "legs", "talismans", "ashes_of_war", "ashes", "sorceries", "incantations", "key_items"]);
@@ -214,8 +219,10 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
         L.marker(at(p), { icon: pin("miss", (() => { const n = {}; for (const it of list) { const k = CAT_KIND[it.cat] || "item"; n[k] = (n[k] || 0) + 1; } return Object.entries(n).sort((a, b) => b[1] - a[1])[0][0]; })(), list.length), zIndexOffset: 500 }).bindPopup(`<div class="popup"><h4>${esc(p.name)}</h4><div class="m">${list.length} objeto${list.length > 1 ? "s" : ""} que te faltan</div><ul>${list.map(it => `<li>${wl(it.name)} <button class="chip" data-mark="item|${it.id}" aria-pressed="false" style="font-size:.72rem;padding:1px 7px">conseguido</button><div class="m">${esc(it.loc.replace(/\s*\[\s*Map Link\s*\]\s*;?/g, ""))}</div></li>`).join("")}</ul></div>`, { maxWidth: 320 }).addTo(layers.miss); }
     }
     // user + community markers
-    for (const m of community.concat(userMarkers)) { if ((m.layer || "tlb") !== layer || !match(m.item || "") && !match(m.note || "")) continue; const own = have ? have.has((m.item || "").toLowerCase().replace(/\s*\+\d+$/, "")) : false;
-      L.marker([m.y, m.x], { icon: pin("user", "user") }).bindPopup(`<div class="popup"><h4>${m.item ? wl(m.item) : "Marcador"}</h4><div class="m">${esc(m.note || "")}${own ? " · ya lo tienes" : ""}${m.by ? " · por " + esc(m.by) : ""}</div></div>`).addTo(layers.user); }
+    const remoteIds = new Set(community.filter(m => m.remote).map(m => m.id));
+    for (const m of community.concat(userMarkers.filter(m => !(m.remoteId && remoteIds.has(m.remoteId))))) { if ((m.layer || "tlb") !== layer || !match(m.item || "") && !match(m.note || "")) continue; const own = have ? have.has((m.item || "").toLowerCase().replace(/\s*\+\d+$/, "")) : false;
+      const st = m.status === "pending" ? " · pendiente de revisión" : m.status === "rejected" ? " · rechazado" : m.remote ? "" : m.remoteId ? " · enviado" : " · solo en este navegador";
+      L.marker([m.y, m.x], { icon: pin("user" + (m.status === "pending" ? " todo" : ""), "user") }).bindPopup(`<div class="popup"><h4>${m.item ? wl(m.item) : "Marcador"}</h4><div class="m">${esc(m.note || "")}${own ? " · ya lo tienes" : ""}${m.by ? " · por " + esc(m.by) : ""}${st}</div></div>`).addTo(layers.user); }
     for (const k in layers) { if (vis[k]) map.addLayer(layers[k]); else map.removeLayer(layers[k]); }
   }
   (function buildPlaceTypes() {
@@ -228,19 +235,22 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
       for (const c of box.querySelectorAll("[data-pk]")) c.setAttribute("aria-pressed", c.dataset.pk === "*" ? !placeKinds : !!(placeKinds && placeKinds.has(c.dataset.pk)));
       render(); };
   })();
-  document.addEventListener("click", e => { const b = e.target.closest("[data-mark]"); if (!b || !CUR) return; const [k, id] = b.dataset.mark.split("|"); Marks.toggle(Marks.charKey(CUR), k, id); map.closePopup(); render(); });
+  document.addEventListener("click", e => { const b = e.target.closest("[data-mark]"); if (!b || !CUR) return; const [k, id] = b.dataset.mark.split("|"); const on = Marks.toggle(Marks.charKey(CUR), k, id); if (Cloud.user()) (on ? Cloud.syncMarks(Marks.charKey(CUR)) : Cloud.removeMark(Marks.charKey(CUR), k, id)); map.closePopup(); render(); });
   for (const b of document.querySelectorAll(".chip[data-l]")) b.onclick = () => { const k = b.dataset.l; vis[k] = !vis[k]; b.setAttribute("aria-pressed", vis[k]); if (k === "user" && vis[k]) openUser(); if (k === "place") $("#placeTypes").hidden = !vis[k]; render(); };
   $("#q").oninput = e => { q = e.target.value.trim().toLowerCase(); render(); };
-  sel.onchange = () => { CUR = chars[+sel.value]; try { localStorage.setItem("tl.cur", String(CUR.slot)); } catch (e) {} render(); };
+  sel.onchange = () => { CUR = chars[+sel.value]; try { localStorage.setItem("tl.cur", String(CUR.slot)); } catch (e) {} render(); syncMarks(); };
 
   // ---- editor --------------------------------------------------------------
   $("#items").innerHTML = CATALOG.map(i => `<option value="${esc(i.name)}">`).join("");
+  if (Cloud.user()) $("#sheetNote").innerHTML = Cloud.isAdmin() ? "Se publica directamente en el mapa de la comunidad (eres moderador)." : "Se envía al mapa de la comunidad y aparecerá para todos cuando un moderador lo apruebe. Mientras, lo verás solo tú.";
+  else if (Cloud.available()) $("#sheetNote").innerHTML = 'Se guarda en este navegador. Si entras con Steam desde la <a href="./">ficha</a>, tus marcadores se envían al mapa de la comunidad.';
   let adding = false, pending = null;
   $("#addBtn").onclick = () => { adding = !adding; $("#hint").hidden = !adding; $("#addBtn").setAttribute("aria-pressed", adding); };
   map.on("click", e => { if (!adding) return; pending = { x: Math.round(e.latlng.lng * 10) / 10, y: Math.round(e.latlng.lat * 10) / 10, layer: $("#layerSel").value }; $("#mItem").value = ""; $("#mNote").value = ""; $("#sheet").hidden = false; $("#mItem").focus(); });
   $("#mCancel").onclick = () => { $("#sheet").hidden = true; };
   $("#mSave").onclick = () => { if (!pending) return; const item = $("#mItem").value.trim(); if (!item) { $("#mItem").focus(); return; }
-    userMarkers.push(Object.assign(pending, { item, note: $("#mNote").value.trim(), at: new Date().toISOString().slice(0, 10) })); saveUser(); $("#sheet").hidden = true; adding = false; $("#hint").hidden = true; $("#addBtn").setAttribute("aria-pressed", "false"); render(); };
+    const m = Object.assign(pending, { item, note: $("#mNote").value.trim(), at: new Date().toISOString().slice(0, 10) }); userMarkers.push(m); saveUser(); $("#sheet").hidden = true; adding = false; $("#hint").hidden = true; $("#addBtn").setAttribute("aria-pressed", "false"); render();
+    if (Cloud.user()) Cloud.proposeMarker({ layer: m.layer, x: m.x, y: m.y, item: m.item, note: m.note }).then(r => { if (r && !r.error) { m.remoteId = r.id; m.status = r.status; community.push(Object.assign({}, m, { remote: true, id: r.id, by: Cloud.user().name })); saveUser(); render(); } }); };
   function openUser() { $("#userList").innerHTML = userMarkers.length ? userMarkers.map((m, i) => `<div>${esc(m.item)} <span class="muted">(${m.x}, ${m.y}, ${m.layer})${m.note ? " · " + esc(m.note) : ""}</span> <button class="chip" data-del="${i}">quitar</button></div>`).join("") : `<span class="muted">Todavía no has añadido marcadores. Pulsa “+ Añadir” y toca el mapa.</span>`; $("#userSheet").hidden = false; }
   $("#userList").onclick = e => { const b = e.target.closest("[data-del]"); if (!b) return; userMarkers.splice(+b.dataset.del, 1); saveUser(); openUser(); render(); };
   $("#userClose").onclick = () => { $("#userSheet").hidden = true; };
@@ -249,6 +259,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
 
   $("#legend").innerHTML = [["grace todo", "grace", "gracia pendiente"], ["grace", "grace", "visitada"], ["boss todo", "boss", "jefe pendiente"], ["boss", "boss", "vencido"], ["miss", "weapon", "objetos que te faltan"], ["place seen", "cave", "lugar visitado"], ["place todo", "cave", "lugar pendiente"], ["place", "cave", "lugar sin datos"], ["user", "user", "añadido"]].map(([c, k, t]) => `<span><span class="pin ${c}" style="display:inline-flex;width:16px;height:16px;vertical-align:middle;margin-right:5px">${glyph(k, 10)}</span>${t}</span>`).join("");
   render();
+  syncMarks();
   if (CUR && !CUR.progress) { L.popup().setLatLng([H / 2, W / 2]).setContent('<div class="popup"><h4>Falta el progreso</h4><div class="m">Esta copia de la partida se guardó con una versión anterior. Vuelve a abrir tu .sl2 en la <a href="./">ficha</a> para ver gracias y jefes visitados.</div></div>').openOn(map); }
   if (!CUR) { L.popup().setLatLng([H / 2, W / 2]).setContent('<div class="popup"><h4>Sin partida cargada</h4><div class="m">Abre tu .sl2 en la <a href="./">ficha</a> y vuelve: verás gracias, jefes y objetos pendientes.</div></div>').openOn(map); }
 })();
