@@ -141,11 +141,13 @@ main{padding:14px max(14px,env(safe-area-inset-right,0px)) 40px max(14px,env(saf
 .need .no{color:var(--bad)}.need .yes{color:var(--ok)}
 .help{color:var(--muted);font-size:.9rem;margin:0}
 details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:6px 0}
-.chars{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
-.chars button{background:var(--panel);border:1px solid var(--line);padding:10px 12px;text-align:left;display:flex;flex-direction:column;gap:2px;min-width:0}
-.chars button[aria-pressed=true]{border-color:var(--gold)}
-.chars b{font-family:var(--display);font-weight:600;font-size:1rem;color:var(--gold-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.chars span{color:var(--fg-2);font-size:.9rem}
+.chars{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:6px max(14px,env(safe-area-inset-right,0px)) 4px max(14px,env(safe-area-inset-left,0px));border-top:1px solid #1e1b17}
+.chars::-webkit-scrollbar{display:none}
+.chars button{flex:1 0 auto;background:var(--panel-s);border:1px solid var(--line);padding:6px 12px;text-align:left;display:flex;align-items:baseline;gap:8px;min-width:0;max-width:60vw}
+.chars button[aria-pressed=true]{border-color:var(--gold);background:#c9a44a14}
+.chars b{font-family:var(--display);font-weight:600;font-size:.9rem;color:var(--fg-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chars button[aria-pressed=true] b{color:var(--gold-2)}
+.chars span{color:var(--muted);font-size:.82rem;white-space:nowrap}
 .drop{padding:30px 18px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
 .drop p{margin:0;color:var(--fg-2);max-width:36em}
 .drop code{font-size:.85em;background:#000;padding:2px 6px;border:1px solid var(--line)}
@@ -170,6 +172,7 @@ details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font
     <a class="btn" href="map.html" id="mapLink" hidden>Mapa</a>
     <label class="btn primary" for="file" id="barOpen" hidden>Abrir .sl2</label>
   </div>
+  <div class="chars" id="chars" hidden></div>
   <div class="tabs" role="tablist" id="tabs" hidden>
     <button class="tab" role="tab" data-t="status" aria-selected="true">Estado</button>
     <button class="tab" role="tab" data-t="equip" aria-selected="false">Equipo</button>
@@ -192,7 +195,6 @@ details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font
   </section>
 
   <div id="app" hidden>
-    <div class="chars" id="chars" hidden style="margin-bottom:14px"></div>
 
     <!-- STATUS -->
     <section class="screen" id="s-status" aria-hidden="false">

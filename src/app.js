@@ -250,7 +250,7 @@ async function main(DB, FLAGS){
     sel.hidden = true;
     sel.onchange = () => pick(chars, sel.value);
     const cs = $("#chars"); cs.hidden = chars.length < 2;
-    cs.innerHTML = chars.map(c => `<button data-slot="${c.slot}" aria-pressed="false"><b>${esc(c.name || "Slot " + (c.slot + 1))}</b><span>Nv ${c.level} · ${esc(c.className)} · ${ERSave.fmtTime(c.playtimeSec)}</span></button>`).join("");
+    cs.innerHTML = chars.map(c => `<button data-slot="${c.slot}" aria-pressed="false"><b>${esc(c.name || "Slot " + (c.slot + 1))}</b><span>Nv ${c.level} · ${esc(c.className)}</span></button>`).join("");
     cs.onclick = e => { const b = e.target.closest("[data-slot]"); if (b) pick(chars, b.dataset.slot); };
     const bad = save.chars.filter(c => c.error);
     $("#msg").innerHTML = bad.length ? `<span class="err">No se pudo leer ${bad.length} slot(s): ${esc(bad[0].error)}</span>` : "";
