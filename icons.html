@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tarnished Ledger · Iconos</title>
+<style>body{background:#17161b;color:#e8e2d3;font-family:"Alegreya Sans",system-ui,sans-serif;margin:0;padding:12px 16px}h1{font-size:1rem}input{width:100%;padding:8px;border-radius:8px;border:1px solid #35343f;background:#26252e;color:inherit;font:inherit;margin-bottom:10px}
+.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}.g div{background:#1f1e25;border-radius:8px;padding:6px;text-align:center;font-size:.72rem;color:#9a948a;overflow-wrap:anywhere}.g img{width:48px;height:48px;display:block;margin:0 auto 4px;background:#26252e;border-radius:6px}a{color:#d6a93d}</style></head>
+<body><h1>Iconos del pack <span id="n"></span> · <a href="./">volver</a></h1><input id="q" type="search" placeholder="Filtrar por nombre…"><div class="g" id="g"></div>
+<script>
+fetch("icons/index.json").then(r=>r.json()).then(list=>{const g=document.getElementById("g");document.getElementById("n").textContent="("+list.length+")";
+const draw=q=>{g.innerHTML=list.filter(n=>n.includes(q)).slice(0,600).map(n=>`<div><img loading="lazy" src="icons/${n}" alt="">${n.replace(/\.webp$/,"")}</div>`).join("");};
+draw("");document.getElementById("q").oninput=e=>draw(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g,"_"));});
+</script></body></html>
