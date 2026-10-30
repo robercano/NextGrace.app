@@ -44,6 +44,10 @@ button{cursor:pointer}
 .btn{background:transparent;border:1px solid var(--line-2);color:var(--fg);padding:5px 12px;font-family:var(--display);font-size:.78rem;letter-spacing:.06em;text-decoration:none;white-space:nowrap}
 .btn:hover{border-color:var(--gold);color:var(--gold-2)}
 .btn.primary{border-color:var(--gold);color:var(--gold-2)}
+.modes{display:flex;justify-content:center;gap:0;padding:6px max(14px,env(safe-area-inset-right,0px)) 0 max(14px,env(safe-area-inset-left,0px));border-top:1px solid #1e1b17}
+.mode{font-family:var(--display);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:6px 18px;border:1px solid var(--line);border-bottom:0}
+.mode:first-child{border-radius:3px 0 0 0}.mode:last-child{border-radius:0 3px 0 0;border-left:0}
+.mode[aria-current=true]{color:var(--gold-2);background:#c9a44a14;border-color:var(--gold-dim)}
 .tabs{display:flex;overflow-x:auto;scrollbar-width:none;gap:0;padding:0 max(8px,env(safe-area-inset-right,0px)) 0 max(8px,env(safe-area-inset-left,0px))}
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex:1 0 auto;background:none;border:0;border-bottom:2px solid transparent;color:var(--fg-2);font-family:var(--display);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;padding:9px 12px 8px;white-space:nowrap}
@@ -176,11 +180,11 @@ details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font
   <div class="topi">
     <h1>Tarnished Ledger</h1>
     <select id="charSel" hidden aria-label="Personaje"></select>
-    <a class="btn" href="map.html" id="mapLink" hidden>Mapa</a>
     <a class="btn" id="barSteam" href="https://store.steampowered.com/account/remotestorageapp/?appid=1245620" target="_blank" rel="noopener" hidden title="Descargar la partida de Steam Cloud">Steam</a>
     <label class="btn primary" for="file" id="barOpen" hidden>Abrir .sl2</label>
   </div>
   <div class="chars" id="chars" hidden></div>
+  <div class="modes" id="modes" hidden><a class="mode" aria-current="true" href="./">Ficha</a><a class="mode" href="map.html">Mapa</a></div>
   <div class="tabs" role="tablist" id="tabs" hidden>
     <button class="tab" role="tab" data-t="status" aria-selected="true">Estado</button>
     <button class="tab" role="tab" data-t="equip" aria-selected="false">Equipo</button>
