@@ -114,7 +114,7 @@ async function main(DB, FLAGS){
     $("#gauges").innerHTML = gauge("HP", c.hp, c.maxHp, "var(--hp)") + gauge("FP", c.fp, c.maxFp, "var(--fp)") + gauge("SP", c.sp, c.maxSp, "var(--sp)");
     const S = c.stats, names = { vigor: "Vigor", mind: "Mente", endurance: "Resistencia", strength: "Fuerza", dexterity: "Destreza", intelligence: "Inteligencia", faith: "Fe", arcane: "Arcano" };
     $("#stats").innerHTML = Object.keys(names).map(k => kvr(svg(k) + names[k], S[k])).join("");
-    $("#kv").innerHTML = kvr("Clase", esc(c.className)) + kvr("Regalo", esc(c.giftName)) + kvr("Runas totales", c.totalRunes.toLocaleString("es")) + kvr("Muertes", c.deaths) + kvr("Ciclo", ng) + kvr("Nivel de arma (matchmaking)", "+" + c.matchmakingWpnLvl) + kvr("Runa mayor", c.greatRuneActive ? "activa" : "inactiva") + kvr("Huecos de talismán", 1 + c.talismanSlots);
+    $("#kv").innerHTML = kvr("Clase", esc(c.className)) + kvr("Regalo", esc(c.giftName)) + kvr("Runas totales", c.totalRunes.toLocaleString("es")) + kvr("Muertes", c.deaths) + kvr("Ciclo", ng) + kvr("Nivel de arma (matchmaking)", "+" + c.matchmakingWpnLvl) + kvr("Runa mayor equipada", c.enriched.equipped.greatRune ? esc(c.enriched.equipped.greatRune.name) : "ninguna") + kvr("Runa mayor activa (Arco de Runa)", c.greatRuneActive ? "sí" : "no") + kvr("Huecos de talismán", 1 + c.talismanSlots);
     const B = c.buildups;
     $("#resist").innerHTML = kvr("Veneno", B.poison) + kvr("Putrefacción", B.rot) + kvr("Hemorragia", B.bleed) + kvr("Congelación", B.frost) + kvr("Sueño", B.sleep) + kvr("Locura", B.madness) + kvr("Muerte", B.deathblight);
     const E = c.enriched.equipped;
@@ -137,7 +137,7 @@ async function main(DB, FLAGS){
   function renderEquip(c) {
     const E = c.enriched.equipped;
     $("#eqArms").innerHTML = [0, 1, 2].map(i => slot(E.rh[i], "Dcha " + (i + 1))).join("") + [0, 1, 2].map(i => slot(E.lh[i], "Izq " + (i + 1))).join("") + slot(E.arrows[0], "Flecha 1") + slot(E.arrows[1], "Flecha 2") + slot(E.bolts[0], "Virote 1") + slot(E.bolts[1], "Virote 2");
-    $("#eqArmor").innerHTML = slot(E.head, "Cabeza") + slot(E.chest, "Pecho") + slot(E.arms, "Brazos") + slot(E.legs, "Piernas") + E.talismans.map((t, i) => slot(t, "Talismán " + (i + 1))).join("");
+    $("#eqArmor").innerHTML = slot(E.head, "Cabeza") + slot(E.chest, "Pecho") + slot(E.arms, "Brazos") + slot(E.legs, "Piernas") + slot(E.greatRune, "Runa mayor") + E.talismans.map((t, i) => slot(t, "Talismán " + (i + 1))).join("");
     const Q = c.enriched.quick, P = c.enriched.pouch;
     $("#eqQuick").innerHTML = Array.from({ length: Math.max(3, Q.length) }, (_, i) => slot(Q[i], "Rápido " + (i + 1))).join("") + Array.from({ length: Math.max(6, P.length) }, (_, i) => slot(P[i], "Bolsa " + (i + 1))).join("");
     const Sp = c.enriched.spells, phys = c.physick.map(id => { const e = DB.items[id]; return e ? { id, name: e.n, display: e.n, kind: e.k, cat: e.c, sub: e.s || "" } : null; });

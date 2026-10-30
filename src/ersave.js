@@ -44,12 +44,12 @@
     const lh = [], rh = [], arrows = [], bolts = [];
     lh[0] = r.u32(); rh[0] = r.u32(); lh[1] = r.u32(); rh[1] = r.u32(); lh[2] = r.u32(); rh[2] = r.u32();
     arrows[0] = r.u32(); bolts[0] = r.u32(); arrows[1] = r.u32(); bolts[1] = r.u32();
-    r.skip(8);
+    const greatRune = r.u32(); r.skip(4);
     const head = r.u32(), chest = r.u32(), arms = r.u32(), legs = r.u32();
     r.skip(4);
     const talismans = [r.u32(), r.u32(), r.u32(), r.u32()];
     r.skip(4);
-    return { lh, rh, arrows, bolts, head, chest, arms, legs, talismans };
+    return { lh, rh, arrows, bolts, greatRune, head, chest, arms, legs, talismans };
   }
 
   function readInventory(r, nCommon, nKey) {
@@ -227,7 +227,9 @@
     const stoKeys = char.storage.key.map(it => Object.assign({ qty: it.qty, handle: it.handle, idx: it.idx, stored: true }, R.resolveHandle(it.handle, gm)));
     const eq = char.equipHandles;
     const h = x => (x && x !== 0xFFFFFFFF) ? R.resolveHandle(x, gm) : null;
+    const grId = char.equipIds && char.equipIds.greatRune;
     const equipped = {
+      greatRune: (grId && grId !== 0xFFFFFFFF) ? R.byId(grId, "goods") : null,
       rh: eq.rh.map(h), lh: eq.lh.map(h), arrows: eq.arrows.map(h), bolts: eq.bolts.map(h),
       head: h(eq.head), chest: h(eq.chest), arms: h(eq.arms), legs: h(eq.legs), talismans: eq.talismans.map(h),
     };
