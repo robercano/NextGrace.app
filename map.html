@@ -37,7 +37,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px
 .pin.place{background:#8a8577;width:10px;height:10px}
 .pin.miss{background:var(--bad);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:11px}
 .pin.user{background:var(--user)}
-.pin.boss{background:#c267c2}.pin.boss.todo{background:#ff6ad5}
+.pin.boss{background:#6a5a78;width:12px;height:12px;border-radius:2px;transform:rotate(45deg)}.pin.boss.todo{background:#ff3b6b;width:16px;height:16px;box-shadow:0 0 0 2px #000,0 0 8px #ff3b6b99}
 .popup h4{margin:0 0 4px;font-family:var(--display);font-size:.95rem}
 .popup .m{color:var(--muted);font-size:.85rem}
 .popup ul{margin:6px 0 0;padding-left:18px}
@@ -67,7 +67,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px
 <div class="tools">
   <input id="q" type="search" placeholder="Buscar lugar, gracia u objeto…" autocomplete="off">
   <button class="chip" data-l="grace" aria-pressed="true"><i style="background:var(--ok)"></i>Gracias</button>
-  <button class="chip" data-l="boss" aria-pressed="true"><i style="background:#c267c2"></i>Jefes</button>
+  <button class="chip" data-l="boss" aria-pressed="true"><i style="background:#ff3b6b"></i>Jefes</button>
   <button class="chip" data-l="place" aria-pressed="false"><i style="background:#8a8577"></i>Lugares</button>
   <button class="chip" data-l="miss" aria-pressed="true"><i style="background:var(--bad)"></i>Me faltan</button>
   <button class="chip" data-l="user" aria-pressed="true"><i style="background:var(--user)"></i>Añadidos</button>
@@ -76,7 +76,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px
 <div class="wrap">
   <div id="map"></div>
   <div class="hint" id="hint" hidden>Toca el mapa donde está el objeto</div>
-  <div class="legend"><span><i style="background:var(--ok)"></i>gracia visitada</span><span><i style="background:var(--accent)"></i>gracia pendiente</span><span><i style="background:#c267c2"></i>jefe vencido · <i style="background:#ff6ad5"></i>pendiente</span><span><i style="background:var(--bad)"></i>objetos que te faltan</span></div>
+  <div class="legend"><span><i style="background:var(--ok)"></i>gracia visitada</span><span><i style="background:var(--accent)"></i>gracia pendiente</span><span><i style="background:#ff3b6b"></i>jefe pendiente · <i style="background:#6a5a78"></i>vencido</span><span><i style="background:var(--bad)"></i>objetos que te faltan</span></div>
 </div>
 
 <div class="sheet" id="sheet" hidden>
