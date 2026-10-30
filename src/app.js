@@ -89,33 +89,71 @@ async function main(DB, FLAGS){
 
   function stoneCounts(c) { const m = {}; for (const it of c.all) if (STONE[it.name] !== undefined) m[it.name] = (m[it.name] || 0) + it.qty; return m; }
 
+  // ---- tabs ----------------------------------------------------------------
+  let TAB = "status";
+  function showTab(t) { TAB = t; for (const b of document.querySelectorAll(".tab")) b.setAttribute("aria-selected", b.dataset.t === t); for (const s of document.querySelectorAll(".screen")) s.setAttribute("aria-hidden", s.id !== "s-" + t); try { localStorage.setItem("tl.tab", t); } catch (e) {} if (location.hash !== "#" + t) history.replaceState(null, "", "#" + t); }
+  $("#tabs").addEventListener("click", e => { const b = e.target.closest(".tab"); if (b) showTab(b.dataset.t); });
+  window.addEventListener("hashchange", () => { const t = location.hash.slice(1); if (document.getElementById("s-" + t)) showTab(t); });
+
+  // ---- small inline SVG icons (own drawings) --------------------------------
+  const SVG = {
+    vigor: '<path d="M9 2l2 4 2-4 3 5-1 5-4 6-4-6-1-5z"/>', mind: '<circle cx="9" cy="9" r="5"/><path d="M9 1v3M9 14v3M1 9h3M14 9h3"/>', endurance: '<path d="M3 13l3-8 3 5 3-7 3 10"/>', strength: '<path d="M4 15l4-6-2-3 4-3 2 4-3 1 4 7"/>', dexterity: '<path d="M3 15l6-12 6 12M6 10h6"/>', intelligence: '<path d="M9 2l6 7-6 7-6-7z"/>', faith: '<path d="M9 2v14M4 7h10"/>', arcane: '<circle cx="9" cy="9" r="6"/><circle cx="9" cy="9" r="2"/>',
+  };
+  const svg = k => `<i class="ic"><svg viewBox="0 0 18 18" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round">${SVG[k] || ""}</svg></i>`;
+  const kvr = (k, v, sub) => `<div class="kvr"><span>${k}</span><b>${v}</b>${sub ? `<div class="sub" style="grid-column:1/-1">${sub}</div>` : ""}</div>`;
+
+  function weightOf(it) { const e = it && DB.items[it.id]; return e && e.w ? e.w : 0; }
   function renderChar(c) {
     CUR = c;
     $("#cName").textContent = c.name || ("Slot " + (c.slot + 1));
-    $("#cLevel").textContent = "Nv " + c.level;
+    $("#cLevel").textContent = c.level;
+    $("#cRunes").textContent = c.runes.toLocaleString("es");
     const ng = c.clearCount ? "NG+" + c.clearCount : "NG";
-    $("#cSub").innerHTML = `<span>${esc(c.className)}</span><span>${ng}</span><span>${ERSave.fmtTime(c.playtimeSec)} jugadas</span><span>${c.deaths} muertes</span>`;
-    const gauge = (label, v, max, color) => `<div class="g"><span>${label}</span><i><b style="width:${max ? Math.min(100, 100 * v / max) : 0}%;background:${color}"></b></i><span>${v} / ${max}</span></div>`;
+    $("#cSub").textContent = `${c.className} · ${ng} · ${ERSave.fmtTime(c.playtimeSec)} · ${c.deaths} muertes`;
+    const gauge = (label, v, max, color) => `<div class="bar"><span>${label}</span><i><b style="width:${max ? Math.min(100, 100 * v / max) : 0}%;background:${color}"></b></i><span class="num">${v} / ${max}</span></div>`;
     $("#gauges").innerHTML = gauge("HP", c.hp, c.maxHp, "var(--hp)") + gauge("FP", c.fp, c.maxFp, "var(--fp)") + gauge("SP", c.sp, c.maxSp, "var(--sp)");
-    const kv = [["Runas", c.runes.toLocaleString("es")], ["Runas totales", c.totalRunes.toLocaleString("es")], ["Frascos", `${c.crimsonFlasks} carmesí · ${c.ceruleanFlasks} cerúleo`], ["Nivel de arma (matchmaking)", "+" + c.matchmakingWpnLvl], ["Regalo inicial", c.giftName], ["Runa mayor", c.greatRuneActive ? "activa" : "inactiva"]];
-    $("#kv").innerHTML = kv.map(([k, v]) => `<div><b>${esc(v)}</b><span>${k}</span></div>`).join("");
-    renderProgress(c);
-    const S = c.stats, names = { vigor: "Vig", mind: "Men", endurance: "Res", strength: "Fue", dexterity: "Des", intelligence: "Int", faith: "Fe", arcane: "Arc" };
-    $("#stats").innerHTML = Object.keys(names).map(k => `<div><b>${S[k]}</b><span>${names[k]}</span></div>`).join("");
-
+    const S = c.stats, names = { vigor: "Vigor", mind: "Mente", endurance: "Resistencia", strength: "Fuerza", dexterity: "Destreza", intelligence: "Inteligencia", faith: "Fe", arcane: "Arcano" };
+    $("#stats").innerHTML = Object.keys(names).map(k => kvr(svg(k) + names[k], S[k])).join("");
+    $("#kv").innerHTML = kvr("Clase", esc(c.className)) + kvr("Regalo", esc(c.giftName)) + kvr("Runas totales", c.totalRunes.toLocaleString("es")) + kvr("Muertes", c.deaths) + kvr("Ciclo", ng) + kvr("Nivel de arma (matchmaking)", "+" + c.matchmakingWpnLvl) + kvr("Runa mayor", c.greatRuneActive ? "activa" : "inactiva") + kvr("Huecos de talismán", 1 + c.talismanSlots);
+    const B = c.buildups;
+    $("#resist").innerHTML = kvr("Veneno", B.poison) + kvr("Putrefacción", B.rot) + kvr("Hemorragia", B.bleed) + kvr("Congelación", B.frost) + kvr("Sueño", B.sleep) + kvr("Locura", B.madness) + kvr("Muerte", B.deathblight);
     const E = c.enriched.equipped;
-    const item = it => (it && real(it)) ? ic(it) + link(it, esc(it.display)) + (it.aow ? `<span class="tag">${esc(it.aow)}</span>` : "") : `<span class="muted">—</span>`;
-    const multi = arr => arr.filter(x => x && real(x)).map(item).join("<br>") || `<span class="muted">—</span>`;
-    const rows = [["Mano dcha", multi(E.rh)], ["Mano izq", multi(E.lh)], ["Flechas", multi(E.arrows.concat(E.bolts))], ["Cabeza", item(E.head)], ["Pecho", item(E.chest)], ["Brazos", item(E.arms)], ["Piernas", item(E.legs)], ["Talismanes", multi(E.talismans)], ["Acceso rápido", multi(c.enriched.quick)], ["Bolsa", multi(c.enriched.pouch)], ["Hechizos", c.enriched.spells.map(s => link(s, esc(s.display))).join("<br>") || `<span class="muted">—</span>`], ["Físico", c.physick.map(id => { const e = DB.items[id]; return e ? link({ name: e.n, kind: e.k }, esc(e.n)) : null; }).filter(Boolean).join("<br>") || `<span class="muted">—</span>`]];
-    $("#eq").innerHTML = rows.map(([k, v]) => `<span>${k}</span><div>${v}</div>`).join("");
+    const worn = [E.head, E.chest, E.arms, E.legs].concat(E.rh, E.lh, E.talismans, E.arrows, E.bolts).filter(x => x && real(x));
+    const load = worn.reduce((a, it) => a + weightOf(it), 0);
+    const maxLoad = 45 + 1.6 * Math.min(S.endurance, 25) + (S.endurance > 25 ? 1.0 * (Math.min(S.endurance, 60) - 25) : 0) + (S.endurance > 60 ? 0.6 * (S.endurance - 60) : 0);
+    const ratio = load / maxLoad, roll = ratio < .3 ? "ligero" : ratio < .7 ? "medio" : ratio <= 1 ? "pesado" : "sobrecargado";
+    $("#misc").innerHTML = kvr("Carga de equipo", `${load.toFixed(1)} / ${maxLoad.toFixed(1)}`, `${roll} (aprox.)`) + kvr("Frasco carmesí", c.crimsonFlasks) + kvr("Frasco cerúleo", c.ceruleanFlasks) + kvr("Hechizos memorizados", c.enriched.spells.length);
 
-    // stones
+    renderEquip(c);
+    renderProgress(c);
+    renderForge(c);
+    renderInv();
+  }
+
+  // ---- equipment screen -----------------------------------------------------
+  const EQSEL = { k: null };
+  function slot(it, lbl, extra) { const has = it && real(it); const img = has ? ICONS.size && iconCandidates(it).map(k => ICONS.get(k)).find(Boolean) : null;
+    return `<div class="slot${has ? "" : " empty"}" data-item="${has ? esc(JSON.stringify({ n: it.display, w: wikiName(it), d: [it.sub, it.infusion && it.infusion !== "Standard" ? it.infusion : null, it.aow ? "Ceniza: " + it.aow : null, weightOf(it) ? "Peso " + weightOf(it) : null].filter(Boolean).join(" · "), i: img || "" })) : ""}" role="button" tabindex="0">${img ? `<img src="${img}" alt="">` : has ? `<span style="font-size:.6rem;text-align:center;padding:4px;color:var(--fg-2)">${esc(it.display)}</span>` : ""}${has && it.kind === "weapon" && it.level ? `<span class="lvl">+${it.level}</span>` : ""}<span class="lbl">${lbl}</span></div>`; }
+  function renderEquip(c) {
+    const E = c.enriched.equipped;
+    $("#eqArms").innerHTML = [0, 1, 2].map(i => slot(E.rh[i], "Dcha " + (i + 1))).join("") + [0, 1, 2].map(i => slot(E.lh[i], "Izq " + (i + 1))).join("") + slot(E.arrows[0], "Flecha 1") + slot(E.arrows[1], "Flecha 2") + slot(E.bolts[0], "Virote 1") + slot(E.bolts[1], "Virote 2");
+    $("#eqArmor").innerHTML = slot(E.head, "Cabeza") + slot(E.chest, "Pecho") + slot(E.arms, "Brazos") + slot(E.legs, "Piernas") + E.talismans.map((t, i) => slot(t, "Talismán " + (i + 1))).join("");
+    const Q = c.enriched.quick, P = c.enriched.pouch;
+    $("#eqQuick").innerHTML = Array.from({ length: Math.max(3, Q.length) }, (_, i) => slot(Q[i], "Rápido " + (i + 1))).join("") + Array.from({ length: Math.max(6, P.length) }, (_, i) => slot(P[i], "Bolsa " + (i + 1))).join("");
+    const Sp = c.enriched.spells, phys = c.physick.map(id => { const e = DB.items[id]; return e ? { id, name: e.n, display: e.n, kind: e.k, cat: e.c, sub: e.s || "" } : null; });
+    $("#eqSpells").innerHTML = Sp.map((s, i) => slot(s, "Hechizo " + (i + 1))).join("") + phys.map((p, i) => slot(p, "Físico " + (i + 1))).join("");
+    $("#eqDetail").innerHTML = `<div class="d help">Toca un hueco para ver el objeto.</div>`;
+  }
+  document.addEventListener("click", e => { const s = e.target.closest(".slot[data-item], .cell[data-item]"); if (!s) return; const d = JSON.parse(s.dataset.item); const box = s.classList.contains("slot") ? $("#eqDetail") : $("#invDetail");
+    for (const x of s.parentElement.querySelectorAll(".sel")) x.classList.remove("sel"); s.classList.add("sel");
+    box.innerHTML = `${d.i ? `<img src="${d.i}" alt="">` : ""}<div><div class="t">${esc(d.n)}</div><div class="d">${esc(d.d || "")}</div>${d.l ? `<div class="d">${esc(d.l)}</div>` : ""}<a class="wl" href="${WIKI}${encodeURIComponent(d.w.replace(/ /g, "_"))}" target="_blank" rel="noopener">Ver en la wiki</a></div>`; });
+
+  // ---- forge ----------------------------------------------------------------
+  function renderForge(c) {
     const sc = stoneCounts(c);
     const tile = (n, lbl) => `<div class="${sc[n] ? "" : "zero"}" title="${esc(n)}"><b>${sc[n] || 0}</b><span>${lbl}</span></div>`;
     $("#stonesN").innerHTML = [1,2,3,4,5,6,7,8].map(n => tile("Smithing Stone [" + n + "]", "[" + n + "]")).join("") + tile("Ancient Dragon Smithing Stone", "Dragón");
     $("#stonesS").innerHTML = [1,2,3,4,5,6,7,8,9].map(n => tile("Somber Smithing Stone [" + n + "]", "[" + n + "]")).join("") + tile("Somber Ancient Dragon Smithing Stone", "Dragón");
-
-    // weapons sorted: not maxed first, highest level first
     const weapons = c.all.filter(i => i.kind === "weapon" && i.maxLevel > 0 && !["arrows_and_bolts"].includes(i.cat));
     weapons.sort((a, b) => (a.level >= a.maxLevel) - (b.level >= b.maxLevel) || b.level - a.level || a.name.localeCompare(b.name));
     const sel = $("#planWeapon");
@@ -124,12 +162,9 @@ async function main(DB, FLAGS){
     $("#planTo").oninput = () => planUpdate("typing"); $("#planTo").onchange = planUpdate;
     sel.selectedIndex = Math.max(0, weapons.findIndex(w => w.level > 0 && w.level < w.maxLevel));
     c.weapons = weapons; planUpdate(true);
-
-    const wrow = w => `<div class="row${w.stored ? " stored" : ""}" data-w="${weapons.indexOf(w)}" role="button" tabindex="0" style="cursor:pointer"><div class="n">${ic(w)}${link(w, esc(w.display))}${w.level >= w.maxLevel ? '<span class="tag max">máx</span>' : ""}${w.aow ? `<span class="tag">${esc(w.aow)}</span>` : ""}<span class="lvlbar"><b style="width:${100 * w.level / w.maxLevel}%"></b></span></div><div class="q">+${w.level} / ${w.maxLevel}</div></div>`;
+    const wrow = w => `<div class="row click${w.stored ? " stored" : ""}" data-w="${weapons.indexOf(w)}" role="button" tabindex="0"><div class="n">${ic(w)}${link(w, esc(w.display))}${w.level >= w.maxLevel ? '<span class="tag max">máx</span>' : ""}${w.aow ? `<span class="tag">${esc(w.aow)}</span>` : ""}<span class="lvlbar"><b style="width:${100 * w.level / w.maxLevel}%"></b></span></div><div class="q">+${w.level} / ${w.maxLevel}</div></div>`;
     const pending = weapons.filter(w => w.level > 0 && w.level < w.maxLevel), maxed = weapons.filter(w => w.level >= w.maxLevel);
-    $("#upgradeable").innerHTML = (pending.map(wrow).join("") || `<p class="muted small">Ninguna arma a medias: todo lo que has tocado está al máximo.</p>`) + (maxed.length ? `<details><summary>${maxed.length} armas al máximo</summary><div class="list">${maxed.map(wrow).join("")}</div></details>` : "");
-
-    renderInv();
+    $("#upgradeable").innerHTML = (pending.map(wrow).join("") || `<p class="help">Ninguna arma a medias: todo lo que has tocado está al máximo.</p>`) + (maxed.length ? `<details><summary>${maxed.length} armas al máximo</summary><div class="list">${maxed.map(wrow).join("")}</div></details>` : "");
   }
 
   function renderProgress(c) {
@@ -169,27 +204,27 @@ async function main(DB, FLAGS){
     const cats = GROUPS.find(g => g[0] === group)[1];
     const src = mode === "missing" ? missingFor(c) : c.all;
     let items = src.filter(i => (!cats || cats.includes(i.cat)) && (!q || i.name.toLowerCase().includes(q) || (i.aow || "").toLowerCase().includes(q)));
-    items = items.slice().sort((a, b) => a.cat.localeCompare(b.cat) || a.name.localeCompare(b.name));
+    const ORDER = ["melee_armaments", "ranged_and_catalysts", "shields", "arrows_and_bolts", "head", "chest", "arms", "legs", "talismans", "ashes_of_war", "ashes", "sorceries", "incantations", "tools", "crafting_materials", "bolstering_materials", "key_items", "info", "gestures"];
+    const oi = c => { const i = ORDER.indexOf(c); return i < 0 ? 99 : i; };
+    items = items.slice().sort((a, b) => oi(a.cat) - oi(b.cat) || a.name.localeCompare(b.name));
     if (mode === "missing") { const tot = CATALOG.filter(i => !cats || cats.includes(i.cat)).length; $("#count").textContent = `${items.length} por conseguir de ${tot}` + (q ? " (filtrado)" : ""); }
     else $("#count").textContent = items.length + " objetos";
-    let lastCat = null, html = "";
-    for (const i of items.slice(0, limit)) {
-      if (i.cat !== lastCat) { lastCat = i.cat; html += `<div class="row"><div class="m" style="grid-column:1/-1;padding-top:6px;color:var(--accent);text-transform:uppercase;letter-spacing:.1em">${esc(CAT_ES[i.cat] || i.cat || "Otros")}</div></div>`; }
-      const meta = [i.sub, i.infusion && i.infusion !== "Standard" ? i.infusion : null, i.aow ? "AoW: " + i.aow : null].filter(Boolean).join(" · ");
-      html += `<div class="row${i.stored ? " stored" : ""}"><div class="n">${ic(i)}${link(i, esc(i.display))}${i.dlc ? '<span class="tag dlc">DLC</span>' : ""}${i.kind === "weapon" && i.maxLevel ? `<span class="tag">+${i.level}/${i.maxLevel}</span>` : ""}</div><div class="q">${i.qty > 1 ? "×" + i.qty : ""}</div>${meta ? `<div class="m">${esc(meta)}</div>` : ""}</div>`;
-    }
-    if (items.length > limit) html += `<button class="btn" id="more" style="margin-top:10px">Mostrar ${Math.min(250, items.length - limit)} más (${items.length - limit} restantes)</button>`;
-    $("#inv").innerHTML = html;
+    const cell = i => { const img = ICONS.size ? iconCandidates(i).map(k => ICONS.get(k)).find(Boolean) : null; const e = DB.items[i.id];
+      const meta = [CAT_ES[i.cat] || i.cat, i.sub, i.infusion && i.infusion !== "Standard" ? i.infusion : null, i.aow ? "Ceniza: " + i.aow : null, i.qty > 1 ? "×" + i.qty : null, i.stored ? "en el cofre" : null, i.kind === "weapon" && i.maxLevel ? `+${i.level}/${i.maxLevel}` : null].filter(Boolean).join(" · ");
+      return `<div class="cell${i.missing ? " miss" : ""}${i.stored ? " stored" : ""}" data-item="${esc(JSON.stringify({ n: i.display, w: wikiName(i), d: meta, l: e && e.loc ? e.loc.replace(/\s*\[\s*Map Link\s*\]\s*;?/g, "").replace(/\s+([.,;])/g, "$1").replace(/\s{2,}/g, " ") : "", i: img || "" }))}" role="button" tabindex="0" title="${esc(i.display)}">${img ? `<img src="${img}" alt="" loading="lazy">` : `<span class="nm">${esc(i.display)}</span>`}${i.qty > 1 ? `<span class="q">${i.qty}</span>` : ""}${i.kind === "weapon" && i.level ? `<span class="lv">+${i.level}</span>` : ""}</div>`; };
+    $("#inv").innerHTML = items.slice(0, limit).map(cell).join("");
+    const more = $("#more"); more.hidden = items.length <= limit; if (!more.hidden) more.textContent = `Mostrar ${Math.min(250, items.length - limit)} más (${items.length - limit} restantes)`;
+    $("#invDetail").innerHTML = `<div class="d help">Toca un objeto para ver el detalle.</div>`;
   }
 
-  function modeChips() { $("#mode").innerHTML = [["have", "Tengo"], ["missing", "No tengo"]].map(([m, l]) => `<button class="chip" aria-pressed="${m === mode}" data-m="${m}">${l}</button>`).join(""); }
-  $("#mode").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; mode = b.dataset.m; limit = 250; modeChips(); renderInv(); });
+  function modeChips() { $("#mode").innerHTML = [["have", "Tengo"], ["missing", "No tengo"]].map(([m, l]) => `<button class="cat" aria-pressed="${m === mode}" data-m="${m}">${l}</button>`).join(""); }
+  $("#mode").addEventListener("click", e => { const b = e.target.closest(".cat"); if (!b) return; mode = b.dataset.m; limit = 250; modeChips(); renderInv(); });
   modeChips();
-  function chips() { $("#chips").innerHTML = GROUPS.map(g => `<button class="chip" aria-pressed="${g[0] === group}" data-g="${g[0]}">${g[0]}</button>`).join(""); }
-  $("#chips").addEventListener("click", e => { const b = e.target.closest(".chip"); if (!b) return; group = b.dataset.g; limit = 250; chips(); renderInv(); });
-  $("#upgradeable").addEventListener("click", e => { if (e.target.closest("a")) return; const r = e.target.closest("[data-w]"); if (!r) return; $("#planWeapon").value = r.dataset.w; planUpdate(true); $("#planWeapon").scrollIntoView({ block: "center", behavior: "smooth" }); });
+  function chips() { $("#chips").innerHTML = GROUPS.map(g => `<button class="cat" aria-pressed="${g[0] === group}" data-g="${g[0]}">${g[0]}</button>`).join(""); }
+  $("#chips").addEventListener("click", e => { const b = e.target.closest(".cat"); if (!b) return; group = b.dataset.g; limit = 250; chips(); renderInv(); });
+  $("#upgradeable").addEventListener("click", e => { if (e.target.closest("a")) return; const r = e.target.closest("[data-w]"); if (!r) return; $("#planWeapon").value = r.dataset.w; planUpdate(true); $("#planWeapon").scrollIntoView({ block: "center", behavior: "smooth" }); showTab("forge"); });
   $("#q").addEventListener("input", () => { limit = 250; renderInv(); });
-  $("#inv").addEventListener("click", e => { if (e.target.id === "more") { limit += 250; renderInv(); } });
+  $("#more").addEventListener("click", () => { limit += 250; renderInv(); });
   chips();
 
   // ---- loading -----------------------------------------------------------
@@ -212,7 +247,7 @@ async function main(DB, FLAGS){
     const chars = save.chars.filter(c => !c.error);
     const sel = $("#charSel");
     sel.innerHTML = chars.map(c => `<option value="${c.slot}">${esc(c.name || "Slot " + (c.slot + 1))} · ${c.level}</option>`).join("");
-    sel.hidden = chars.length < 2;
+    sel.hidden = true;
     sel.onchange = () => pick(chars, sel.value);
     const cs = $("#chars"); cs.hidden = chars.length < 2;
     cs.innerHTML = chars.map(c => `<button data-slot="${c.slot}" aria-pressed="false"><b>${esc(c.name || "Slot " + (c.slot + 1))}</b><span>Nv ${c.level} · ${esc(c.className)} · ${ERSave.fmtTime(c.playtimeSec)}</span></button>`).join("");
@@ -220,7 +255,7 @@ async function main(DB, FLAGS){
     const bad = save.chars.filter(c => c.error);
     $("#msg").innerHTML = bad.length ? `<span class="err">No se pudo leer ${bad.length} slot(s): ${esc(bad[0].error)}</span>` : "";
     if (!chars.length) { $("#msg").innerHTML = `<span class="err">No hay personajes legibles en este archivo.</span>`; return; }
-    $("#app").hidden = false; $("#dropSec").hidden = true; $("#barOpen").hidden = false; $("#mapLink").hidden = false;
+    $("#app").hidden = false; $("#dropSec").hidden = true; $("#barOpen").hidden = false; $("#mapLink").hidden = false; $("#tabs").hidden = false; let t0 = location.hash.slice(1); try { t0 = t0 || localStorage.getItem("tl.tab") || "status"; } catch (e) {} showTab(document.getElementById("s-" + t0) ? t0 : "status");
     $("#foot").textContent = `${name} · ${when}`;
     pick(chars, chars[0].slot);
   }
