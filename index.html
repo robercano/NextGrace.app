@@ -126,6 +126,8 @@ main{padding:14px max(14px,env(safe-area-inset-right,0px)) 40px max(14px,env(saf
 .tag{font-family:var(--display);font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border:1px solid var(--line-2);color:var(--fg-2);white-space:nowrap}
 .tag.max{border-color:var(--ok);color:var(--ok)}
 .tag.dlc{border-color:var(--fp);color:#8fb2e6}
+.btn.mk{font-size:.62rem;padding:2px 7px;margin-left:6px}
+.btn.mk[aria-pressed=true]{border-color:var(--ok);color:var(--ok)}
 .lvlbar{display:inline-block;width:64px;height:5px;background:#000;border:1px solid var(--line);vertical-align:middle;overflow:hidden}
 .lvlbar b{display:block;height:100%;background:var(--gold)}
 .stones{display:grid;grid-template-columns:repeat(auto-fit,minmax(52px,1fr));gap:5px}
@@ -275,6 +277,7 @@ details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="src/ersave.js"></script>
+<script src="src/marks.js"></script>
 <script src="src/app.js"></script>
 </body>
 </html>

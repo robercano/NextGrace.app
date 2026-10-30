@@ -167,6 +167,12 @@ async function main(DB, FLAGS){
     $("#upgradeable").innerHTML = (pending.map(wrow).join("") || `<p class="help">Ninguna arma a medias: todo lo que has tocado está al máximo.</p>`) + (maxed.length ? `<details><summary>${maxed.length} armas al máximo</summary><div class="list">${maxed.map(wrow).join("")}</div></details>` : "");
   }
 
+  function markBtn(k, id) { const on = CUR && Marks.has(Marks.charKey(CUR), k, id); return `<button class="btn mk" data-mark="${k}|${id}" aria-pressed="${!!on}" title="Marcar a mano">${on ? "✓ marcado" : "marcar"}</button>`; }
+  function markName(e) { if (e.k === "boss") { const b = FLAGS.bosses.find(x => String(x.id) === e.id); return b ? b.name : e.id; } if (e.k === "grace") { const g = FLAGS.graces.find(x => String(x.id) === e.id); return g ? g.name : e.id; } if (e.k === "item") { const it = DB.items[e.id]; return it ? it.n : e.id; } return e.id; }
+  document.addEventListener("click", e => { const b = e.target.closest("[data-mark]"); if (b && CUR) { const [k, id] = b.dataset.mark.split("|"); Marks.toggle(Marks.charKey(CUR), k, id); renderProgress(CUR); return; }
+    const u = e.target.closest("[data-unmark]"); if (u && CUR) { const [k, id] = u.dataset.unmark.split("|"); Marks.set(Marks.charKey(CUR), k, id, false); renderProgress(CUR); return; }
+    if (e.target.id === "marksExport") { const txt = Marks.export(); navigator.clipboard.writeText(txt).then(() => { e.target.textContent = "Copiado"; setTimeout(() => e.target.textContent = "Exportar", 1500); }).catch(() => { prompt("Copia este JSON:", txt); }); } });
+  document.addEventListener("change", async e => { if (e.target.id === "marksImport" && e.target.files[0]) { try { Marks.import(await e.target.files[0].text()); if (CUR) renderProgress(CUR); } catch (err) { alert("JSON no válido"); } } });
   function renderProgress(c) {
     const el = $("#progress"); if (!c.progress) { el.innerHTML = `<p class="muted small">Sin datos de progreso (vuelve a abrir el .sl2).</p>`; return; }
     const gv = new Set(c.progress.graces), bd = new Set(c.progress.bosses);
@@ -187,8 +193,9 @@ async function main(DB, FLAGS){
       <div><b>${world.length - wMissing.length} / ${world.length}</b><span>Objetos únicos del mundo</span></div>
       <div><b>${(c.progress.regions || []).length} / ${Object.keys(FLAGS.mapRegions || {}).length}</b><span>Zonas de mapa reveladas</span></div></div>
       <details><summary>Objetos únicos pendientes (${wMissing.length})</summary><p class="help">Notas, mapas, cartas, lágrimas, recetarios, llaves… que existen una sola vez en el mundo y aún no has cogido.</p><div class="list">${wMissing.map(wRow).join("") || '<p class="help">Todo cogido.</p>'}</div></details>
-      <details><summary>Jefes pendientes (${pend.length})</summary><div class="list">${pend.map(b => `<div class="row"><div class="n">${link({ name: b.name, kind: "boss" }, esc(b.name))}${b.rem ? '<span class="tag">remembranza</span>' : ""}</div><div class="q">${esc(b.region)}</div></div>`).join("") || '<p class="muted small">Ninguno.</p>'}</div></details>
-      <details><summary>Gracias pendientes por región (${FLAGS.graces.length - gv.size})</summary><div class="list">${regions.filter(([, r]) => r.pending.length).map(([name, r]) => `<div class="row"><div class="n">${esc(name)}</div><div class="q">${r.done} / ${r.total}</div><div class="m">${r.pending.map(g => esc(g.name)).join(" · ")}</div></div>`).join("") || '<p class="muted small">Todas descubiertas.</p>'}</div></details>`;
+      <details><summary>Jefes pendientes (${pend.length})</summary><p class="help">Según el save. Si uno está mal (p. ej. un jefe opcional ya vencido que el juego no marca), puedes marcarlo a mano.</p><div class="list">${pend.map(b => `<div class="row"><div class="n">${link({ name: b.name, kind: "boss" }, esc(b.name))}${b.rem ? '<span class="tag">remembranza</span>' : ""}</div><div class="q">${esc(b.region)} ${markBtn("boss", b.id)}</div></div>`).join("") || '<p class="muted small">Ninguno.</p>'}</div></details>
+      <details><summary>Gracias pendientes por región (${FLAGS.graces.length - gv.size})</summary><div class="list">${regions.filter(([, r]) => r.pending.length).map(([name, r]) => `<div class="row"><div class="n">${esc(name)}</div><div class="q">${r.done} / ${r.total}</div><div class="m">${r.pending.map(g => esc(g.name) + " " + markBtn("grace", g.id)).join(" · ")}</div></div>`).join("") || '<p class="muted small">Todas descubiertas.</p>'}</div></details>
+      <details><summary>Marcas manuales (${Marks.all(Marks.charKey(c)).length})</summary><p class="help">Lo que has marcado a mano para este personaje (lugares en el mapa, jefes, gracias, objetos). Se guarda en este navegador; "Exportar" copia el JSON para llevarlo a otro dispositivo o, más adelante, a la nube.</p><div class="list">${Marks.all(Marks.charKey(c)).map(e => `<div class="row"><div class="n">${esc(e.k)} · ${esc(markName(e))}</div><div class="q">${e.at} <button class="btn" data-unmark="${esc(e.k)}|${esc(e.id)}">quitar</button></div></div>`).join("") || '<p class="help">Ninguna todavía.</p>'}</div><div style="display:flex;gap:8px;margin-top:8px"><button class="btn" id="marksExport">Exportar</button><label class="btn" for="marksImport">Importar</label><input id="marksImport" type="file" accept=".json" hidden></div></details>`;
   }
 
   function planUpdate(init) {
@@ -240,6 +247,7 @@ async function main(DB, FLAGS){
   function prep(save) {
     for (const c of save.chars) {
       if (c.error) continue;
+      c.steamId = save.steamId || "0";
       c.enriched = ERSave.enrich(c, DB);
       c.all = c.enriched.inventory.concat(c.enriched.keyItems, c.enriched.storage, c.enriched.storageKeys).filter(real);
       if (c.eventFlags) {

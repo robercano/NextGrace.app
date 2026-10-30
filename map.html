@@ -105,6 +105,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px
 </div>
 
 <script src="vendor/leaflet/leaflet.js"></script>
+<script src="src/marks.js"></script>
 <script>
 (async function () {
   const $ = s => document.querySelector(s);
@@ -182,6 +183,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px
     const picked = new Set(CUR && CUR.progress ? CUR.progress.picked || [] : []), haveIds = new Set(CUR ? (CUR.all || []).map(i => i.id) : []);
     // "visited" evidence per place name: any grace touched or boss beaten whose place is this one
     const seen = new Set(), known = new Set();
+    const CK = CUR ? Marks.charKey(CUR) : null, manual = CK ? Marks.load(CK) : new Set();
     for (const g of F.graces) { const p = findPlace(g.name); if (!p) continue; known.add(p.name.toLowerCase()); if (gv.has(g.id)) seen.add(p.name.toLowerCase()); }
     for (const b of F.bosses) { const p = findPlace(b.region); if (!p) continue; known.add(p.name.toLowerCase()); if (bd.has(b.id)) seen.add(p.name.toLowerCase()); }
     const match = s => !q || s.toLowerCase().includes(q);
@@ -196,15 +198,15 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px
       L.marker(at(p), { icon: pin("boss" + (done ? "" : " todo"), "boss") }).bindPopup(`<div class="popup"><h4>${wl(b.name)}</h4><div class="m">Jefe · ${esc(b.region)} · ${done ? "vencido" : "pendiente"}${b.rem ? " · remembranza" : ""}</div></div>`).addTo(layers.boss); }
     // places
     for (const p of P.places) { if (p.region || layerOf(p) !== layer || graceNames.has(p.name.toLowerCase()) || !match(p.name)) continue; const pk = GROUP_KIND[p.group] || "place"; if (placeKinds && !placeKinds.has(pk)) continue;
-      const k = p.name.toLowerCase(), st = seen.has(k) ? "seen" : known.has(k) && CUR ? "todo" : "";
-      L.marker(at(p), { icon: pin("place " + st, GROUP_KIND[p.group] || "place") }).bindPopup(`<div class="popup"><h4>${wl(p.article || p.name, esc(p.name))}</h4><div class="m">${esc(KIND_ES[GROUP_KIND[p.group]] || p.group)}${st === "seen" ? " · visitado" : st === "todo" ? " · pendiente" : " · sin datos"}</div></div>`).addTo(layers.place); }
+      const k = p.name.toLowerCase(), man = manual.has("place:" + p.id), st = seen.has(k) || man ? "seen" : known.has(k) && CUR ? "todo" : "";
+      L.marker(at(p), { icon: pin("place " + st, GROUP_KIND[p.group] || "place") }).bindPopup(`<div class="popup"><h4>${wl(p.article || p.name, esc(p.name))}</h4><div class="m">${esc(KIND_ES[GROUP_KIND[p.group]] || p.group)}${seen.has(k) ? " · visitado (según el save)" : man ? " · visitado (marcado a mano)" : st === "todo" ? " · pendiente" : ""}</div>${CUR ? `<button class="chip" data-mark="place|${p.id}" aria-pressed="${man}" style="margin-top:6px">${man ? "✓ Visitado" : "Marcar como visitado"}</button>` : ""}</div>`).addTo(layers.place); }
     // missing items grouped by place
     if (have) {
       const byPlace = new Map();
-      for (const it of CATALOG) { if (have.has(baseKey({ name: it.name, kind: it.kind })) || picked.has(it.id)) continue; const pls = P.items[it.id]; if (!pls) continue;
+      for (const it of CATALOG) { if (have.has(baseKey({ name: it.name, kind: it.kind })) || picked.has(it.id) || manual.has("item:" + it.id)) continue; const pls = P.items[it.id]; if (!pls) continue;
         for (const pi of pls) { const p = P.places[pi]; if (p.region || layerOf(p) !== layer) continue; if (!match(it.name) && !match(p.name)) continue; (byPlace.get(pi) || byPlace.set(pi, []).get(pi)).push(it); } }
       for (const [pi, list] of byPlace) { const p = P.places[pi];
-        L.marker(at(p), { icon: pin("miss", (() => { const n = {}; for (const it of list) { const k = CAT_KIND[it.cat] || "item"; n[k] = (n[k] || 0) + 1; } return Object.entries(n).sort((a, b) => b[1] - a[1])[0][0]; })(), list.length), zIndexOffset: 500 }).bindPopup(`<div class="popup"><h4>${esc(p.name)}</h4><div class="m">${list.length} objeto${list.length > 1 ? "s" : ""} que te faltan</div><ul>${list.map(it => `<li>${wl(it.name)}${picked.has(it.id) ? ' <span class="m">(ya cogido)</span>' : ""}<div class="m">${esc(it.loc.replace(/\s*\[\s*Map Link\s*\]\s*;?/g, ""))}</div></li>`).join("")}</ul></div>`, { maxWidth: 320 }).addTo(layers.miss); }
+        L.marker(at(p), { icon: pin("miss", (() => { const n = {}; for (const it of list) { const k = CAT_KIND[it.cat] || "item"; n[k] = (n[k] || 0) + 1; } return Object.entries(n).sort((a, b) => b[1] - a[1])[0][0]; })(), list.length), zIndexOffset: 500 }).bindPopup(`<div class="popup"><h4>${esc(p.name)}</h4><div class="m">${list.length} objeto${list.length > 1 ? "s" : ""} que te faltan</div><ul>${list.map(it => `<li>${wl(it.name)} <button class="chip" data-mark="item|${it.id}" aria-pressed="false" style="font-size:.72rem;padding:1px 7px">conseguido</button><div class="m">${esc(it.loc.replace(/\s*\[\s*Map Link\s*\]\s*;?/g, ""))}</div></li>`).join("")}</ul></div>`, { maxWidth: 320 }).addTo(layers.miss); }
     }
     // user + community markers
     for (const m of community.concat(userMarkers)) { if ((m.layer || "tlb") !== layer || !match(m.item || "") && !match(m.note || "")) continue; const own = have ? have.has((m.item || "").toLowerCase().replace(/\s*\+\d+$/, "")) : false;
@@ -221,6 +223,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px
       for (const c of box.querySelectorAll("[data-pk]")) c.setAttribute("aria-pressed", c.dataset.pk === "*" ? !placeKinds : !!(placeKinds && placeKinds.has(c.dataset.pk)));
       render(); };
   })();
+  document.addEventListener("click", e => { const b = e.target.closest("[data-mark]"); if (!b || !CUR) return; const [k, id] = b.dataset.mark.split("|"); Marks.toggle(Marks.charKey(CUR), k, id); map.closePopup(); render(); });
   for (const b of document.querySelectorAll(".chip[data-l]")) b.onclick = () => { const k = b.dataset.l; vis[k] = !vis[k]; b.setAttribute("aria-pressed", vis[k]); if (k === "user" && vis[k]) openUser(); if (k === "place") $("#placeTypes").hidden = !vis[k]; render(); };
   $("#q").oninput = e => { q = e.target.value.trim().toLowerCase(); render(); };
   sel.onchange = () => { CUR = chars[+sel.value]; try { localStorage.setItem("tl.cur", String(CUR.slot)); } catch (e) {} render(); };
