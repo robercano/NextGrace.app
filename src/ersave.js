@@ -85,7 +85,7 @@
     }
 
     // PlayerGameData (0x1B0)
-    const pgStart = r.pos;
+    const pgStart = r.pos; const pgdOffset = r.pos - start;
     r.skip(8);
     const hp = r.u32(), maxHp = r.u32(), baseMaxHp = r.u32();
     const fp = r.u32(), maxFp = r.u32(), baseMaxFp = r.u32();
@@ -101,7 +101,7 @@
     const name = r.utf16(16); r.skip(2);
     const gender = r.u8(), archetype = r.u8();
     r.skip(2); const voice = r.u8(); const gift = r.u8();
-    r.skip(2); const talismanSlots = r.u8(); r.skip(1);
+    r.skip(2); const talismanSlots = r.u8(); const greatRuneId = r.u8();
     r.skip(0x18);
     r.skip(2); const matchmakingWpnLvl = r.u8(); r.skip(0x1C);
     const greatRuneActive = r.u8(); r.skip(1);
@@ -145,9 +145,9 @@
     return {
       ver, mapId, name, level, runes, totalRunes, stats, hp, maxHp, baseMaxHp, fp, maxFp, baseMaxFp, sp, maxSp, baseMaxSp,
       buildups, gender, archetype, className: CLASSES[archetype] || ("#" + archetype), voice, gift, giftName: GIFTS[gift] || ("#" + gift),
-      talismanSlots, matchmakingWpnLvl, greatRuneActive: !!greatRuneActive, crimsonFlasks, ceruleanFlasks,
+      talismanSlots, greatRuneId, matchmakingWpnLvl, greatRuneActive: !!greatRuneActive, crimsonFlasks, ceruleanFlasks,
       armStyle, activeSlots, equipIndex, equipIds, equipHandles, inventory, storage, spells, quick, pouch, physick, regions,
-      clearCount, deaths, lastGrace, eventFlagsOffset, eventFlags, gaMap,
+      clearCount, deaths, lastGrace, eventFlagsOffset, eventFlags, gaMap, pgdOffset,
     };
   }
 
@@ -227,9 +227,12 @@
     const stoKeys = char.storage.key.map(it => Object.assign({ qty: it.qty, handle: it.handle, idx: it.idx, stored: true }, R.resolveHandle(it.handle, gm)));
     const eq = char.equipHandles;
     const h = x => (x && x !== 0xFFFFFFFF) ? R.resolveHandle(x, gm) : null;
-    const grId = char.equipIds && char.equipIds.greatRune;
+    // Equipped Great Rune: PlayerGameData+0xBF (GreatRuneId). Verified: 0 = none, 3 = Godrick's (save diff).
+    // Other values follow the game's internal rune numbering; names below for the ones confirmed, "#n" otherwise.
+    const GR_NAMES = { 3: "Godrick's Great Rune", 4: "Radahn's Great Rune", 5: "Morgott's Great Rune", 6: "Rykard's Great Rune", 7: "Mohg's Great Rune", 8: "Malenia's Great Rune", 10: "Great Rune of the Unborn" };
+    const grn = char.greatRuneId;
     const equipped = {
-      greatRune: (grId && grId !== 0xFFFFFFFF) ? R.byId(grId, "goods") : null,
+      greatRune: grn ? { id: 0x40000000 + 0xBF + Math.max(0, grn - 3), name: GR_NAMES[grn] || ("Great Rune #" + grn), display: GR_NAMES[grn] || ("Great Rune #" + grn), kind: "goods", cat: "key_items", sub: "", runeId: grn } : null,
       rh: eq.rh.map(h), lh: eq.lh.map(h), arrows: eq.arrows.map(h), bolts: eq.bolts.map(h),
       head: h(eq.head), chest: h(eq.chest), arms: h(eq.arms), legs: h(eq.legs), talismans: eq.talismans.map(h),
     };
