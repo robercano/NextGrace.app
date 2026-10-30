@@ -175,11 +175,18 @@ async function main(DB, FLAGS){
     const regions = Object.entries(byRegion).sort((a, b) => (a[1].total - a[1].done) - (b[1].total - b[1].done) === 0 ? a[0].localeCompare(b[0]) : (b[1].total - b[1].done) - (a[1].total - a[1].done));
     const main = FLAGS.bosses.filter(b => b.type === "main"), field = FLAGS.bosses.filter(b => b.type !== "main");
     const pend = FLAGS.bosses.filter(b => !bd.has(b.id));
+    const picked = new Set(c.progress.picked || []), have = new Set(c.all.map(i => i.id));
+    const world = Object.keys(FLAGS.pickups || {}).map(Number).map(id => ({ id, e: DB.items[id] })).filter(x => x.e).sort((a, b) => (a.e.c || "").localeCompare(b.e.c || "") || a.e.n.localeCompare(b.e.n));
+    const wMissing = world.filter(x => !picked.has(x.id) && !have.has(x.id));
+    const wRow = x => `<div class="row"><div class="n">${ic({ id: x.id, name: x.e.n, kind: x.e.k })}${link({ name: x.e.n, kind: x.e.k }, esc(x.e.n))}<span class="tag">${esc(CAT_ES[x.e.c] || x.e.c || "")}</span></div><div class="q">${have.has(x.id) ? "lo tienes" : picked.has(x.id) ? "cogido" : "pendiente"}</div>${x.e.loc ? `<div class="m">${esc(x.e.loc.replace(/\s*\[\s*Map Link\s*\]\s*;?/g, ""))}</div>` : ""}</div>`;
     el.innerHTML = `<div class="kv">
       <div><b>${gv.size} / ${FLAGS.graces.length}</b><span>Gracias</span></div>
       <div><b>${main.filter(b => bd.has(b.id)).length} / ${main.length}</b><span>Jefes principales</span></div>
       <div><b>${field.filter(b => bd.has(b.id)).length} / ${field.length}</b><span>Jefes de campo</span></div>
-      <div><b>${FLAGS.bosses.filter(b => b.rem && bd.has(b.id)).length} / ${FLAGS.bosses.filter(b => b.rem).length}</b><span>Remembranzas</span></div></div>
+      <div><b>${FLAGS.bosses.filter(b => b.rem && bd.has(b.id)).length} / ${FLAGS.bosses.filter(b => b.rem).length}</b><span>Remembranzas</span></div>
+      <div><b>${world.length - wMissing.length} / ${world.length}</b><span>Objetos únicos del mundo</span></div>
+      <div><b>${(c.progress.regions || []).length} / ${Object.keys(FLAGS.mapRegions || {}).length}</b><span>Zonas de mapa reveladas</span></div></div>
+      <details><summary>Objetos únicos pendientes (${wMissing.length})</summary><p class="help">Notas, mapas, cartas, lágrimas, recetarios, llaves… que existen una sola vez en el mundo y aún no has cogido.</p><div class="list">${wMissing.map(wRow).join("") || '<p class="help">Todo cogido.</p>'}</div></details>
       <details><summary>Jefes pendientes (${pend.length})</summary><div class="list">${pend.map(b => `<div class="row"><div class="n">${link({ name: b.name, kind: "boss" }, esc(b.name))}${b.rem ? '<span class="tag">remembranza</span>' : ""}</div><div class="q">${esc(b.region)}</div></div>`).join("") || '<p class="muted small">Ninguno.</p>'}</div></details>
       <details><summary>Gracias pendientes por región (${FLAGS.graces.length - gv.size})</summary><div class="list">${regions.filter(([, r]) => r.pending.length).map(([name, r]) => `<div class="row"><div class="n">${esc(name)}</div><div class="q">${r.done} / ${r.total}</div><div class="m">${r.pending.map(g => esc(g.name)).join(" · ")}</div></div>`).join("") || '<p class="muted small">Todas descubiertas.</p>'}</div></details>`;
   }
@@ -237,7 +244,8 @@ async function main(DB, FLAGS){
       c.all = c.enriched.inventory.concat(c.enriched.keyItems, c.enriched.storage, c.enriched.storageKeys).filter(real);
       if (c.eventFlags) {
         const flag = ERSave.makeFlagReader(FLAGS.bst, c.eventFlags);
-        c.progress = { graces: FLAGS.graces.filter(g => flag(g.id)).map(g => g.id), bosses: FLAGS.bosses.filter(b => flag(b.id)).map(b => b.id) };
+        c.progress = { graces: FLAGS.graces.filter(g => flag(g.id)).map(g => g.id), bosses: FLAGS.bosses.filter(b => flag(b.id)).map(b => b.id),
+          picked: Object.entries(FLAGS.pickups || {}).filter(([, f]) => flag(f)).map(([id]) => +id), regions: Object.keys(FLAGS.mapRegions || {}).filter(k => flag(+k)).map(Number) };
         delete c.eventFlags;
       }
     }
