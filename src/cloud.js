@@ -22,7 +22,7 @@
     summarize(c) {
       const eq = c.enriched && c.enriched.equipped || {};
       const n = x => x && x.display || null;
-      return { level: c.level, class: c.className, ng: c.clearCount, playtime: c.playtimeSec, deaths: c.deaths, stats: c.stats, hp: c.maxHp, fp: c.maxFp, sp: c.maxSp,
+      return { level: c.level, class: c.className, ng: c.clearCount, playtime: c.playtimeSec, deaths: c.deaths, totalRunes: c.totalRunes, stats: c.stats, hp: c.maxHp, fp: c.maxFp, sp: c.maxSp,
         equipped: { rh: (eq.rh || []).map(n), lh: (eq.lh || []).map(n), head: n(eq.head), chest: n(eq.chest), arms: n(eq.arms), legs: n(eq.legs), talismans: (eq.talismans || []).map(n), greatRune: n(eq.greatRune) },
         progress: c.progress || null, itemCount: (c.all || []).length, haveKeys: (c.all || []).map(i => i.id).slice(0, 3000),
         // for the advisor: what matters for build/route advice, by name (ids are resolved client-side already)
@@ -55,6 +55,7 @@
     async proposeMarker(m) { return api("/markers", { method: "POST", body: m }); },
     async deleteMarker(id) { return api("/markers/" + id, { method: "DELETE" }); },
     async pending() { const r = await api("/admin/markers"); return r.markers || []; },
+    async history(charKey) { const r = await api("/history/" + encodeURIComponent(charKey)); return r.history || []; },
     // Advisor (server-side report cached in the account)
     async advice(charKey) { return api("/advice/" + encodeURIComponent(charKey)); },
     // POST streams ndjson: {beat}/{progress} lines while the model works, then {advice} or {error}

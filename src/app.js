@@ -136,10 +136,65 @@ async function main(DB, FLAGS){
     $("#misc").innerHTML = kvr("Carga de equipo", `${load.toFixed(1)} / ${maxLoad.toFixed(1)}`, `${roll} (aprox.)`, "load") + kvr("Frasco carmesí", c.crimsonFlasks, null, "crimson") + kvr("Frasco cerúleo", c.ceruleanFlasks, null, "cerulean") + kvr("Hechizos memorizados", c.enriched.spells.length, null, "spells");
 
     renderUnused(c);
+    PLAN.add = {}; renderPlanner(c);
     renderEquip(c);
     renderProgress(c);
     renderForge(c);
     renderInv();
+  }
+
+  // ---- level planner ---------------------------------------------------------
+  // runes needed to go from level x to x+1: fixed table up to 11; from 12, with y = x+1: 0.02y³ + 3.06y² + 105.6y − 895 (checked against the wiki: 12→1038, 44→11876, 100→61591)
+  const LOW = [673, 689, 706, 723, 740, 757, 775, 793, 811, 829, 847];
+  const levelCost = x => { if (x < 12) return LOW[x - 1]; const y = x + 1; return Math.floor(0.02 * y ** 3 + 3.06 * y ** 2 + 105.6 * y - 895); };
+  const SOFT = { vigor: [40, 60], mind: [40, 60], endurance: [50, 60], strength: [55, 80], dexterity: [55, 80], intelligence: [60, 80], faith: [60, 80], arcane: [60, 80] };
+  const STAT_ES = { vigor: "Vigor", mind: "Mente", endurance: "Resistencia", strength: "Fuerza", dexterity: "Destreza", intelligence: "Inteligencia", faith: "Fe", arcane: "Arcano" };
+  const PLAN = { open: false, add: {} };
+  function renderPlanner(c) {
+    const box = $("#planner"); if (!box) return; box.hidden = !PLAN.open; $("#planBtn").setAttribute("aria-pressed", PLAN.open); if (!PLAN.open) return;
+    const S = c.stats, add = PLAN.add; const n = Object.values(add).reduce((a, b) => a + b, 0);
+    let cost = 0; for (let l = c.level; l < c.level + n; l++) cost += levelCost(l);
+    const pocket = c.all.filter(i => RUNE_VALUE[i.name]).reduce((a, i) => a + RUNE_VALUE[i.name] * (i.qty || 1), 0);
+    const avail = c.runes + pocket, left = avail - cost;
+    let nextLv = c.level + n, affordable = 0, acc = 0; for (let l = c.level; l < 713; l++) { acc += levelCost(l); if (acc > avail) break; affordable++; }
+    const row = k => { const v = S[k] + (add[k] || 0), [s1, s2] = SOFT[k]; const cls = v >= 99 ? "cap" : v >= s2 ? "cap" : v >= s1 ? "soft" : "";
+      return `<div class="pr"><span>${svg(k)}${STAT_ES[k]}<span class="help" style="margin-left:6px">cap ${s1}/${s2}</span></span><span class="cur">${S[k]}</span><span class="new ${cls}" title="${v >= s2 ? "por encima del segundo soft cap: rinde muy poco" : v >= s1 ? "por encima del primer soft cap: rinde menos" : ""}">${v}</span><span class="pm"><button data-pl-stat="${k}" data-d="-1" ${add[k] ? "" : "disabled"}>−</button><button data-pl-stat="${k}" data-d="1" ${v >= 99 ? "disabled" : ""}>+</button></span></div>`; };
+    box.className = "planner";
+    box.innerHTML = Object.keys(STAT_ES).map(row).join("") + `<div class="sum">
+      <span>Nivel</span><span><b>${c.level}</b> → <b>${nextLv}</b> (+${n})</span>
+      <span>Coste en runas</span><span><b>${cost.toLocaleString("es")}</b></span>
+      <span>Runas disponibles${pocket ? " (incl. " + pocket.toLocaleString("es") + " en objetos)" : ""}</span><span><b>${avail.toLocaleString("es")}</b></span>
+      <span>${left >= 0 ? "Te sobrarían" : "Te faltarían"}</span><span class="${left < 0 ? "neg" : ""}"><b>${Math.abs(left).toLocaleString("es")}</b></span>
+      <span>Con lo que tienes puedes subir</span><span><b>${affordable}</b> nivel${affordable === 1 ? "" : "es"} (hasta ${c.level + affordable})</span></div>
+      <div style="display:flex;gap:8px;margin-top:8px"><button class="btn" id="planReset">Reiniciar</button><button class="btn" id="planFill" title="Reparte los niveles que puedes pagar en los atributos que ya has tocado, o en Vigor si no has tocado ninguno">Gastar lo disponible</button></div>
+      <p class="help" style="margin-top:6px">Soft caps: a partir del primero cada punto rinde menos; a partir del segundo, casi nada. El coste por nivel es el del juego (crece con el nivel, no con el atributo).</p>`;
+    $("#planReset").onclick = () => { PLAN.add = {}; renderPlanner(c); };
+    $("#planFill").onclick = () => { const keys = Object.keys(add).filter(k => add[k] > 0); const target = keys.length ? keys : ["vigor"]; let i = 0; while (Object.values(PLAN.add).reduce((a, b) => a + b, 0) < affordable) { const k = target[i++ % target.length]; if (S[k] + (PLAN.add[k] || 0) >= 99) { if (target.every(t => S[t] + (PLAN.add[t] || 0) >= 99)) break; continue; } PLAN.add[k] = (PLAN.add[k] || 0) + 1; } renderPlanner(c); };
+  }
+  document.addEventListener("click", e => {
+    if (e.target.id === "planBtn" && CUR) { PLAN.open = !PLAN.open; renderPlanner(CUR); return; }
+    const b = e.target.closest("[data-pl-stat]"); if (b && CUR) { const k = b.dataset.plStat, d = +b.dataset.d; PLAN.add[k] = Math.max(0, (PLAN.add[k] || 0) + d); if (!PLAN.add[k]) delete PLAN.add[k]; renderPlanner(CUR); }
+  });
+
+  // ---- spirit ashes (Roderika) -------------------------------------------------
+  const GHOST_NAMED = new Set(["Mimic Tear Ashes"]);
+  function spiritInfo(name) { const m = name.match(/^(.*?)\s*\+\s*(\d+)\s*$/); const base = (m ? m[1] : name).trim(); return { base, level: m ? +m[2] : 0, ghost: GHOST_NAMED.has(base) || !/ Ashes$/.test(base) }; }
+  const gloveName = (ghost, lvl) => lvl >= 10 ? (ghost ? "Great Ghost Glovewort" : "Great Grave Glovewort") : `${ghost ? "Ghost" : "Grave"} Glovewort [${lvl}]`;
+  function renderSpirits(c) {
+    const el = $("#spirits"); if (!el) return;
+    const have = {}; for (const it of c.all) if (/^(Great )?(Grave|Ghost) Glovewort/.test(it.name)) have[it.name] = (have[it.name] || 0) + (it.qty || 1);
+    const tile = (n, lbl) => `<div class="${have[n] ? "" : "zero"}" title="${esc(n)}"><b>${have[n] || 0}</b><span>${lbl}</span></div>`;
+    $("#gloveN").innerHTML = [1,2,3,4,5,6,7,8,9].map(n => tile("Grave Glovewort [" + n + "]", "[" + n + "]")).join("") + tile("Great Grave Glovewort", "Great");
+    $("#gloveS").innerHTML = [1,2,3,4,5,6,7,8,9].map(n => tile("Ghost Glovewort [" + n + "]", "[" + n + "]")).join("") + tile("Great Ghost Glovewort", "Great");
+    const ashes = c.all.filter(i => i.cat === "ashes").map(i => Object.assign({ it: i }, spiritInfo(i.name)));
+    ashes.sort((a, b) => (a.level >= 10) - (b.level >= 10) || b.level - a.level || a.base.localeCompare(b.base));
+    el.innerHTML = ashes.map(a => {
+      let reach = a.level, next = null; const pool = Object.assign({}, have);
+      while (reach < 10) { const g = gloveName(a.ghost, reach + 1); if (pool[g] > 0) { pool[g]--; reach++; } else { next = g; break; } }
+      const status = a.level >= 10 ? '<span class="tag max">máx</span>' : reach > a.level ? `<span class="tag" style="color:var(--ok);border-color:var(--ok)">puedes subir a +${reach}</span>` : "";
+      const miss = a.level < 10 && next ? `<div class="m">${reach > a.level ? `para +${reach + 1}` : `para +${a.level + 1}`} falta ${link({ name: next, kind: "goods" }, esc(next))}</div>` : "";
+      return `<div class="row"><div class="n">${ic(a.it)}${link({ name: a.base, kind: "goods" }, esc(a.base))} <b>+${a.level}</b>${status}</div><div class="q">${a.ghost ? "Ghost" : "Grave"}</div>${miss}</div>`;
+    }).join("") || '<p class="help">Sin cenizas de espíritu.</p>';
   }
 
   // ---- unused upgrades / deliverables ---------------------------------------
@@ -158,7 +213,7 @@ async function main(DB, FLAGS){
     rows.push(row("Remembranzas", list(n => /^Remembrance of /.test(n)), "unused_rem", "Enia (Mesa Redonda) las cambia por el arma o hechizo del jefe; también se pueden consumir por runas."));
     rows.push(row("Entregar a un PNJ", list(n => /Prayerbook$|Scroll$/.test(n) || n === "Deathroot" || n === "Dragon Heart"), "unused_npc", "Libros de oración → Corhyn o Miriel; pergaminos → Sellen o Thops; Deathroot → Gurranq; Dragon Heart → altares de Comunión Dragón."));
     rows.push(row("Campanas de vendedor", list(n => /Bell Bearing/.test(n)), "unused_bell", "Entrégalas a las Gemelas Vendedoras de la Mesa Redonda para comprar lo que vendía ese mercader (piedras incluidas)."));
-    const glove = list(n => /Glovewort/.test(n));
+    const glove = list(n => /^(Great )?(Grave|Ghost) Glovewort/.test(n));
     rows.push(row("Para Roderika (espíritus)", glove, "unused_glove", "Mejoran las cenizas de espíritu en la Mesa Redonda."));
     const dragon = list(n => /Ancient Dragon Smithing Stone$/.test(n));
     rows.push(row("Piedras de dragón", dragon, "unused_dragon", "Suben un arma al máximo (+25 o +10 sombría). Elige bien: no se compran."));
@@ -200,6 +255,7 @@ async function main(DB, FLAGS){
     $("#planTo").oninput = () => planUpdate("typing"); $("#planTo").onchange = planUpdate;
     sel.selectedIndex = Math.max(0, weapons.findIndex(w => w.level > 0 && w.level < w.maxLevel));
     c.weapons = weapons; planUpdate(true);
+    renderSpirits(c);
     const wrow = w => `<div class="row click${w.stored ? " stored" : ""}" data-w="${weapons.indexOf(w)}" role="button" tabindex="0"><div class="n">${ic(w)}${link(w, esc(w.display))}${w.level >= w.maxLevel ? '<span class="tag max">máx</span>' : ""}${w.aow ? `<span class="tag">${esc(w.aow)}</span>` : ""}<span class="lvlbar"><b style="width:${100 * w.level / w.maxLevel}%"></b></span></div><div class="q">+${w.level} / ${w.maxLevel}</div></div>`;
     const pending = weapons.filter(w => w.level > 0 && w.level < w.maxLevel), maxed = weapons.filter(w => w.level >= w.maxLevel);
     $("#upgradeable").innerHTML = (pending.map(wrow).join("") || `<p class="help">Ninguna arma a medias: todo lo que has tocado está al máximo.</p>`) + (maxed.length ? `<details><summary>${maxed.length} armas al máximo</summary><div class="list">${maxed.map(wrow).join("")}</div></details>` : "");
@@ -246,10 +302,39 @@ async function main(DB, FLAGS){
         <div class="plf">${seg("todo", "Pendientes")}${seg("done", "Hechos")}${seg("all", "Todos")}<input id="plq" type="search" placeholder="Filtrar…" value="${esc(PL.q)}" autocomplete="off"></div>
         <div class="list">${[...groups].map(([g, xs]) => `<div class="grp"><div class="gh">${esc(g)} <span class="muted">${xs.length}</span></div>${xs.map(row).join("")}</div>`).join("") || `<p class="help">${PL.state === "todo" ? "Nada pendiente." : "Nada todavía."}</p>`}</div></div>`;
     }
-    el.innerHTML = `<div class="kv tiles">${tile("graces", "Gracias")}${tile("main", "Jefes principales")}${tile("field", "Jefes de campo")}${tile("rem", "Remembranzas")}${tile("world", "Objetos únicos")}<div><b>${(c.progress.regions || []).length} / ${Object.keys(FLAGS.mapRegions || {}).length}</b><span>Zonas de mapa</span></div></div>
+    el.innerHTML = `<div id="diary"></div><div class="kv tiles">${tile("graces", "Gracias")}${tile("main", "Jefes principales")}${tile("field", "Jefes de campo")}${tile("rem", "Remembranzas")}${tile("world", "Objetos únicos")}<div><b>${(c.progress.regions || []).length} / ${Object.keys(FLAGS.mapRegions || {}).length}</b><span>Zonas de mapa</span></div></div>
       ${panel || '<p class="help">Toca una casilla para ver la lista de pendientes y hechos.</p>'}
       <details><summary>Marcas manuales (${Marks.all(CK).length})</summary><p class="help">Lo que has marcado a mano para este personaje (lugares en el mapa, jefes, gracias, objetos). Se guarda en este navegador${Cloud.user() ? " y en tu cuenta (sincronizado con Steam)" : '; si entras con Steam (botón de cuenta arriba) se sincroniza entre dispositivos'}. "Exportar" copia el JSON.</p><div class="list">${Marks.all(CK).map(e => `<div class="row"><div class="n">${esc(e.k)} · ${esc(markName(e))}</div><div class="q">${e.at} <button class="btn" data-unmark="${esc(e.k)}|${esc(e.id)}">quitar</button></div></div>`).join("") || '<p class="help">Ninguna todavía.</p>'}</div><div style="display:flex;gap:8px;margin-top:8px"><button class="btn" id="marksExport">Exportar</button><label class="btn" for="marksImport">Importar</label><input id="marksImport" type="file" accept=".json" hidden></div></details>`;
+    renderDiary(c);
     const pq = $("#plq"); if (pq) pq.oninput = () => { PL.q = pq.value; const pos = pq.selectionStart; renderProgress(c); const n = $("#plq"); if (n) { n.focus(); n.setSelectionRange(pos, pos); } };
+  }
+  // ---- session diary (from the account's snapshots) ---------------------------
+  const DIARY = { cache: {} };
+  async function renderDiary(c) {
+    const box = $("#diary"); if (!box || !Cloud.user()) return;
+    const ck = Marks.charKey(c);
+    let H = DIARY.cache[ck]; if (!H) { H = await Cloud.history(ck); DIARY.cache[ck] = H; }
+    if (CUR !== c || !document.getElementById("diary")) return;
+    if (H.length < 2) { $("#diary").innerHTML = H.length === 1 ? `<p class="help">Diario: primera sesión registrada (${esc(new Date(H[0].at.replace(" ", "T") + "Z").toLocaleDateString("es-ES", { dateStyle: "medium" }))}). A partir de la próxima partida que abras verás aquí qué ha cambiado.</p>` : ""; return; }
+    const prev = H[H.length - 2], now = H[H.length - 1];
+    const bossName = id => (FLAGS.bosses.find(b => b.id === id) || {}).name;
+    const newBosses = now.bosses.filter(id => !prev.bosses.includes(id)).map(bossName).filter(Boolean);
+    const newGraces = now.graces.filter(id => !prev.graces.includes(id)).length;
+    const pw = new Map(prev.weapons || []); const ups = (now.weapons || []).filter(([n, l]) => (pw.get(n) || 0) < l).map(([n, l]) => `${n} +${pw.get(n) || 0}→+${l}`);
+    const d = (a, b) => { const v = (b || 0) - (a || 0); return v ? (v > 0 ? "+" : "") + v.toLocaleString("es") : "0"; };
+    const sec = now.playtime - prev.playtime;
+    const statD = Object.keys(now.stats || {}).filter(k => (now.stats[k] || 0) !== ((prev.stats || {})[k] || 0)).map(k => `${STAT_ES[k] || k} ${prev.stats[k]}→${now.stats[k]}`);
+    // level sparkline over all snapshots
+    const W = 320, Hh = 46, lv = H.map(h => h.level), min = Math.min(...lv), max = Math.max(...lv), span = Math.max(1, max - min);
+    const pts = H.map((h, i) => `${(i / Math.max(1, H.length - 1)) * (W - 8) + 4},${Hh - 6 - ((h.level - min) / span) * (Hh - 14)}`).join(" ");
+    const when = h => new Date(h.at.replace(" ", "T") + "Z").toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+    $("#diary").innerHTML = `<div class="pane frame" style="margin-bottom:12px"><h3>Diario · desde la sesión anterior <span class="muted">(${esc(when(prev))} → ${esc(when(now))})</span></h3>
+      <div class="kv"><div><b>${d(prev.level, now.level)}</b><span>nivel (${now.level})</span></div><div><b>${ERSave.fmtTime(sec)}</b><span>jugado</span></div><div><b>${newBosses.length}</b><span>jefes</span></div><div><b>${newGraces}</b><span>gracias</span></div><div><b>${d(prev.items, now.items)}</b><span>objetos</span></div><div><b>${d(prev.deaths, now.deaths)}</b><span>muertes</span></div></div>
+      ${newBosses.length ? `<p style="margin:8px 0 0"><span class="help">Jefes vencidos:</span> ${newBosses.map(n => link({ name: n, kind: "boss" }, esc(n))).join(", ")}</p>` : ""}
+      ${ups.length ? `<p style="margin:6px 0 0"><span class="help">Armas mejoradas:</span> ${ups.map(esc).join(", ")}</p>` : ""}
+      ${statD.length ? `<p style="margin:6px 0 0"><span class="help">Atributos:</span> ${statD.map(esc).join(", ")}</p>` : ""}
+      <svg viewBox="0 0 ${W} ${Hh}" width="100%" height="${Hh}" style="margin-top:8px;display:block" aria-label="Nivel por sesión"><polyline fill="none" stroke="var(--gold)" stroke-width="1.5" points="${pts}"/>${H.map((h, i) => `<circle cx="${(i / Math.max(1, H.length - 1)) * (W - 8) + 4}" cy="${Hh - 6 - ((h.level - min) / span) * (Hh - 14)}" r="2.5" fill="var(--gold-2)"><title>${esc(when(h))}: nivel ${h.level}</title></circle>`).join("")}<text x="4" y="${Hh - 0}" font-size="9" fill="var(--muted)">${esc(when(H[0]))} · nv ${min}</text><text x="${W - 4}" y="10" font-size="9" fill="var(--muted)" text-anchor="end">nv ${max}</text></svg>
+      <p class="help" style="margin:6px 0 0">${H.length} sesiones registradas (una por cada partida con tiempo de juego distinto que abres con la sesión iniciada).</p></div>`;
   }
   document.addEventListener("click", e => {
     const t = e.target.closest("[data-pl]"); if (t && CUR) { PL.view = PL.view === t.dataset.pl ? null : t.dataset.pl; PL.q = ""; renderProgress(CUR); return; }
@@ -349,7 +434,7 @@ async function main(DB, FLAGS){
     file.arrayBuffer().then(buf => {
       const save = ERSave.parse(buf);
       prep(save);
-      Cloud.pushCharacters(save.chars).then(r => { if (r && !r.error) note("Resumen de personajes guardado en tu cuenta."); else if (r && r.error) note("No se pudo guardar el resumen en tu cuenta: " + r.error); });
+      Cloud.pushCharacters(save.chars).then(r => { if (r && !r.error) { note("Resumen de personajes guardado en tu cuenta."); DIARY.cache = {}; if (CUR) renderDiary(CUR); } else if (r && r.error) note("No se pudo guardar el resumen en tu cuenta: " + r.error); });
       const when = new Date().toLocaleString("es-ES", { dateStyle: "medium", timeStyle: "short" });
       showSave(save, file.name, when);
       try { localStorage.setItem("tl.last", JSON.stringify({ name: file.name, when, chars: save.chars.map(slim) })); } catch (e) {}
@@ -459,7 +544,7 @@ async function main(DB, FLAGS){
     q.onclick = async e => { const b = e.target.closest("[data-rev]"); if (!b) return; const [a, id] = b.dataset.rev.split("|"); b.disabled = true; await Cloud.review(+id, a); renderModQueue(); };
   }
   $("#acct").addEventListener("click", openAcct);
-  Cloud.init().then(() => { renderAcct(); if (CUR) cloudSync(CUR); if (CUR && TAB === "advice") renderAdvice(CUR); if (location.hash === "#status" && Cloud.user() && history.replaceState) { /* back from Steam login */ note("Sesión iniciada con Steam."); } });
+  Cloud.init().then(() => { renderAcct(); if (CUR) { cloudSync(CUR); renderDiary(CUR); } if (CUR && TAB === "advice") renderAdvice(CUR); if (location.hash === "#status" && Cloud.user() && history.replaceState) { /* back from Steam login */ note("Sesión iniciada con Steam."); } });
 
   // last file, if this browser kept it
   iconsLoad().then(() => { if (CUR) renderChar(CUR); });

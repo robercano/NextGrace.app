@@ -198,6 +198,18 @@ details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font
 .plf input{flex:1;min-width:120px;background:var(--panel-s);border:1px solid var(--line);padding:6px 10px}
 .grp .gh{font-family:var(--display);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);padding:10px 4px 2px;border-bottom:1px solid var(--line)}
 .row.done .n{opacity:.6}.row.done .q{color:var(--ok)}
+.planner{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
+.planner .pr{display:grid;grid-template-columns:1fr auto auto auto;gap:6px 8px;align-items:center;padding:3px 0;border-bottom:1px dotted #2a2721}
+.planner .pr .cur{color:var(--muted);font-variant-numeric:tabular-nums}
+.planner .pr .new{font-weight:600;color:var(--gold-2);font-variant-numeric:tabular-nums;min-width:2.2em;text-align:right}
+.planner .pr .new.cap{color:var(--bad)}
+.planner .pr .new.soft{color:#d9b85c}
+.planner .pm{display:flex;gap:4px}
+.planner .pm button{width:30px;height:30px;border:1px solid var(--line-2);background:transparent;color:var(--fg);font-size:1rem;line-height:1}
+.planner .pm button:disabled{opacity:.3}
+.planner .sum{display:grid;grid-template-columns:1fr auto;gap:4px 10px;margin-top:8px;font-variant-numeric:tabular-nums}
+.planner .sum b{color:var(--gold-2)}
+.planner .sum .neg{color:var(--bad)}
 .advh{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
 .md{line-height:1.5}
 .md h2{font-family:var(--display);font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line)}
@@ -257,7 +269,7 @@ details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font
       </div>
       <div class="bars frame" id="gauges"></div>
       <div class="cols">
-        <div class="pane frame"><h3>Atributos</h3><div id="stats"></div></div>
+        <div class="pane frame"><h3>Atributos <button class="btn mk" id="planBtn" style="margin-left:8px;vertical-align:middle">planificar</button></h3><div id="stats"></div><div id="planner" hidden></div></div>
         <div class="pane frame"><h3>Personaje</h3><div id="kv"></div></div>
       </div>
       <div class="cols">
@@ -306,6 +318,8 @@ details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font
         <div class="need" id="need"></div>
       </div>
       <div class="pane frame"><h3>Armas a medias</h3><p class="help">Toca una para planificarla.</p><div class="list" id="upgradeable"></div></div>
+      <div class="pane frame"><h3>Cenizas de espíritu · gloveworts</h3><p class="help">Roderika (Mesa Redonda) sube cada ceniza hasta +10: un glovewort del número del nivel y uno "Great" para el +10. Las cenizas con nombre (Mimic Tear, Tiche, Oleg…) usan Ghost Glovewort; el resto, Grave Glovewort.</p><div class="stones" id="gloveN"></div><div class="stones" id="gloveS" style="margin-top:6px"></div></div>
+      <div class="pane frame"><h3>Tus cenizas de espíritu</h3><p class="help">Hasta dónde puedes subir cada una ahora con lo que llevas, y qué falta para el siguiente nivel.</p><div class="list" id="spirits"></div></div>
     </section>
 
     <!-- PROGRESS -->

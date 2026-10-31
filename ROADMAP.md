@@ -44,11 +44,13 @@ Usuario: Rob (SteamID REPLACE_WITH_YOUR_STEAMID64, moderador). Dos personajes: G
 7. Alpha con cuenta: Steam OpenID, D1, sync de marcas, resúmenes de personaje, marcadores de la comunidad con moderación; conversión a Worker con assets.
 8. Glosario con explicaciones y enlaces en la ficha; moderación con casilla "enviar como pendiente".
 9. Progreso con casillas tocables → listas pendientes/hechos/todos por región y enlace al mapa filtrado (`map.html#l=boss&t=main&s=todo`); selector Todo/Pendiente/Hecho en el mapa.
-10. Consejero (pestaña + API + migración 002).
+10. Consejero (pestaña + API + migración 002); respuesta en streaming con latidos; enlaces del informe al mapa (`#focus=`).
+11. Estado: "Pendiente de aplicar" (semillas, runas sin consumir, remembranzas, libros/pergaminos, campanas, gloveworts, piedras de dragón) y planificador de nivel (coste real por nivel, soft caps, runas en objetos). Forja: cenizas de espíritu con gloveworts. Progreso: diario de sesión (tabla `history`, creada por el Worker al vuelo; snapshot por cada tiempo de juego distinto).
 
 ## Pendiente / ideas
 
 - [ ] Rob: ejecutar `db/migrations/002_advice.sql`, poner `ANTHROPIC_API_KEY` y probar el primer informe; ajustar el prompt con el resultado.
+- [ ] "¿Puedo usarlo?": requisitos y escalado de armas/hechizos desde la wiki (script tipo fetch_icons) → marcar en inventario/forja y pasarlo al Consejero.
 - [ ] Consejero: herramienta de wiki (que compruebe escalado/requisitos de armas antes de recomendarlas); quizá pedir "qué hacer hoy en 1 hora".
 - [ ] Confirmar la tabla de ids de runa mayor (valores distintos de 0, 3 y 10).
 - [ ] Mapa: más coordenadas (solo 17 de 35 jefes principales tienen pin; vía marcadores de la comunidad); iconos por objeto en marcadores comunitarios; filtro de tipo de jefe visible en la UI (hoy solo por hash).
