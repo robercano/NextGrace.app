@@ -1,0 +1,35 @@
+# Requisitos y escalado de armas y hechizos desde eldenring.wiki.gg → data/reqs.json (texto; CC BY-NC-SA, con atribución)
+name: reqs
+on:
+  workflow_dispatch:
+    inputs:
+      probe:
+        description: "Solo sondeo: imprime los parámetros crudos de N páginas (0 = descarga completa)"
+        default: "0"
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: Descargar requisitos
+        run: python tools/fetch_reqs.py --probe "${{ github.event.inputs.probe || '0' }}"
+      - name: Commit
+        if: ${{ github.event.inputs.probe == '0' || github.event.inputs.probe == '' }}
+        run: |
+          git config user.name "reqs-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/reqs.json
+          if git diff --cached --quiet; then echo "Sin cambios"; exit 0; fi
+          git commit -m "reqs: requisitos y escalado desde la wiki"
+          for i in 1 2 3 4 5; do
+            git fetch origin main && git rebase origin/main && git push origin HEAD:main && exit 0
+            git rebase --abort 2>/dev/null || true; sleep 10
+          done
+          exit 1
