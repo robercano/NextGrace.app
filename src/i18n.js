@@ -132,7 +132,7 @@
   const T = (s, ...a) => fmt(lang === "en" && EN[s] !== undefined && EN[s] !== "" ? EN[s] : s, a);
   const I18N = {
     get lang() { return lang; },
-    set(l) { try { localStorage.setItem("tl.lang", l); } catch (e) {} const u = new URL(location.href); u.searchParams.delete("lang"); location.href = u.toString(); },
+    set(l) { try { localStorage.setItem("tl.lang", l); } catch (e) {} try { const u = new URL(location.href); if (u.searchParams.has("lang")) { u.searchParams.delete("lang"); history.replaceState(null, "", u.toString()); } } catch (e) {} location.reload(); },
     locale() { return lang === "en" ? "en-GB" : "es-ES"; },
     apply(root) {
       root = root || document; document.documentElement.lang = lang;
