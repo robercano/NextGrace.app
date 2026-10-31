@@ -24,7 +24,7 @@
       const n = x => x && x.display || null;
       return { level: c.level, class: c.className, ng: c.clearCount, playtime: c.playtimeSec, deaths: c.deaths, stats: c.stats, hp: c.maxHp, fp: c.maxFp, sp: c.maxSp,
         equipped: { rh: (eq.rh || []).map(n), lh: (eq.lh || []).map(n), head: n(eq.head), chest: n(eq.chest), arms: n(eq.arms), legs: n(eq.legs), talismans: (eq.talismans || []).map(n), greatRune: n(eq.greatRune) },
-        progress: c.progress || null, itemCount: (c.all || []).length, haveKeys: (c.all || []).map(i => i.id).slice(0, 5000),
+        progress: c.progress || null, itemCount: (c.all || []).length, haveKeys: (c.all || []).map(i => i.id).slice(0, 3000),
         // for the advisor: what matters for build/route advice, by name (ids are resolved client-side already)
         weapons: (c.all || []).filter(i => i.kind === "weapon" && i.maxLevel > 0 && i.cat !== "arrows_and_bolts").map(i => ({ n: i.name.replace(/\s*\+\d+$/, ""), inf: i.infusion && i.infusion !== "Standard" ? i.infusion : undefined, lvl: i.level, max: i.maxLevel, cat: i.sub || i.cat, stored: i.stored || undefined })),
         talismans: (c.all || []).filter(i => i.kind === "talisman").map(i => i.name),

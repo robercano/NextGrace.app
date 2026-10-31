@@ -321,7 +321,7 @@ async function main(DB, FLAGS){
     file.arrayBuffer().then(buf => {
       const save = ERSave.parse(buf);
       prep(save);
-      Cloud.pushCharacters(save.chars).then(r => { if (r && !r.error) note("Resumen de personajes guardado en tu cuenta."); });
+      Cloud.pushCharacters(save.chars).then(r => { if (r && !r.error) note("Resumen de personajes guardado en tu cuenta."); else if (r && r.error) note("No se pudo guardar el resumen en tu cuenta: " + r.error); });
       const when = new Date().toLocaleString("es-ES", { dateStyle: "medium", timeStyle: "short" });
       showSave(save, file.name, when);
       try { localStorage.setItem("tl.last", JSON.stringify({ name: file.name, when, chars: save.chars.map(slim) })); } catch (e) {}
@@ -368,7 +368,10 @@ async function main(DB, FLAGS){
     $("#advRefresh").onclick = async () => {
       ADV.busy = true; const btn = $("#advRefresh"); btn.disabled = true; btn.textContent = "Generando…";
       const st = document.createElement("p"); st.className = "help"; st.id = "advStatus"; st.textContent = "Pidiendo el informe a Claude (suele tardar entre 15 y 40 segundos)…"; el.insertBefore(st, el.children[1] || null);
-      let x; try { x = await Cloud.adviceRefresh(Marks.charKey(c)); } catch (e) { x = { error: String(e && e.message || e) }; }
+      // make sure the account has the current summary (also works from the copy this browser kept) before asking for the report
+      let x = null;
+      if (SAVE && SAVE.chars) { st.textContent = "Guardando el resumen del personaje en tu cuenta…"; const p = await Cloud.pushCharacters(SAVE.chars).catch(e => ({ error: String(e && e.message || e) })); if (p && p.error) x = { error: "no se pudo guardar el resumen (" + p.error + ")" }; else if (p && p.skipped && !p.count) x = { error: "este personaje pertenece a otra cuenta de Steam" }; }
+      if (!x) { st.textContent = "Pidiendo el informe a Claude (suele tardar entre 15 y 40 segundos)…"; try { x = await Cloud.adviceRefresh(Marks.charKey(c)); } catch (e) { x = { error: String(e && e.message || e) }; } }
       ADV.busy = false;
       if (x && x.error) { ADV.err = ERR_ES[x.error] || x.error; } else ADV.err = null;
       renderAdvice(c);
