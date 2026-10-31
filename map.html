@@ -76,6 +76,11 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
     <option value="gugr">Subsuelo</option>
     <option value="sote">Reino de las Sombras</option>
   </select>
+  <select id="stateSel" aria-label="Estado">
+    <option value="all">Todo</option>
+    <option value="todo">Pendiente</option>
+    <option value="done">Hecho</option>
+  </select>
 </div>
 <div class="modes"><a class="mode" href="./">Ficha</a><a class="mode" aria-current="true" href="map.html">Mapa</a></div>
 <div class="tools">
@@ -153,6 +158,15 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   $("#layerSel").onchange = e => { setBg(e.target.value); render(); };
   const layers = { grace: L.layerGroup().addTo(map), boss: L.layerGroup().addTo(map), place: L.layerGroup(), miss: L.layerGroup().addTo(map), user: L.layerGroup().addTo(map) };
   const vis = { grace: true, boss: true, place: false, miss: true, user: true };
+  // filters from the URL hash (set by the progress tab): l=grace,boss,... s=todo|done|all t=main|field|rem q=text
+  let state = "all", bossType = null, hashQ = "";
+  (function fromHash() {
+    const h = new URLSearchParams(location.hash.slice(1)); if (!h.has("l") && !h.has("s") && !h.has("t")) return;
+    if (h.get("l")) { const on = new Set(h.get("l").split(",")); for (const k in vis) vis[k] = on.has(k); }
+    if (/^(todo|done|all)$/.test(h.get("s") || "")) state = h.get("s");
+    if (/^(main|field|rem)$/.test(h.get("t") || "")) bossType = h.get("t");
+    if (h.get("q")) hashQ = h.get("q").toLowerCase();
+  })();
   // Own glyphs (16x16). Keys = marker kinds.
   const G = {
     grace: '<circle cx="8" cy="8" r="3"/><path d="M8 1v3M8 12v3M1 8h3M12 8h3"/>',
@@ -185,7 +199,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   let userMarkers = []; try { userMarkers = JSON.parse(localStorage.getItem("tl.markers") || "[]"); } catch (e) {}
   const saveUser = () => { try { localStorage.setItem("tl.markers", JSON.stringify(userMarkers)); } catch (e) {} };
 
-  let q = "";
+  let q = hashQ;
   function render() {
     for (const k in layers) layers[k].clearLayers();
     const layer = $("#layerSel").value;
@@ -202,14 +216,16 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
     // graces: from flags DB, placed by wiki place of same name
     const graceNames = new Set();
     for (const g of F.graces) { const p = findPlace(g.name); if (!p || layerOf(p) !== layer) continue; graceNames.add(p.name.toLowerCase()); if (!match(g.name)) continue;
-      const done = gv.has(g.id);
+      const done = gv.has(g.id) || manual.has("grace:" + g.id); if (state !== "all" && (state === "done") !== done) continue;
       L.marker(at(p), { icon: pin("grace" + (done ? "" : " todo"), "grace") }).bindPopup(`<div class="popup"><h4>${wl(g.name)}</h4><div class="m">Gracia · ${esc(g.region)} · ${done ? "visitada" : "pendiente"}</div></div>`).addTo(layers.grace); }
     // bosses: placed by region/place name
-    for (const b of F.bosses) { const p = findPlace(b.region) || findPlace(b.name); if (!p || layerOf(p) !== layer || !match(b.name)) continue; const done = bd.has(b.id);
+    for (const b of F.bosses) { if (bossType === "main" && b.type !== "main") continue; if (bossType === "field" && b.type === "main") continue; if (bossType === "rem" && !b.rem) continue;
+      const p = findPlace(b.region) || findPlace(b.name); if (!p || layerOf(p) !== layer || !match(b.name)) continue; const done = bd.has(b.id) || manual.has("boss:" + b.id); if (state !== "all" && (state === "done") !== done) continue;
       L.marker(at(p), { icon: pin("boss" + (done ? "" : " todo"), "boss") }).bindPopup(`<div class="popup"><h4>${wl(b.name)}</h4><div class="m">Jefe · ${esc(b.region)} · ${done ? "vencido" : "pendiente"}${b.rem ? " · remembranza" : ""}</div></div>`).addTo(layers.boss); }
     // places
     for (const p of P.places) { if (p.region || layerOf(p) !== layer || graceNames.has(p.name.toLowerCase()) || !match(p.name)) continue; const pk = GROUP_KIND[p.group] || "place"; if (placeKinds && !placeKinds.has(pk)) continue;
       const k = p.name.toLowerCase(), man = manual.has("place:" + p.id), st = seen.has(k) || man ? "seen" : known.has(k) && CUR ? "todo" : "";
+      if (state === "done" && st !== "seen") continue; if (state === "todo" && st === "seen") continue;
       L.marker(at(p), { icon: pin("place " + st, GROUP_KIND[p.group] || "place") }).bindPopup(`<div class="popup"><h4>${wl(p.article || p.name, esc(p.name))}</h4><div class="m">${esc(KIND_ES[GROUP_KIND[p.group]] || p.group)}${seen.has(k) ? " · visitado (según el save)" : man ? " · visitado (marcado a mano)" : st === "todo" ? " · pendiente" : ""}</div>${CUR ? `<button class="chip" data-mark="place|${p.id}" aria-pressed="${man}" style="margin-top:6px">${man ? "✓ Visitado" : "Marcar como visitado"}</button>` : ""}</div>`).addTo(layers.place); }
     // missing items grouped by place
     if (have) {
@@ -259,6 +275,10 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   $("#exportBtn").onclick = async () => { const txt = JSON.stringify(userMarkers, null, 1); try { await navigator.clipboard.writeText(txt); $("#exportMsg").textContent = "Copiado. Pégalo en data/user_markers.json del repo (o en un issue)."; } catch (e) { $("#exportMsg").textContent = txt; } };
   $("#importFile").onchange = async e => { const f = e.target.files[0]; if (!f) return; try { const arr = JSON.parse(await f.text()); if (Array.isArray(arr)) { userMarkers = userMarkers.concat(arr.filter(m => typeof m.x === "number" && typeof m.y === "number")); saveUser(); openUser(); render(); } } catch (err) { $("#exportMsg").textContent = "JSON no válido."; } };
 
+  $("#stateSel").value = state; $("#stateSel").onchange = e => { state = e.target.value; render(); };
+  for (const b of document.querySelectorAll(".chip[data-l]")) b.setAttribute("aria-pressed", !!vis[b.dataset.l]);
+  if (vis.place) $("#placeTypes").hidden = false;
+  if (q) $("#q").value = q;
   $("#legend").innerHTML = [["grace todo", "grace", "gracia pendiente"], ["grace", "grace", "visitada"], ["boss todo", "boss", "jefe pendiente"], ["boss", "boss", "vencido"], ["miss", "weapon", "objetos que te faltan"], ["place seen", "cave", "lugar visitado"], ["place todo", "cave", "lugar pendiente"], ["place", "cave", "lugar sin datos"], ["user", "user", "añadido"]].map(([c, k, t]) => `<span><span class="pin ${c}" style="display:inline-flex;width:16px;height:16px;vertical-align:middle;margin-right:5px">${glyph(k, 10)}</span>${t}</span>`).join("");
   render();
   syncMarks();
