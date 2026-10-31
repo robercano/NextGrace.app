@@ -186,9 +186,12 @@ async function main(DB, FLAGS, REQS){
     const E = c.enriched.equipped;
     const worn = [E.head, E.chest, E.arms, E.legs].concat(E.rh, E.lh, E.talismans, E.arrows, E.bolts).filter(x => x && real(x));
     const load = worn.reduce((a, it) => a + weightOf(it), 0);
-    const maxLoad = 45 + 1.6 * Math.min(S.endurance, 25) + (S.endurance > 25 ? 1.0 * (Math.min(S.endurance, 60) - 25) : 0) + (S.endurance > 60 ? 0.6 * (S.endurance - 60) : 0);
-    const ratio = load / maxLoad, roll = ratio < .3 ? "ligero" : ratio < .7 ? "medio" : ratio <= 1 ? "pesado" : "sobrecargado";
-    $("#misc").innerHTML = kvr("Carga de equipo", `${load.toFixed(1)} / ${maxLoad.toFixed(1)}`, `${roll} (aprox.)`, "load") + kvr("Frasco carmesí", c.crimsonFlasks, null, "crimson") + kvr("Frasco cerúleo", c.ceruleanFlasks, null, "cerulean") + kvr("Hechizos memorizados", c.enriched.spells.length, null, "spells");
+    // max equip load by (effective) endurance: 45 at ≤8, 72 at 25, 120 at 60, 160 at 99 (wiki table; linear between anchors)
+    const endEff = effStats(c).endurance | 0, lerp = (x, x0, y0, x1, y1) => y0 + (y1 - y0) * (x - x0) / (x1 - x0);
+    const maxLoad = endEff <= 8 ? 45 : endEff <= 25 ? lerp(endEff, 8, 45, 25, 72) : endEff <= 60 ? lerp(endEff, 25, 72, 60, 120) : lerp(Math.min(endEff, 99), 60, 120, 99, 160);
+    const ratio = load / maxLoad, rollK = ratio < .3 ? "light" : ratio < .7 ? "medium" : ratio <= 1 ? "heavy" : "over";
+    const ROLL = { light: ["Carga ligera", "#7fc8ff"], medium: ["Carga media", "var(--fg)"], heavy: ["Carga pesada", "#e0b23c"], over: ["Sobrecargado", "var(--bad)"] };
+    $("#misc").innerHTML = kvr("Carga de equipo", `${load.toFixed(1)} / ${maxLoad.toFixed(1)}`, `<span style="color:${ROLL[rollK][1]};font-weight:600">${ROLL[rollK][0]}</span> · ${Math.round(ratio * 100)} % (aprox.)`, "load") + kvr("Frasco carmesí", c.crimsonFlasks, null, "crimson") + kvr("Frasco cerúleo", c.ceruleanFlasks, null, "cerulean") + kvr("Hechizos memorizados", c.enriched.spells.length, null, "spells");
 
     renderUnused(c);
     PLAN.add = {}; renderPlanner(c);
