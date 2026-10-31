@@ -98,6 +98,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   <h3>Nuevo marcador</h3>
   <div class="row"><input id="mItem" list="items" placeholder="Objeto (empieza a escribir)" autocomplete="off"><datalist id="items"></datalist></div>
   <div class="row"><input id="mNote" placeholder="Nota (opcional): cofre, enemigo, cómo llegar…"></div>
+  <label class="row small" id="mPendRow" hidden style="align-items:center;gap:6px"><input type="checkbox" id="mPend" style="flex:0 0 auto"> Enviar como propuesta pendiente (para probar la moderación)</label>
   <div class="row"><button class="btn primary" id="mSave">Guardar</button><button class="btn" id="mCancel">Cancelar</button></div>
   <p class="muted small" style="margin:0" id="sheetNote">Se guarda en este navegador. Desde <b>Añadidos → Exportar</b> puedes copiar el JSON y enviarlo al repo para compartirlo.</p>
 </div>
@@ -242,6 +243,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
 
   // ---- editor --------------------------------------------------------------
   $("#items").innerHTML = CATALOG.map(i => `<option value="${esc(i.name)}">`).join("");
+  if (Cloud.isAdmin()) $("#mPendRow").hidden = false;
   if (Cloud.user()) $("#sheetNote").innerHTML = Cloud.isAdmin() ? "Se publica directamente en el mapa de la comunidad (eres moderador)." : "Se envía al mapa de la comunidad y aparecerá para todos cuando un moderador lo apruebe. Mientras, lo verás solo tú.";
   else if (Cloud.available()) $("#sheetNote").innerHTML = 'Se guarda en este navegador. Si entras con Steam desde la <a href="./">ficha</a>, tus marcadores se envían al mapa de la comunidad.';
   let adding = false, pending = null;
@@ -250,7 +252,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   $("#mCancel").onclick = () => { $("#sheet").hidden = true; };
   $("#mSave").onclick = () => { if (!pending) return; const item = $("#mItem").value.trim(); if (!item) { $("#mItem").focus(); return; }
     const m = Object.assign(pending, { item, note: $("#mNote").value.trim(), at: new Date().toISOString().slice(0, 10) }); userMarkers.push(m); saveUser(); $("#sheet").hidden = true; adding = false; $("#hint").hidden = true; $("#addBtn").setAttribute("aria-pressed", "false"); render();
-    if (Cloud.user()) Cloud.proposeMarker({ layer: m.layer, x: m.x, y: m.y, item: m.item, note: m.note }).then(r => { if (r && !r.error) { m.remoteId = r.id; m.status = r.status; community.push(Object.assign({}, m, { remote: true, id: r.id, by: Cloud.user().name })); saveUser(); render(); } }); };
+    if (Cloud.user()) Cloud.proposeMarker({ layer: m.layer, x: m.x, y: m.y, item: m.item, note: m.note, pending: $("#mPend").checked }).then(r => { if (r && !r.error) { m.remoteId = r.id; m.status = r.status; community.push(Object.assign({}, m, { remote: true, id: r.id, by: Cloud.user().name })); saveUser(); render(); } }); };
   function openUser() { $("#userList").innerHTML = userMarkers.length ? userMarkers.map((m, i) => `<div>${esc(m.item)} <span class="muted">(${m.x}, ${m.y}, ${m.layer})${m.note ? " · " + esc(m.note) : ""}</span> <button class="chip" data-del="${i}">quitar</button></div>`).join("") : `<span class="muted">Todavía no has añadido marcadores. Pulsa “+ Añadir” y toca el mapa.</span>`; $("#userSheet").hidden = false; }
   $("#userList").onclick = e => { const b = e.target.closest("[data-del]"); if (!b) return; userMarkers.splice(+b.dataset.del, 1); saveUser(); openUser(); render(); };
   $("#userClose").onclick = () => { $("#userSheet").hidden = true; };

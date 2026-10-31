@@ -15,7 +15,8 @@ export const onRequestPost = handler(async context => {
   if (!item && !note) return bad("item or note required");
   const pend = await context.env.DB.prepare("SELECT COUNT(*) AS n FROM markers WHERE author = ? AND status = 'pending'").bind(u.steamid).first();
   if (pend.n >= 200) return bad("too many pending markers", 429);
-  const status = u.role === "admin" ? "approved" : "pending";
+  // admins publish directly unless they ask to go through the queue (to test moderation)
+  const status = u.role === "admin" && !b.pending ? "approved" : "pending";
   const r = await context.env.DB.prepare("INSERT INTO markers (author, layer, x, y, item, kind, note, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id, status").bind(u.steamid, b.layer, x, y, item || null, kind || null, note || null, status).first();
   return json({ ok: true, id: r.id, status: r.status });
 });

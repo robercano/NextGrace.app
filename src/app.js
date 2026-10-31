@@ -100,7 +100,17 @@ async function main(DB, FLAGS){
     vigor: '<path d="M9 2l2 4 2-4 3 5-1 5-4 6-4-6-1-5z"/>', mind: '<circle cx="9" cy="9" r="5"/><path d="M9 1v3M9 14v3M1 9h3M14 9h3"/>', endurance: '<path d="M3 13l3-8 3 5 3-7 3 10"/>', strength: '<path d="M4 15l4-6-2-3 4-3 2 4-3 1 4 7"/>', dexterity: '<path d="M3 15l6-12 6 12M6 10h6"/>', intelligence: '<path d="M9 2l6 7-6 7-6-7z"/>', faith: '<path d="M9 2v14M4 7h10"/>', arcane: '<circle cx="9" cy="9" r="6"/><circle cx="9" cy="9" r="2"/>',
   };
   const svg = k => `<i class="ic"><svg viewBox="0 0 18 18" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round">${SVG[k] || ""}</svg></i>`;
-  const kvr = (k, v, sub) => `<div class="kvr"><span>${k}</span><b>${v}</b>${sub ? `<div class="sub" style="grid-column:1/-1">${sub}</div>` : ""}</div>`;
+  // kvr(label, value, sub?, glossaryKey?) — with a glossary key the label becomes tappable and expands a short explanation + wiki link
+  const kvr = (k, v, sub, g) => `<div class="kvr${g ? " g" : ""}"${g ? ` data-g="${g}"` : ""}><span>${k}${g ? '<i class="qi" aria-hidden="true">i</i>' : ""}</span><b>${v}</b>${sub ? `<div class="sub" style="grid-column:1/-1">${sub}</div>` : ""}</div>`;
+  const wlink = (page, text) => `<a class="wl" href="${WIKI}${encodeURIComponent(String(page).replace(/ /g, "_"))}" target="_blank" rel="noopener">${text}</a>`;
+  document.addEventListener("click", e => {
+    if (e.target.closest("a")) return;
+    const row = e.target.closest(".kvr.g, .bar.g"); if (!row) return;
+    const g = GLOSSARY[row.dataset.g]; if (!g) return;
+    let tip = row.querySelector(".tip");
+    if (tip) { tip.remove(); row.classList.remove("open"); return; }
+    tip = document.createElement("div"); tip.className = "tip"; tip.innerHTML = `${esc(g.es)} ${wlink(g.w, "Ver en la wiki ↗")}`; row.appendChild(tip); row.classList.add("open");
+  });
 
   function weightOf(it) { const e = it && DB.items[it.id]; return e && e.w ? e.w : 0; }
   function renderChar(c) {
@@ -110,19 +120,20 @@ async function main(DB, FLAGS){
     $("#cRunes").textContent = c.runes.toLocaleString("es");
     const ng = c.clearCount ? "NG+" + c.clearCount : "NG";
     $("#cSub").textContent = `${c.className} · ${ng} · ${ERSave.fmtTime(c.playtimeSec)} · ${c.deaths} muertes`;
-    const gauge = (label, v, max, color) => `<div class="bar"><span>${label}</span><i><b style="width:${max ? Math.min(100, 100 * v / max) : 0}%;background:${color}"></b></i><span class="num">${v} / ${max}</span></div>`;
-    $("#gauges").innerHTML = gauge("HP", c.hp, c.maxHp, "var(--hp)") + gauge("FP", c.fp, c.maxFp, "var(--fp)") + gauge("SP", c.sp, c.maxSp, "var(--sp)");
+    const gauge = (label, v, max, color, g) => `<div class="bar g" data-g="${g}"><span>${label}</span><i><b style="width:${max ? Math.min(100, 100 * v / max) : 0}%;background:${color}"></b></i><span class="num">${v} / ${max}</span></div>`;
+    $("#gauges").innerHTML = gauge("HP", c.hp, c.maxHp, "var(--hp)", "hp") + gauge("FP", c.fp, c.maxFp, "var(--fp)", "fp") + gauge("SP", c.sp, c.maxSp, "var(--sp)", "sp");
     const S = c.stats, names = { vigor: "Vigor", mind: "Mente", endurance: "Resistencia", strength: "Fuerza", dexterity: "Destreza", intelligence: "Inteligencia", faith: "Fe", arcane: "Arcano" };
-    $("#stats").innerHTML = Object.keys(names).map(k => kvr(svg(k) + names[k], S[k])).join("");
-    $("#kv").innerHTML = kvr("Clase", esc(c.className)) + kvr("Regalo", esc(c.giftName)) + kvr("Runas totales", c.totalRunes.toLocaleString("es")) + kvr("Muertes", c.deaths) + kvr("Ciclo", ng) + kvr("Nivel de arma (matchmaking)", "+" + c.matchmakingWpnLvl) + kvr("Runa mayor equipada", c.enriched.equipped.greatRune ? esc(c.enriched.equipped.greatRune.name) : "ninguna") + kvr("Runa mayor activa (Arco de Runa)", c.greatRuneActive ? "sí" : "no") + kvr("Huecos de talismán", 1 + c.talismanSlots);
+    $("#stats").innerHTML = Object.keys(names).map(k => kvr(svg(k) + names[k], S[k], null, k)).join("");
+    const gr = c.enriched.equipped.greatRune;
+    $("#kv").innerHTML = kvr("Nivel", c.level, null, "level") + kvr("Clase", wlink(c.className, esc(c.className)), null, "class") + kvr("Regalo", c.gift ? wlink(c.giftName, esc(c.giftName)) : "ninguno", null, "gift") + kvr("Runas totales", c.totalRunes.toLocaleString("es"), null, "runes") + kvr("Muertes", c.deaths, null, "deaths") + kvr("Ciclo", ng, null, "ng") + kvr("Nivel de arma (matchmaking)", "+" + c.matchmakingWpnLvl, null, "mmlvl") + kvr("Runa mayor equipada", gr ? wlink(gr.name, esc(gr.name)) : "ninguna", null, "greatrune") + kvr("Runa mayor activa (Arco de Runa)", c.greatRuneActive ? "sí" : "no", null, "runearc") + kvr("Huecos de talismán", 1 + c.talismanSlots, null, "talismans");
     const B = c.buildups;
-    $("#resist").innerHTML = kvr("Veneno", B.poison) + kvr("Putrefacción", B.rot) + kvr("Hemorragia", B.bleed) + kvr("Congelación", B.frost) + kvr("Sueño", B.sleep) + kvr("Locura", B.madness) + kvr("Muerte", B.deathblight);
+    $("#resist").innerHTML = kvr("Veneno", B.poison, null, "poison") + kvr("Putrefacción", B.rot, null, "rot") + kvr("Hemorragia", B.bleed, null, "bleed") + kvr("Congelación", B.frost, null, "frost") + kvr("Sueño", B.sleep, null, "sleep") + kvr("Locura", B.madness, null, "madness") + kvr("Muerte", B.deathblight, null, "deathblight");
     const E = c.enriched.equipped;
     const worn = [E.head, E.chest, E.arms, E.legs].concat(E.rh, E.lh, E.talismans, E.arrows, E.bolts).filter(x => x && real(x));
     const load = worn.reduce((a, it) => a + weightOf(it), 0);
     const maxLoad = 45 + 1.6 * Math.min(S.endurance, 25) + (S.endurance > 25 ? 1.0 * (Math.min(S.endurance, 60) - 25) : 0) + (S.endurance > 60 ? 0.6 * (S.endurance - 60) : 0);
     const ratio = load / maxLoad, roll = ratio < .3 ? "ligero" : ratio < .7 ? "medio" : ratio <= 1 ? "pesado" : "sobrecargado";
-    $("#misc").innerHTML = kvr("Carga de equipo", `${load.toFixed(1)} / ${maxLoad.toFixed(1)}`, `${roll} (aprox.)`) + kvr("Frasco carmesí", c.crimsonFlasks) + kvr("Frasco cerúleo", c.ceruleanFlasks) + kvr("Hechizos memorizados", c.enriched.spells.length);
+    $("#misc").innerHTML = kvr("Carga de equipo", `${load.toFixed(1)} / ${maxLoad.toFixed(1)}`, `${roll} (aprox.)`, "load") + kvr("Frasco carmesí", c.crimsonFlasks, null, "crimson") + kvr("Frasco cerúleo", c.ceruleanFlasks, null, "cerulean") + kvr("Hechizos memorizados", c.enriched.spells.length, null, "spells");
 
     renderEquip(c);
     renderProgress(c);

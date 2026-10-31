@@ -65,6 +65,14 @@ main{padding:14px max(14px,env(safe-area-inset-right,0px)) 40px max(14px,env(saf
 .kvr span:first-child{color:var(--fg-2)}
 .kvr b{font-weight:500;color:var(--fg);font-variant-numeric:tabular-nums}
 .kvr .sub{color:var(--muted);font-size:.85rem}
+.kvr.g,.bar.g{cursor:pointer}
+.kvr.g>span:first-child:hover,.bar.g>span:first-child:hover{color:var(--gold-2)}
+.qi{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;margin-left:6px;border:1px solid var(--line-2);border-radius:50%;font:italic 600 .6rem/1 var(--display);color:var(--muted);vertical-align:1px}
+.open .qi{border-color:var(--gold);color:var(--gold-2)}
+.tip{grid-column:1/-1;color:var(--fg-2);font-size:.86rem;line-height:1.4;padding:4px 0 6px;border-top:1px dotted #2a2721;margin-top:3px}
+.kvr .wl,.tip .wl{color:var(--gold-2);text-decoration:none;border-bottom:1px dotted var(--line-2)}.kvr .wl:hover,.tip .wl:hover{border-bottom-color:var(--gold)}
+.tip .wl{white-space:nowrap;margin-left:4px}
+.bar.g .tip{grid-column:1/-1}
 .kvr i.ic{display:inline-block;width:18px;height:18px;vertical-align:-4px;margin-right:6px;opacity:.9}
 
 /* status header */
@@ -290,6 +298,7 @@ details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="src/ersave.js"></script>
+<script src="src/glossary.js"></script>
 <script src="src/marks.js"></script>
 <script src="src/cloud.js"></script>
 <script src="src/app.js"></script>
