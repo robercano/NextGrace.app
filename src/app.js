@@ -286,7 +286,7 @@ async function main(DB, FLAGS, REQS){
   function renderEquip(c) {
     const E = c.enriched.equipped;
     $("#eqArms").innerHTML = [0, 1, 2].map(i => slot(E.rh[i], "Dcha " + (i + 1))).join("") + [0, 1, 2].map(i => slot(E.lh[i], "Izq " + (i + 1))).join("") + slot(E.arrows[0], "Flecha 1") + slot(E.arrows[1], "Flecha 2") + slot(E.bolts[0], "Virote 1") + slot(E.bolts[1], "Virote 2");
-    $("#eqArmor").innerHTML = slot(E.head, "Cabeza") + slot(E.chest, "Pecho") + slot(E.arms, "Brazos") + slot(E.legs, "Piernas") + slot(E.greatRune, "Runa mayor") + E.talismans.map((t, i) => slot(t, "Talismán " + (i + 1))).join("");
+    $("#eqArmor").innerHTML = slot(E.head, "Cabeza") + slot(E.chest, "Pecho") + slot(E.arms, "Brazos") + slot(E.legs, "Piernas") + slot(E.greatRune, "Runa mayor") + E.talismans.slice(0, Math.max(1 + (c.talismanSlots || 0), E.talismans.filter(t => t && real(t)).length)).map((t, i) => slot(t, "Talismán " + (i + 1))).join(""); // only the slots unlocked (1 + talisman pouches)
     const Q = c.enriched.quick, P = c.enriched.pouch;
     $("#eqQuick").innerHTML = Array.from({ length: Math.max(3, Q.length) }, (_, i) => slot(Q[i], "Rápido " + (i + 1))).join("") + Array.from({ length: Math.max(6, P.length) }, (_, i) => slot(P[i], "Bolsa " + (i + 1))).join("");
     const Sp = c.enriched.spells, phys = c.physick.map(id => { const e = DB.items[id]; return e ? { id, name: e.n, display: e.n, kind: e.k, cat: e.c, sub: e.s || "" } : null; });
