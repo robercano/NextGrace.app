@@ -101,7 +101,7 @@ async function main(DB, FLAGS, REQS){
   };
   const svg = k => `<i class="ic"><svg viewBox="0 0 18 18" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round">${SVG[k] || ""}</svg></i>`;
   // kvr(label, value, sub?, glossaryKey?) — with a glossary key the label becomes tappable and expands a short explanation + wiki link
-  const kvr = (k, v, sub, g) => `<div class="kvr${g ? " g" : ""}"${g ? ` data-g="${g}"` : ""}><span>${k}${g ? '<i class="qi" aria-hidden="true">i</i>' : ""}</span><b>${v}</b>${sub ? `<div class="sub" style="grid-column:1/-1">${sub}</div>` : ""}</div>`;
+  const kvr = (k, v, sub, g, extra) => `<div class="kvr${g ? " g" : ""}"${g ? ` data-g="${g}"` : ""}${extra ? ` data-extra="${esc(extra)}"` : ""}><span>${k}${g ? '<i class="qi" aria-hidden="true">i</i>' : ""}</span><b>${v}</b>${sub ? `<div class="sub" style="grid-column:1/-1">${sub}</div>` : ""}</div>`;
   const wlink = (page, text) => `<a class="wl" href="${WIKI}${encodeURIComponent(String(page).replace(/ /g, "_"))}" target="_blank" rel="noopener">${text}</a>`;
   document.addEventListener("click", e => {
     if (e.target.closest("a")) return;
@@ -109,7 +109,7 @@ async function main(DB, FLAGS, REQS){
     const g = GLOSSARY[row.dataset.g]; if (!g) return;
     let tip = row.querySelector(".tip");
     if (tip) { tip.remove(); row.classList.remove("open"); return; }
-    tip = document.createElement("div"); tip.className = "tip"; tip.innerHTML = `${esc(g.es)} ${wlink(g.w, "Ver en la wiki ↗")}`; row.appendChild(tip); row.classList.add("open");
+    tip = document.createElement("div"); tip.className = "tip"; tip.innerHTML = `${row.dataset.extra ? `<div style="color:#e08a3c;margin-bottom:4px">${esc(row.dataset.extra)}</div>` : ""}${esc(g.es)} ${wlink(g.w, "Ver en la wiki ↗")}`; row.appendChild(tip); row.classList.add("open");
   });
 
   function weightOf(it) { const e = it && DB.items[it.id]; return e && e.w ? e.w : 0; }
@@ -168,7 +168,9 @@ async function main(DB, FLAGS, REQS){
     $("#gauges").innerHTML = gauge("HP", c.hp, c.maxHp, "var(--hp)", "hp") + gauge("FP", c.fp, c.maxFp, "var(--fp)", "fp") + gauge("SP", c.sp, c.maxSp, "var(--sp)", "sp");
     const S = c.stats, names = { vigor: "Vigor", mind: "Mente", endurance: "Resistencia", strength: "Fuerza", dexterity: "Destreza", intelligence: "Inteligencia", faith: "Fe", arcane: "Arcano" };
     const BN = statBonuses(c);
-    $("#stats").innerHTML = Object.keys(names).map(k => kvr(svg(k) + names[k], BN[k] ? `${S[k]} <span class="bonus" title="${esc(BN[k].map(x => x.src + " +" + x.v).join(", "))}">+${BN[k].reduce((a, x) => a + x.v, 0)}</span>` : S[k], BN[k] ? `${S[k] + BN[k].reduce((a, x) => a + x.v, 0)} efectivo con ${esc(BN[k].map(x => x.src).join(" y "))}` : null, k)).join("");
+    // like the game's status screen: the effective total, tinted when equipment raises it; the breakdown shows when the row is expanded
+    $("#stats").innerHTML = Object.keys(names).map(k => { const b = BN[k] ? BN[k].reduce((a, x) => a + x.v, 0) : 0;
+      return kvr(svg(k) + names[k], b ? `<span class="bonus" title="Base ${S[k]} + ${b}">${S[k] + b}</span>` : S[k], null, k, b ? `Base ${S[k]} · ${BN[k].map(x => "+" + x.v + " " + x.src).join(" · ")}` : null); }).join("");
     const gr = c.enriched.equipped.greatRune;
     $("#kv").innerHTML = kvr("Nivel", c.level, null, "level") + kvr("Clase", wlink(c.className, esc(c.className)), null, "class") + kvr("Regalo", c.gift ? wlink(c.giftName, esc(c.giftName)) : "ninguno", null, "gift") + kvr("Runas totales", c.totalRunes.toLocaleString("es"), null, "runes") + kvr("Muertes", c.deaths, null, "deaths") + kvr("Ciclo", ng, null, "ng") + kvr("Nivel de arma (matchmaking)", "+" + c.matchmakingWpnLvl, null, "mmlvl") + kvr("Runa mayor equipada", gr ? wlink(gr.name, esc(gr.name)) : "ninguna", null, "greatrune") + kvr("Runa mayor activa (Arco de Runa)", c.greatRuneActive ? "sí" : "no", null, "runearc") + kvr("Huecos de talismán", 1 + c.talismanSlots, null, "talismans");
     const B = c.buildups;
@@ -197,13 +199,14 @@ async function main(DB, FLAGS, REQS){
   const PLAN = { open: false, add: {} };
   function renderPlanner(c) {
     const box = $("#planner"); if (!box) return; box.hidden = !PLAN.open; $("#planBtn").setAttribute("aria-pressed", PLAN.open); if (!PLAN.open) return;
-    const S = c.stats, add = PLAN.add; const n = Object.values(add).reduce((a, b) => a + b, 0);
+    const S = c.stats, add = PLAN.add, BNp = statBonuses(c); const n = Object.values(add).reduce((a, b) => a + b, 0);
     let cost = 0; for (let l = c.level; l < c.level + n; l++) cost += levelCost(l);
     const pocket = c.all.filter(i => RUNE_VALUE[i.name]).reduce((a, i) => a + RUNE_VALUE[i.name] * (i.qty || 1), 0);
     const avail = c.runes + pocket, left = avail - cost;
     let nextLv = c.level + n, affordable = 0, acc = 0; for (let l = c.level; l < 713; l++) { acc += levelCost(l); if (acc > avail) break; affordable++; }
     const row = k => { const v = S[k] + (add[k] || 0), [s1, s2] = SOFT[k]; const cls = v >= 99 ? "cap" : v >= s2 ? "cap" : v >= s1 ? "soft" : "";
-      return `<div class="pr"><span>${svg(k)}${STAT_ES[k]}<span class="help" style="margin-left:6px">cap ${s1}/${s2}</span></span><span class="cur">${S[k]}</span><span class="new ${cls}" title="${v >= s2 ? "por encima del segundo soft cap: rinde muy poco" : v >= s1 ? "por encima del primer soft cap: rinde menos" : ""}">${v}</span><span class="pm"><button data-pl-stat="${k}" data-d="-1" ${add[k] ? "" : "disabled"}>−</button><button data-pl-stat="${k}" data-d="1" ${v >= 99 ? "disabled" : ""}>+</button></span></div>`; };
+      const bn = (BNp[k] || []).reduce((a, x) => a + x.v, 0);
+      return `<div class="pr"><span>${svg(k)}${STAT_ES[k]}<span class="help" style="margin-left:6px">cap ${s1}/${s2}</span></span><span class="cur" title="${bn ? "base; con bonus " + (S[k] + bn) : ""}">${S[k]}${bn ? `<small class="help"> (${S[k] + bn})</small>` : ""}</span><span class="new ${cls}" title="${v >= s2 ? "por encima del segundo soft cap: rinde muy poco" : v >= s1 ? "por encima del primer soft cap: rinde menos" : ""}">${v}</span><span class="pm"><button data-pl-stat="${k}" data-d="-1" ${add[k] ? "" : "disabled"}>−</button><button data-pl-stat="${k}" data-d="1" ${v >= 99 ? "disabled" : ""}>+</button></span></div>`; };
     box.className = "planner";
     box.innerHTML = Object.keys(STAT_ES).map(row).join("") + `<div class="sum">
       <span>Nivel</span><span><b>${c.level}</b> → <b>${nextLv}</b> (+${n})</span>
@@ -212,7 +215,7 @@ async function main(DB, FLAGS, REQS){
       <span>${left >= 0 ? "Te sobrarían" : "Te faltarían"}</span><span class="${left < 0 ? "neg" : ""}"><b>${Math.abs(left).toLocaleString("es")}</b></span>
       <span>Con lo que tienes puedes subir</span><span><b>${affordable}</b> nivel${affordable === 1 ? "" : "es"} (hasta ${c.level + affordable})</span></div>
       <div style="display:flex;gap:8px;margin-top:8px"><button class="btn" id="planReset">Reiniciar</button><button class="btn" id="planFill" title="Reparte los niveles que puedes pagar en los atributos que ya has tocado, o en Vigor si no has tocado ninguno">Gastar lo disponible</button></div>
-      <p class="help" style="margin-top:6px">Soft caps: a partir del primero cada punto rinde menos; a partir del segundo, casi nada. El coste por nivel es el del juego (crece con el nivel, no con el atributo).</p>`;
+      <p class="help" style="margin-top:6px">Soft caps: a partir del primero cada punto rinde menos; a partir del segundo, casi nada. El coste por nivel es el del juego (crece con el nivel, no con el atributo). Se planifica sobre el valor base; entre paréntesis, el efectivo con tu equipo.</p>`;
     $("#planReset").onclick = () => { PLAN.add = {}; renderPlanner(c); };
     $("#planFill").onclick = () => { const keys = Object.keys(add).filter(k => add[k] > 0); const target = keys.length ? keys : ["vigor"]; let i = 0; while (Object.values(PLAN.add).reduce((a, b) => a + b, 0) < affordable) { const k = target[i++ % target.length]; if (S[k] + (PLAN.add[k] || 0) >= 99) { if (target.every(t => S[t] + (PLAN.add[t] || 0) >= 99)) break; continue; } PLAN.add[k] = (PLAN.add[k] || 0) + 1; } renderPlanner(c); };
   }
