@@ -13,7 +13,7 @@ html_handling = "none"          # rutas exactas (map.html, icons.html); "/" sigu
 [[d1_databases]]
 binding = "DB"
 database_name = "tarnished-ledger"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"   # D1 → tarnished-ledger → "Database ID" (UUID)
+database_id = "1e0ef758-2fc0-4a75-af7e-38ee24d69475"
 
 [vars]
 # SteamID64 de los moderadores, separados por comas
