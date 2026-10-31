@@ -56,6 +56,7 @@ Usuario: Rob (SteamID REPLACE_WITH_YOUR_STEAMID64, moderador). Dos personajes: G
 - [ ] Mapa: más coordenadas (solo 17 de 35 jefes principales tienen pin; vía marcadores de la comunidad); iconos por objeto en marcadores comunitarios; filtro de tipo de jefe visible en la UI (hoy solo por hash).
 - [ ] Iconos que faltan (alias de nombres).
 - [ ] Gestión de cuenta: borrar cuenta/personajes; que un usuario pueda retirar un marcador aprobado suyo.
+- [ ] Iconos desde la copia del juego de Rob (decisión: no reutilizar assets de la wiki en la web pública): `tools/extract_icons_game.py` + `tools/EXTRACT.md` (UXM → WitchyBND → texconv → Smithbox CSV → script). Primera ejecución pendiente con Rob; el parser de .layout puede necesitar ajuste. Después: servir los iconos fuera del repo público (p. ej. R2 detrás del Worker) y retirar los de la wiki.
 - [ ] Público: sacar el arte del repo y del historial, licencia (GPL-3.0 por SaveForge), atribuciones (wiki CC BY-NC-SA), quitar Cloudflare Access, OAuth propio si se expone un MCP.
 - [ ] MCP remoto (`/mcp/<token>`) con las mismas herramientas, para usar desde la app de Claude o Claude Code.
 - [ ] Opcional PC: vigilar el .sl2 con File System Access API para actualizar sin abrir el archivo a mano.
