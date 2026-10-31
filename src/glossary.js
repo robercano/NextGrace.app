@@ -39,6 +39,14 @@
     frost: { w: "Frostbite", es: "Congelación: daño instantáneo, menos aguante recuperado y más daño recibido durante un tiempo. También robustez." },
     sleep: { w: "Sleep", es: "Sueño: te deja indefenso unos segundos. La concentración (mente) frena su acumulación." },
     madness: { w: "Madness", es: "Locura: daño instantáneo, pérdida de FP y aturdimiento. Solo la provocan los Tres Dedos y sus seguidores. Concentración." },
+    unused_grace: { w: "Golden Seed", es: "Semillas doradas y lágrimas sagradas se gastan en el menú de cualquier gracia (Frascos): cada semilla añade una carga (cada vez hacen falta más) y cada lágrima sube la cantidad curada. En Shadow of the Erdtree, los fragmentos del Scadutree y las cenizas veneradas se activan igual y son la mejora más importante de la expansión." },
+    unused_runes: { w: "Golden Rune", es: "Objetos consumibles que dan runas al usarlos. No se pierden al morir, así que son un colchón seguro: consúmelos justo antes de subir de nivel o de comprar." },
+    unused_rem: { w: "Remembrances", es: "Cada remembranza se cambia con Enia (Mesa Redonda) por una de dos recompensas del jefe (arma, hechizo o talismán), o se consume por muchas runas. Con un Walking Mausoleum se puede duplicar para conseguir ambas." },
+    unused_npc: { w: "Prayerbooks", es: "Los libros de oración se entregan a Corhyn o a Miriel para que vendan esos encantamientos; los pergaminos a Sellen o a Thops para hechicerías. Deathroot a Gurranq (encantamientos de bestia) y Dragon Hearts a los altares de Comunión Dragón." },
+    unused_bell: { w: "Bell Bearings", es: "Al entregar una campana a las Gemelas Vendedoras, su inventario pasa a venderse en la Mesa Redonda. Las de minero dan piedras de forja ilimitadas de ese nivel: son las más útiles de entregar cuanto antes." },
+    unused_glove: { w: "Grave Glovewort", es: "Las Grave Glovewort mejoran las cenizas de espíritu normales y las Ghost Glovewort las especiales (con nombre), en la Mesa Redonda con Roderika una vez formada como ajustadora de espíritus." },
+    unused_dragon: { w: "Ancient Dragon Smithing Stone", es: "Solo hay unas pocas por partida y llevan un arma del +24 al +25 (o del +9 al +10 las sombrías). Guárdalas para el arma que vayas a usar hasta el final." },
+    unused_other: { w: "Larval Tear", es: "La Larval Tear permite redistribuir atributos con Rennala (tras vencerla). El Arco de Runa activa la runa mayor equipada hasta la siguiente muerte." },
     deathblight: { w: "Death Blight", es: "Muerte súbita: al llenarse, mueres. La vitalidad (arcano) frena su acumulación." },
   };
   root.GLOSSARY = G;

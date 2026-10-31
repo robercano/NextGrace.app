@@ -135,10 +135,37 @@ async function main(DB, FLAGS){
     const ratio = load / maxLoad, roll = ratio < .3 ? "ligero" : ratio < .7 ? "medio" : ratio <= 1 ? "pesado" : "sobrecargado";
     $("#misc").innerHTML = kvr("Carga de equipo", `${load.toFixed(1)} / ${maxLoad.toFixed(1)}`, `${roll} (aprox.)`, "load") + kvr("Frasco carmesí", c.crimsonFlasks, null, "crimson") + kvr("Frasco cerúleo", c.ceruleanFlasks, null, "cerulean") + kvr("Hechizos memorizados", c.enriched.spells.length, null, "spells");
 
+    renderUnused(c);
     renderEquip(c);
     renderProgress(c);
     renderForge(c);
     renderInv();
+  }
+
+  // ---- unused upgrades / deliverables ---------------------------------------
+  const RUNE_VALUE = { "Golden Rune [1]": 200, "Golden Rune [2]": 400, "Golden Rune [3]": 800, "Golden Rune [4]": 1200, "Golden Rune [5]": 1600, "Golden Rune [6]": 2000, "Golden Rune [7]": 2500, "Golden Rune [8]": 3000, "Golden Rune [9]": 3800, "Golden Rune [10]": 5000, "Golden Rune [11]": 6250, "Golden Rune [12]": 7500, "Golden Rune [13]": 10000, "Numen's Rune": 12000, "Hero's Rune [1]": 15000, "Hero's Rune [2]": 20000, "Hero's Rune [3]": 25000, "Hero's Rune [4]": 30000, "Hero's Rune [5]": 35000, "Lord's Rune": 50000 };
+  function renderUnused(c) {
+    const pane = $("#unusedPane"), el = $("#unused"); if (!pane) return;
+    const qty = name => c.all.filter(i => i.name === name).reduce((a, i) => a + (i.qty || 1), 0);
+    const list = pred => { const m = new Map(); for (const i of c.all) if (pred(i.name)) m.set(i.name, (m.get(i.name) || 0) + (i.qty || 1)); return [...m]; };
+    const row = (label, items, g, how) => items.length ? kvr(label, items.reduce((a, x) => a + x[1], 0), items.map(([n, q]) => `${link({ name: n, kind: "goods" }, esc(n))}${q > 1 ? " ×" + q : ""}`).join(" · ") + (how ? `<div class="help" style="margin-top:2px">${how}</div>` : ""), g) : "";
+    const rows = [];
+    const grace = [["Golden Seed", qty("Golden Seed")], ["Sacred Tear", qty("Sacred Tear")], ["Scadutree Fragment", qty("Scadutree Fragment")], ["Revered Spirit Ash", qty("Revered Spirit Ash")]].filter(x => x[1] > 0);
+    const maxed = (c.crimsonFlasks + c.ceruleanFlasks) >= 14;
+    rows.push(row("En un lugar de gracia", grace, "unused_grace", "Se aplican desde el menú de la gracia: más cargas y curación de los frascos; en la expansión, la bendición del Scadutree y de las cenizas." + (maxed && qty("Golden Seed") ? " Ya tienes las 14 cargas máximas: las semillas sobrantes no se pueden usar." : "")));
+    const runes = list(n => RUNE_VALUE[n]).sort((x, y) => RUNE_VALUE[y[0]] - RUNE_VALUE[x[0]]); const total = runes.reduce((a, [n, q]) => a + RUNE_VALUE[n] * q, 0);
+    rows.push(row("Runas sin consumir", runes, "unused_runes", total ? `Valen ${total.toLocaleString("es")} runas en total; úsalas cuando vayas a subir de nivel o comprar.` : ""));
+    rows.push(row("Remembranzas", list(n => /^Remembrance of /.test(n)), "unused_rem", "Enia (Mesa Redonda) las cambia por el arma o hechizo del jefe; también se pueden consumir por runas."));
+    rows.push(row("Entregar a un PNJ", list(n => /Prayerbook$|Scroll$/.test(n) || n === "Deathroot" || n === "Dragon Heart"), "unused_npc", "Libros de oración → Corhyn o Miriel; pergaminos → Sellen o Thops; Deathroot → Gurranq; Dragon Heart → altares de Comunión Dragón."));
+    rows.push(row("Campanas de vendedor", list(n => /Bell Bearing/.test(n)), "unused_bell", "Entrégalas a las Gemelas Vendedoras de la Mesa Redonda para comprar lo que vendía ese mercader (piedras incluidas)."));
+    const glove = list(n => /Glovewort/.test(n));
+    rows.push(row("Para Roderika (espíritus)", glove, "unused_glove", "Mejoran las cenizas de espíritu en la Mesa Redonda."));
+    const dragon = list(n => /Ancient Dragon Smithing Stone$/.test(n));
+    rows.push(row("Piedras de dragón", dragon, "unused_dragon", "Suben un arma al máximo (+25 o +10 sombría). Elige bien: no se compran."));
+    const other = list(n => n === "Larval Tear" || n === "Rune Arc");
+    rows.push(row("Otros", other, "unused_other", "Larval Tear: redistribuir atributos con Rennala. Rune Arc: activa la runa mayor equipada."));
+    const html = rows.join("");
+    pane.hidden = !html; el.innerHTML = html || "";
   }
 
   // ---- equipment screen -----------------------------------------------------
