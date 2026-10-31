@@ -78,14 +78,15 @@ def candidates(n):
 def missing_items():
     have = {os.path.splitext(f)[0] for f in os.listdir(ICONS)}
     db = json.load(open(os.path.join(ROOT, "data", "items.json"), encoding="utf-8"))["items"]
-    out = {}
+    out = {}  # key (name without level/infusion words) -> set of real item names in the group
     for e in db.values():
         if e.get("f") or e["n"] in ("Unarmed", "Head", "Body", "Arms", "Legs"):
             continue
         if any(c in have for c in candidates(e["n"])):
             continue
-        key = base_name(e["n"])
-        out.setdefault(key, e)
+        n = base_name(e["n"])
+        key = INF_ANY.sub("", n).strip() or n
+        out.setdefault(key, set()).add(n)
     return out
 
 
@@ -169,22 +170,27 @@ def main():
     if a.limit:
         names = names[:a.limit]
     # 1) page → image file name (trying title variants)
-    want = {}  # name -> [variants]
+    want = {}  # key -> [titles to try]: the real names of the group (shortest first), then variants of the key
     for n in names:
-        want[n] = title_variants(n)
+        group = sorted(miss[n], key=len)
+        seen, vs = set(), []
+        for t in group + title_variants(n):
+            if t not in seen:
+                seen.add(t); vs.append(t)
+        want[n] = vs
     all_titles = sorted({t for v in want.values() for t in v})
     print(f"{len(all_titles)} títulos a consultar", flush=True)
     wt = wikitext(all_titles)
-    found, nopage, noimg = {}, [], []
+    found, nopage, noimg = {}, [], []  # found: save-name -> image file
     for n, vs in want.items():
-        img = None
+        img, hit = None, None
         for t in vs:
             if t in wt:
                 img = image_name(wt[t])
                 if img:
-                    break
+                    hit = t; break
         if img:
-            found[n] = img.replace("_", " ")
+            found[hit if hit in miss[n] else n] = img.replace("_", " ")
         elif any(t in wt for t in vs):
             noimg.append(n)
         else:
