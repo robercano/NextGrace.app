@@ -72,11 +72,15 @@ def candidates(n):
     if ": " in n:
         c.append(slug(n.split(": ", 1)[1]))
     c.append(slug(INF_ANY.sub("", n).strip()))
+    nb = re.sub(r"\s*\[\d+\]\s*$", "", n)
+    if nb != n:
+        c.append(slug(nb))
     return c
 
 
 def missing_items():
     have = {os.path.splitext(f)[0] for f in os.listdir(ICONS)}
+    have |= {re.sub(r"^(item|material|weapon|armor|spell|talisman|goods|key|gesture|info|tool|ash|spirit)_", "", h) for h in list(have)}  # same aliases as the web
     db = json.load(open(os.path.join(ROOT, "data", "items.json"), encoding="utf-8"))["items"]
     out = {}  # key (name without level/infusion words) -> set of real item names in the group
     for e in db.values():
