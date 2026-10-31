@@ -92,7 +92,7 @@ async function main(DB, FLAGS){
   // ---- tabs ----------------------------------------------------------------
   let TAB = "status";
   function showTab(t) { TAB = t; for (const b of document.querySelectorAll(".tab")) b.setAttribute("aria-selected", b.dataset.t === t); for (const s of document.querySelectorAll(".screen")) s.setAttribute("aria-hidden", s.id !== "s-" + t); try { localStorage.setItem("tl.tab", t); } catch (e) {} if (location.hash !== "#" + t) history.replaceState(null, "", "#" + t); }
-  $("#tabs").addEventListener("click", e => { const b = e.target.closest(".tab"); if (b) showTab(b.dataset.t); });
+  $("#tabs").addEventListener("click", e => { const b = e.target.closest(".tab"); if (b) { showTab(b.dataset.t); if (b.dataset.t === "advice" && CUR) renderAdvice(CUR); } });
   window.addEventListener("hashchange", () => { const t = location.hash.slice(1); if (document.getElementById("s-" + t)) showTab(t); });
 
   // ---- small inline SVG icons (own drawings) --------------------------------
@@ -313,6 +313,7 @@ async function main(DB, FLAGS){
     group = "Armas"; limit = 250; $("#q").value = ""; chips();
     renderChar(c);
     cloudSync(c);
+    if (TAB === "advice") renderAdvice(c);
   }
 
   function loadFile(file) {
@@ -333,6 +334,37 @@ async function main(DB, FLAGS){
   const drop = $("#drop");
   drop.addEventListener("dragover", e => { e.preventDefault(); });
   drop.addEventListener("drop", e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) loadFile(f); });
+
+  // ---- advisor tab -----------------------------------------------------------
+  function md(src) { // headings, lists, bold/italic, paragraphs — enough for the report
+    const inline = t => esc(t).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>").replace(/(^|[^*])\*(?!\s)(.+?)\*(?!\*)/g, "$1<em>$2</em>").replace(/`(.+?)`/g, "<code>$1</code>");
+    const out = []; let list = null;
+    const close = () => { if (list) { out.push(`</${list}>`); list = null; } };
+    for (const raw of src.split(/\r?\n/)) {
+      const l = raw.trim(); if (!l) { close(); continue; }
+      let m;
+      if ((m = l.match(/^(#{1,4})\s+(.*)$/))) { close(); out.push(`<h2>${inline(m[2])}</h2>`); }
+      else if ((m = l.match(/^[-*•]\s+(.*)$/))) { if (list !== "ul") { close(); out.push("<ul>"); list = "ul"; } out.push(`<li>${inline(m[1])}</li>`); }
+      else if ((m = l.match(/^\d+[.)]\s+(.*)$/))) { if (list !== "ol") { close(); out.push("<ol>"); list = "ol"; } out.push(`<li>${inline(m[1])}</li>`); }
+      else { close(); out.push(`<p>${inline(l)}</p>`); }
+    }
+    close(); return out.join("");
+  }
+  const ADV = { busy: false };
+  async function renderAdvice(c) {
+    const el = $("#advice"); if (!el) return;
+    if (!Cloud.user()) { el.innerHTML = `<div class="pane frame"><p class="help">Entra con Steam (botón de cuenta, arriba) y abre tu .sl2 una vez: el consejero trabaja sobre el resumen del personaje guardado en tu cuenta.</p><button class="btn primary" id="advLogin">Entrar con Steam</button></div>`; $("#advLogin").onclick = () => Cloud.login(); return; }
+    el.innerHTML = `<p class="help">Cargando…</p>`;
+    const r = await Cloud.advice(Marks.charKey(c)); if (CUR !== c) return;
+    if (r.error) { el.innerHTML = `<div class="pane frame"><p class="help">${esc(r.status === 404 ? "Este personaje aún no está en tu cuenta: vuelve a abrir el .sl2 con la sesión iniciada." : r.error)}</p></div>`; return; }
+    const when = r.advice ? new Date(r.advice.created_at.replace(" ", "T") + "Z").toLocaleString("es-ES", { dateStyle: "medium", timeStyle: "short" }) : null;
+    const canRefresh = r.configured && !ADV.busy && (Cloud.isAdmin() || (r.cooldown === 0 && r.used < r.cap));
+    const why = !r.configured ? "El consejero no está configurado en el servidor (falta la clave de la API)." : r.cooldown > 0 && !Cloud.isAdmin() ? `Podrás pedir otro informe en ${Math.ceil(r.cooldown / 3600)} h.` : r.used >= r.cap && !Cloud.isAdmin() ? "Has llegado al máximo diario de informes." : r.stale && r.advice ? "Has abierto una partida más reciente que la de este informe." : "";
+    el.innerHTML = `<div class="advh"><span class="help">${r.advice ? `Generado el ${when}${r.stale ? " · desactualizado" : ""}` : "Todavía no hay informe para este personaje."} · ${r.used}/${r.cap} hoy</span><button class="btn primary" id="advRefresh" ${canRefresh ? "" : "disabled"}>${ADV.busy ? "Generando…" : r.advice ? "Actualizar" : "Generar informe"}</button></div>
+      ${why ? `<p class="help">${esc(why)}</p>` : ""}
+      ${r.advice ? `<div class="pane frame md">${md(r.advice.text)}</div>` : ""}`;
+    $("#advRefresh").onclick = async () => { ADV.busy = true; renderAdvice(c); const x = await Cloud.adviceRefresh(Marks.charKey(c)); ADV.busy = false; if (x.error) note("No se pudo generar: " + x.error); renderAdvice(c); };
+  }
 
   // ---- account (optional) ---------------------------------------------------
   function note(t) { const m = $("#msg"); if (!m.textContent) { m.textContent = t; setTimeout(() => { if (m.textContent === t) m.textContent = ""; }, 4000); } }
@@ -371,7 +403,7 @@ async function main(DB, FLAGS){
     q.onclick = async e => { const b = e.target.closest("[data-rev]"); if (!b) return; const [a, id] = b.dataset.rev.split("|"); b.disabled = true; await Cloud.review(+id, a); renderModQueue(); };
   }
   $("#acct").addEventListener("click", openAcct);
-  Cloud.init().then(() => { renderAcct(); if (CUR) cloudSync(CUR); if (location.hash === "#status" && Cloud.user() && history.replaceState) { /* back from Steam login */ note("Sesión iniciada con Steam."); } });
+  Cloud.init().then(() => { renderAcct(); if (CUR) cloudSync(CUR); if (CUR && TAB === "advice") renderAdvice(CUR); if (location.hash === "#status" && Cloud.user() && history.replaceState) { /* back from Steam login */ note("Sesión iniciada con Steam."); } });
 
   // last file, if this browser kept it
   iconsLoad().then(() => { if (CUR) renderChar(CUR); });

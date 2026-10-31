@@ -24,7 +24,16 @@
       const n = x => x && x.display || null;
       return { level: c.level, class: c.className, ng: c.clearCount, playtime: c.playtimeSec, deaths: c.deaths, stats: c.stats, hp: c.maxHp, fp: c.maxFp, sp: c.maxSp,
         equipped: { rh: (eq.rh || []).map(n), lh: (eq.lh || []).map(n), head: n(eq.head), chest: n(eq.chest), arms: n(eq.arms), legs: n(eq.legs), talismans: (eq.talismans || []).map(n), greatRune: n(eq.greatRune) },
-        progress: c.progress || null, itemCount: (c.all || []).length, haveKeys: (c.all || []).map(i => i.id).slice(0, 5000) };
+        progress: c.progress || null, itemCount: (c.all || []).length, haveKeys: (c.all || []).map(i => i.id).slice(0, 5000),
+        // for the advisor: what matters for build/route advice, by name (ids are resolved client-side already)
+        weapons: (c.all || []).filter(i => i.kind === "weapon" && i.maxLevel > 0 && i.cat !== "arrows_and_bolts").map(i => ({ n: i.name.replace(/\s*\+\d+$/, ""), inf: i.infusion && i.infusion !== "Standard" ? i.infusion : undefined, lvl: i.level, max: i.maxLevel, cat: i.sub || i.cat, stored: i.stored || undefined })),
+        talismans: (c.all || []).filter(i => i.kind === "talisman").map(i => i.name),
+        spells: (c.enriched && c.enriched.spells || []).map(n).filter(Boolean),
+        spellsOwned: (c.all || []).filter(i => i.cat === "sorceries" || i.cat === "incantations").map(i => i.name),
+        ashes: (c.all || []).filter(i => i.cat === "ashes" || i.cat === "ashes_of_war").map(i => i.name),
+        stones: Object.fromEntries((c.all || []).filter(i => /Smithing Stone/.test(i.name)).map(i => [i.name, i.qty || 1])),
+        keyItems: (c.all || []).filter(i => i.cat === "key_items").map(i => i.name).slice(0, 300),
+        flasks: { crimson: c.crimsonFlasks, cerulean: c.ceruleanFlasks }, talismanSlots: 1 + (c.talismanSlots || 0), greatRuneActive: !!c.greatRuneActive, matchmakingWpnLvl: c.matchmakingWpnLvl, lastGrace: c.lastGrace };
     },
     pushCharacters(chars) {
       if (!me) return Promise.resolve(null);
@@ -46,6 +55,9 @@
     async proposeMarker(m) { return api("/markers", { method: "POST", body: m }); },
     async deleteMarker(id) { return api("/markers/" + id, { method: "DELETE" }); },
     async pending() { const r = await api("/admin/markers"); return r.markers || []; },
+    // Advisor (server-side report cached in the account)
+    async advice(charKey) { return api("/advice/" + encodeURIComponent(charKey)); },
+    async adviceRefresh(charKey) { return api("/advice/" + encodeURIComponent(charKey), { method: "POST", body: {} }); },
     async review(id, action) { return api("/admin/markers", { method: "POST", body: { id, action } }); },
   };
   root.Cloud = Cloud;

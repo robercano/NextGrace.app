@@ -55,6 +55,15 @@ npx wrangler d1 execute DB --local --file db/schema.sql
 npx wrangler dev --port 8791
 ```
 
+## Consejero (informe con Claude)
+
+Pestaña *Consejero* de la ficha: el Worker llama a la API de Claude con el resumen del personaje (lo mismo que ya guarda la cuenta: atributos, armas y piedras, jefes y gracias, nunca el `.sl2`), más `data/progression.json` (tabla orientativa de zonas, niveles y piedras), y guarda el informe en D1 (`advice`). Se regenera solo si el resumen ha cambiado (has abierto una partida más reciente), con 1 h de espera entre informes y 5 al día por usuario (los moderadores no tienen límite). `functions/api/advice/[char_key].js`.
+
+Activarlo:
+1. Ejecuta `db/migrations/002_advice.sql` en la *Console* de la base D1 (el `schema.sql` completo también lo incluye).
+2. *Worker → Settings → Variables and secrets → Add → Secret*: `ANTHROPIC_API_KEY` con una clave de [console.anthropic.com](https://console.anthropic.com/). Opcional: variable `ADVICE_MODEL` (por defecto `claude-sonnet-5-5`).
+3. En local: `npx wrangler dev --var ADVICE_MOCK:1` devuelve un informe falso con el contexto que se enviaría al modelo (campo `ctx`), útil para revisar el prompt sin gastar.
+
 ## Iconos
 
 Ver `icons/README.md`. La página busca primero `icons/index.json` (pack subido al repo) y, si no existe, el pack cargado con el botón "Cargar iconos" (guardado en IndexedDB del navegador).

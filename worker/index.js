@@ -10,6 +10,7 @@ import * as adminMarkers from "../functions/api/admin/markers.js";
 import * as authSteam from "../functions/api/auth/steam.js";
 import * as authCallback from "../functions/api/auth/callback.js";
 import * as authLogout from "../functions/api/auth/logout.js";
+import * as advice from "../functions/api/advice/[char_key].js";
 
 // [pattern, module]; ":name" captures one path segment into context.params.name
 const ROUTES = [
@@ -23,6 +24,7 @@ const ROUTES = [
   ["/api/auth/steam", authSteam],
   ["/api/auth/callback", authCallback],
   ["/api/auth/logout", authLogout],
+  ["/api/advice/:char_key", advice],
 ].map(([p, mod]) => ({ parts: p.split("/"), mod }));
 
 function match(pathname) {

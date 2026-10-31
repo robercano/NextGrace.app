@@ -198,6 +198,12 @@ details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font
 .plf input{flex:1;min-width:120px;background:var(--panel-s);border:1px solid var(--line);padding:6px 10px}
 .grp .gh{font-family:var(--display);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);padding:10px 4px 2px;border-bottom:1px solid var(--line)}
 .row.done .n{opacity:.6}.row.done .q{color:var(--ok)}
+.advh{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.md{line-height:1.5}
+.md h2{font-family:var(--display);font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:16px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+.md h2:first-child{margin-top:4px}
+.md p{margin:6px 0}.md ul,.md ol{margin:4px 0 8px 20px;padding:0}.md li{margin:3px 0}
+.md strong{color:var(--gold-2);font-weight:600}
 @media (prefers-reduced-motion:no-preference){.bar i b{transition:width .4s ease}}
 </style>
 </head>
@@ -219,6 +225,7 @@ details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font
     <button class="tab" role="tab" data-t="inv" aria-selected="false">Inventario</button>
     <button class="tab" role="tab" data-t="forge" aria-selected="false">Forja</button>
     <button class="tab" role="tab" data-t="progress" aria-selected="false">Progreso</button>
+    <button class="tab" role="tab" data-t="advice" aria-selected="false">Consejero</button>
   </div>
 </div>
 
@@ -301,6 +308,11 @@ details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font
     <section class="screen" id="s-progress" aria-hidden="true">
       <p class="help">Gracias descubiertas y jefes vencidos, leídos de los event flags de la partida. <a href="map.html">Ver en el mapa</a>.</p>
       <div id="progress"></div>
+    </section>
+
+    <section class="screen" id="s-advice" aria-hidden="true">
+      <p class="help">Informe para tu próxima sesión, generado por Claude a partir del resumen del personaje guardado en tu cuenta (atributos, armas, piedras, jefes y gracias). Orientativo: el juego es tuyo.</p>
+      <div id="advice"></div>
     </section>
 
     <p class="foot" id="foot"></p>
