@@ -118,7 +118,7 @@ async function main(DB, FLAGS, REQS){
     tip = document.createElement("div"); tip.className = "tip"; tip.innerHTML = `${row.dataset.extra ? `<div style="color:#e08a3c;margin-bottom:4px">${esc(row.dataset.extra)}</div>` : ""}${esc(g.es)} ${wlink(g.w, "Ver en la wiki ↗")}`; row.appendChild(tip); row.classList.add("open");
   });
 
-  function weightOf(it) { const e = it && DB.items[it.id]; return e && e.w ? e.w : 0; }
+  function weightOf(it) { const e = it && DB.items[it.id]; return e && e.w ? Math.round(e.w * 10) / 10 : 0; } // weights come from 32-bit floats in the game data
 
   // ---- requirements (data/reqs.json, from the wiki) --------------------------
   const RQ = REQS || { weapons: {}, spells: {} };
