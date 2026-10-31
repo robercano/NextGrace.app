@@ -162,7 +162,9 @@ async function main(DB, FLAGS, REQS){
   const useCls = u => !u ? "" : u.boosted ? " boost" : u.ok ? "" : u.twoHand ? " use2h" : " nope";
   const useTag = u => !u ? "" : u.boosted ? `<span class="tag boost">con ${esc(u.via.join(" + "))}${u.twoHand ? ", a dos manos" : ""}</span>` : u.ok ? "" : u.twoHand ? '<span class="tag use2h">a dos manos</span>' : `<span class="tag nope">faltan ${u.missing.map(m => `${STAT_SHORT[m.k]} ${m.need - m.have}`).join(", ")}</span>`;
   const useMeta = u => !u ? "" : u.boosted ? `solo gracias a ${u.via.join(" y ")}${u.twoHand ? " (y a dos manos)" : ""}: tus atributos base no llegan` : u.ok ? "" : u.twoHand ? "solo a dos manos" : "no cumples: " + u.missing.map(m => `${STAT_SHORT[m.k]} ${m.need} (tienes ${m.have})`).join(", ");
-  const reqLine = u => { if (!u) return ""; const req = Object.entries(u.req).filter(([, v]) => v).map(([k, v]) => `${STAT_SHORT[k]} ${v}`).join(" · "); const sc = u.scale ? Object.entries(u.scale).map(([k, v]) => `${STAT_SHORT[k]} ${v}`).join(" · ") : ""; return `${req ? "Requisitos: " + req : "Sin requisitos"}${sc ? " · Escalado: " + sc : ""}${u.info.fp != null ? " · FP " + u.info.fp : ""}${u.info.slots ? " · huecos " + u.info.slots : ""}`; };
+  // one line each: requirements, scaling, (spells) FP and memory slots
+  const reqLine = u => { if (!u) return ""; const req = Object.entries(u.req).filter(([, v]) => v).map(([k, v]) => `${STAT_SHORT[k]} ${v}`).join(" · "); const sc = u.scale ? Object.entries(u.scale).map(([k, v]) => `${STAT_SHORT[k]} ${v}`).join(" · ") : "";
+    const lines = [req ? "Requisitos: " + req : "Sin requisitos"]; if (sc) lines.push("Escalado: " + sc); if (u.info.fp != null || u.info.slots) lines.push([u.info.fp != null ? "FP " + u.info.fp : null, u.info.slots ? "huecos " + u.info.slots : null].filter(Boolean).join(" · ")); return lines.join("\n"); };
   function renderChar(c) {
     CUR = c;
     $("#cName").textContent = c.name || ("Slot " + (c.slot + 1));
@@ -293,7 +295,7 @@ async function main(DB, FLAGS, REQS){
   }
   document.addEventListener("click", e => { const s = e.target.closest(".slot[data-item], .cell[data-item]"); if (!s) return; const d = JSON.parse(s.dataset.item); const box = s.classList.contains("slot") ? $("#eqDetail") : $("#invDetail");
     for (const x of s.parentElement.querySelectorAll(".sel")) x.classList.remove("sel"); s.classList.add("sel");
-    box.innerHTML = `${d.i ? `<img src="${d.i}" alt="">` : ""}<div><div class="t">${esc(d.n)}</div><div class="d">${esc(d.d || "")}</div>${d.r ? `<div class="d" style="color:var(--gold-2)">${esc(d.r)}</div>` : ""}${d.l ? `<div class="d">${esc(d.l)}</div>` : ""}<a class="wl" href="${WIKI}${encodeURIComponent(d.w.replace(/ /g, "_"))}" target="_blank" rel="noopener">Ver en la wiki</a></div>`; });
+    box.innerHTML = `${d.i ? `<img src="${d.i}" alt="">` : ""}<div><div class="t">${esc(d.n)}</div><div class="d">${esc(d.d || "")}</div>${d.r ? d.r.split("\n").map(l => `<div class="d" style="color:var(--gold-2)">${esc(l)}</div>`).join("") : ""}${d.l ? `<div class="d">${esc(d.l)}</div>` : ""}<a class="wl" href="${WIKI}${encodeURIComponent(d.w.replace(/ /g, "_"))}" target="_blank" rel="noopener">Ver en la wiki</a></div>`; });
 
   // ---- forge ----------------------------------------------------------------
   function renderForge(c) {
