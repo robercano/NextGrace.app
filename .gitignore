@@ -6,6 +6,5 @@ er-icons.zip
 __pycache__/
 # descomenta para no subir el pack de iconos al repo
 # icons/*.webp
-wrangler.toml
 .wrangler/
 node_modules/

@@ -1,0 +1,20 @@
+# Cloudflare Worker con assets estáticos (deploy: `npx wrangler deploy`, también desde Workers Builds al hacer push).
+# Los bindings de aquí son la fuente de verdad: lo que se cambie en el panel se sobrescribe en el siguiente deploy.
+name = "tarnishedviewer"
+main = "worker/index.js"
+compatibility_date = "2024-09-23"
+
+[assets]
+directory = "."
+binding = "ASSETS"
+html_handling = "none"          # rutas exactas (map.html, icons.html); "/" sigue sirviendo index.html
+# ficheros que no se publican como assets: ver .assetsignore
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tarnished-ledger"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"   # D1 → tarnished-ledger → "Database ID" (UUID)
+
+[vars]
+# SteamID64 de los moderadores, separados por comas
+ADMIN_STEAMIDS = "REPLACE_WITH_YOUR_STEAMID64"

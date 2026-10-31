@@ -1,0 +1,57 @@
+// Worker entry (Cloudflare Workers + static assets). Routes /api/* to the same handlers that
+// Pages Functions would use (functions/api/**) and serves everything else from the assets binding.
+import * as health from "../functions/api/health.js";
+import * as me from "../functions/api/me.js";
+import * as characters from "../functions/api/characters.js";
+import * as marks from "../functions/api/marks/[char_key].js";
+import * as markers from "../functions/api/markers/index.js";
+import * as marker from "../functions/api/markers/[id].js";
+import * as adminMarkers from "../functions/api/admin/markers.js";
+import * as authSteam from "../functions/api/auth/steam.js";
+import * as authCallback from "../functions/api/auth/callback.js";
+import * as authLogout from "../functions/api/auth/logout.js";
+
+// [pattern, module]; ":name" captures one path segment into context.params.name
+const ROUTES = [
+  ["/api/health", health],
+  ["/api/me", me],
+  ["/api/characters", characters],
+  ["/api/marks/:char_key", marks],
+  ["/api/markers", markers],
+  ["/api/markers/:id", marker],
+  ["/api/admin/markers", adminMarkers],
+  ["/api/auth/steam", authSteam],
+  ["/api/auth/callback", authCallback],
+  ["/api/auth/logout", authLogout],
+].map(([p, mod]) => ({ parts: p.split("/"), mod }));
+
+function match(pathname) {
+  const segs = pathname.replace(/\/+$/, "").split("/");
+  for (const r of ROUTES) {
+    if (r.parts.length !== segs.length) continue;
+    const params = {}; let ok = true;
+    for (let i = 0; i < segs.length; i++) {
+      if (r.parts[i].startsWith(":")) params[r.parts[i].slice(1)] = segs[i];
+      else if (r.parts[i] !== segs[i]) { ok = false; break; }
+    }
+    if (ok) return { mod: r.mod, params };
+  }
+  return null;
+}
+const METHOD = { GET: "onRequestGet", HEAD: "onRequestGet", POST: "onRequestPost", PUT: "onRequestPut", DELETE: "onRequestDelete", PATCH: "onRequestPatch", OPTIONS: "onRequestOptions" };
+
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+    if (url.pathname.startsWith("/api/")) {
+      const m = match(url.pathname);
+      if (!m) return new Response(JSON.stringify({ error: "not found" }), { status: 404, headers: { "content-type": "application/json" } });
+      const fn = m.mod[METHOD[request.method]] || m.mod.onRequest;
+      if (!fn) return new Response(JSON.stringify({ error: "method not allowed" }), { status: 405, headers: { "content-type": "application/json", allow: Object.keys(METHOD).filter(k => m.mod[METHOD[k]]).join(", ") } });
+      return fn({ request, env, params: m.params, waitUntil: ctx.waitUntil.bind(ctx), passThroughOnException: ctx.passThroughOnException.bind(ctx), data: {}, next: () => env.ASSETS.fetch(request) });
+    }
+    // html_handling = "none" keeps exact paths (map.html, icons.html); only map "/" (and "dir/") to index.html here.
+    if (url.pathname.endsWith("/")) { url.pathname += "index.html"; return env.ASSETS.fetch(new Request(url, request)); }
+    return env.ASSETS.fetch(request);
+  },
+};
