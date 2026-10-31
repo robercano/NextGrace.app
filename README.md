@@ -80,11 +80,7 @@ y abre `http://localhost:8080`. Al cambiar ficheros, sube `VERSION` en `sw.js` p
 
 ## Hoja de ruta
 
-- [x] v1: estado, equipo, inventario, forja (qué armas mejorar y qué piedras faltan)
-- [x] v2: progreso (gracias y jefes desde los event flags), "No tengo" contra el catálogo, mapa con lugares de la wiki y objetos pendientes por lugar, editor de marcadores propio (exportable)
-- [x] alpha: cuenta con Steam (OpenID), D1 para marcas y resúmenes de personaje, marcadores de la comunidad con moderación
-- [ ] v2.1: más lugares y coordenadas exactas aportadas por usuarios; iconos para marcadores comunitarios según el objeto
-- [ ] v3: MCP (Worker) para planificación con Claude a partir del save
+Ver [ROADMAP.md](ROADMAP.md): estado del proyecto, decisiones, formato del save y pendientes.
 
 ## Mapa
 
