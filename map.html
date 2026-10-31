@@ -161,7 +161,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   // filters from the URL hash (set by the progress tab): l=grace,boss,... s=todo|done|all t=main|field|rem q=text
   let state = "all", bossType = null, hashQ = "";
   (function fromHash() {
-    const h = new URLSearchParams(location.hash.slice(1)); if (!h.has("l") && !h.has("s") && !h.has("t")) return;
+    const h = new URLSearchParams(location.hash.slice(1)); if (!h.has("l") && !h.has("s") && !h.has("t") && !h.has("q")) return;
     if (h.get("l")) { const on = new Set(h.get("l").split(",")); for (const k in vis) vis[k] = on.has(k); }
     if (/^(todo|done|all)$/.test(h.get("s") || "")) state = h.get("s");
     if (/^(main|field|rem)$/.test(h.get("t") || "")) bossType = h.get("t");

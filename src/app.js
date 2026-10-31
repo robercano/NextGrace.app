@@ -355,12 +355,17 @@ async function main(DB, FLAGS){
   // Turn known place / boss / grace names inside the report into links to the map (longest names first).
   async function reportLinker() {
     if (ADV.linker) return ADV.linker;
-    let names = [];
-    try { const P = await fetch("data/places.json").then(r => r.json()); names = P.places.map(p => p.name); } catch (e) {}
-    names = names.concat(FLAGS.bosses.map(b => b.name), FLAGS.graces.map(g => g.name));
-    const uniq = [...new Set(names.filter(n => n && n.length > 3))].sort((a, b) => b.length - a.length);
+    // name → map target: places, bosses and graces by their own name; items by the place where the map puts them
+    const target = new Map();
+    try { const P = await fetch("data/places.json").then(r => r.json());
+      for (const p of P.places) target.set(p.name, { focus: p.name });
+      for (const [id, idxs] of Object.entries(P.items || {})) { const e = DB.items[id], pl = P.places[idxs[0]]; if (e && pl && !target.has(e.n)) target.set(e.n, { focus: pl.name, q: e.n }); }
+    } catch (e) {}
+    for (const b of FLAGS.bosses) if (!target.has(b.name)) target.set(b.name, { focus: b.name });
+    for (const g of FLAGS.graces) if (!target.has(g.name)) target.set(g.name, { focus: g.name });
+    const uniq = [...target.keys()].filter(n => n.length > 3).sort((a, b) => b.length - a.length);
     const re = new RegExp("(?<![\\w'])(" + uniq.map(n => esc(n).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")(?![\\w'])", "g");
-    return ADV.linker = html => html.replace(re, m => `<a class="ml" href="map.html#focus=${encodeURIComponent(m.replace(/&amp;/g, "&"))}" title="Ver en el mapa">${m}</a>`);
+    return ADV.linker = html => html.replace(re, m => { const t = target.get(m.replace(/&amp;/g, "&")); if (!t) return m; return `<a class="ml" href="map.html#focus=${encodeURIComponent(t.focus)}${t.q ? "&q=" + encodeURIComponent(t.q) : ""}" title="Ver en el mapa">${m}</a>`; });
   }
   const ERR_ES = { "summary too old: open the save again while logged in": "el resumen guardado es de una versión anterior; vuelve a abrir el .sl2 con la sesión iniciada.", "advisor not configured (ANTHROPIC_API_KEY)": "falta la clave de la API en el servidor.", "daily cap reached": "has llegado al máximo diario.", "unknown character; open the save while logged in first": "este personaje no está en tu cuenta todavía; abre el .sl2 con la sesión iniciada." };
   async function renderAdvice(c) {
