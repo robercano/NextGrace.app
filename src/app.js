@@ -118,7 +118,11 @@ async function main(DB, FLAGS, REQS){
     tip = document.createElement("div"); tip.className = "tip"; tip.innerHTML = `${row.dataset.extra ? `<div style="color:#e08a3c;margin-bottom:4px">${esc(row.dataset.extra)}</div>` : ""}${esc(g.es)} ${wlink(g.w, "Ver en la wiki ↗")}`; row.appendChild(tip); row.classList.add("open");
   });
 
-  function weightOf(it) { const e = it && DB.items[it.id]; return e && e.w ? Math.round(e.w * 10) / 10 : 0; } // weights come from 32-bit floats in the game data
+  // weights come from 32-bit floats in the game data; upgraded weapons carry their level in the id, so look up the base entry; ammo weighs nothing
+  function weightOf(it) { if (!it) return 0; if (it.cat === "arrows_and_bolts") return 0;
+    const e = DB.items[it.id] || (it.kind === "weapon" ? DB.items[it.id - (it.id % 10000)] : null); let w = e && e.w ? e.w : 0;
+    if (!w && it.kind === "weapon" && REQS) { const r = REQS.weapons[wikiName(it)]; if (r && r.weight) w = r.weight; }
+    return Math.round(w * 10) / 10; }
 
   // ---- requirements (data/reqs.json, from the wiki) --------------------------
   const RQ = REQS || { weapons: {}, spells: {} };
