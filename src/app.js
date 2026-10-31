@@ -330,7 +330,9 @@ async function main(DB, FLAGS, REQS){
     sel.selectedIndex = Math.max(0, weapons.findIndex(w => w.level > 0 && w.level < w.maxLevel));
     c.weapons = weapons; planUpdate(true);
     renderSpirits(c);
-    const wrow = w => `<div class="row click${w.stored ? " stored" : ""}" data-w="${weapons.indexOf(w)}" role="button" tabindex="0"><div class="n">${ic(w)}${link(w, esc(w.display))}${useTag(canUse(c, w))}${w.level >= w.maxLevel ? '<span class="tag max">máx</span>' : ""}${w.aow ? `<span class="tag">${esc(w.aow)}</span>` : ""}<span class="lvlbar"><b style="width:${100 * w.level / w.maxLevel}%"></b></span></div><div class="q">+${w.level} / ${w.maxLevel}</div></div>`;
+    // name + level bar on the first line; usability / ash of war tags below, so long names don't get squeezed
+    const wrow = w => { const tags = useTag(canUse(c, w)) + (w.level >= w.maxLevel ? '<span class="tag max">máx</span>' : "") + (w.aow ? `<span class="tag">${esc(w.aow)}</span>` : "");
+      return `<div class="row click${w.stored ? " stored" : ""}" data-w="${weapons.indexOf(w)}" role="button" tabindex="0"><div class="n">${ic(w)}${link(w, esc(w.display))}<span class="lvlbar"><b style="width:${100 * w.level / w.maxLevel}%"></b></span></div><div class="q">+${w.level} / ${w.maxLevel}</div>${tags ? `<div class="m tags">${tags}</div>` : ""}</div>`; };
     const pending = weapons.filter(w => w.level > 0 && w.level < w.maxLevel), maxed = weapons.filter(w => w.level >= w.maxLevel);
     $("#upgradeable").innerHTML = (pending.map(wrow).join("") || `<p class="help">Ninguna arma a medias: todo lo que has tocado está al máximo.</p>`) + (maxed.length ? `<details><summary>${maxed.length} armas al máximo</summary><div class="list">${maxed.map(wrow).join("")}</div></details>` : "");
   }
