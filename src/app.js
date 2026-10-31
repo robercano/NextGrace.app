@@ -16,8 +16,12 @@ async function main(DB, FLAGS, REQS){
   const ICONS = new Map(); // key -> object URL
   const slug = n => n.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
   const iconKey = i => i.kind === "weapon" ? String(i.id - (i.id % 10000)) : String(i.id);
+  // some icons were saved with the wiki group as a prefix ("item_armorer_s_cookbook", "material_smithing_stone_1"): alias them without it
+  const ICON_PREFIX = /^(item|material|weapon|armor|spell|talisman|goods|key|gesture|info|tool|ash|spirit)_/;
+  function iconAliases() { for (const [k, v] of [...ICONS]) { if (ICON_PREFIX.test(k)) { const bare = k.replace(ICON_PREFIX, ""); if (!ICONS.has(bare)) ICONS.set(bare, v); } } }
   function iconCandidates(i) {
     const c = [iconKey(i), slug(i.name)];
+    const nb = i.name.replace(/\s*\[\d+\]\s*$/, ""); if (nb !== i.name) c.push(slug(nb)); // "Armorer's Cookbook [1]" → shared cookbook icon
     if (i.kind === "weapon" && i.infusion && i.infusion !== "Standard" && i.name.startsWith(i.infusion + " ")) c.push(slug(i.name.slice(i.infusion.length + 1)));
     const plain = i.name.replace(/\s*\+\d+$/, ""); if (plain !== i.name) c.push(slug(plain));
     if (i.name.includes(": ")) c.push(slug(i.name.split(": ").slice(1).join(": ")));
@@ -31,7 +35,7 @@ async function main(DB, FLAGS, REQS){
   }
   function idb() { return new Promise((res, rej) => { const r = indexedDB.open("tl", 1); r.onupgradeneeded = () => r.result.createObjectStore("icons"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
   async function iconsLoad() {
-    try { const r = await fetch("icons/index.json", { cache: "no-cache" }); if (r.ok) { for (const n of await r.json()) ICONS.set(n.replace(/\.[a-z0-9]+$/i, ""), "icons/" + n); if (ICONS.size) { $("#iconsMsg").textContent = ICONS.size + " iconos del sitio."; $("#iconsBtn").textContent = "Añadir iconos"; } } } catch (e) {}
+    try { const r = await fetch("icons/index.json", { cache: "no-cache" }); if (r.ok) { for (const n of await r.json()) ICONS.set(n.replace(/\.[a-z0-9]+$/i, ""), "icons/" + n); iconAliases(); if (ICONS.size) { $("#iconsMsg").textContent = ICONS.size + " iconos del sitio."; $("#iconsBtn").textContent = "Añadir iconos"; } } } catch (e) {}
     try { const db = await idb(); const tx = db.transaction("icons"); const st = tx.objectStore("icons");
       await new Promise((res, rej) => { const cur = st.openCursor(); cur.onsuccess = () => { const c = cur.result; if (!c) return res(); ICONS.set(c.key, URL.createObjectURL(c.value)); c.continue(); }; cur.onerror = () => rej(cur.error); });
       if (ICONS.size) $("#iconsMsg").textContent = ICONS.size + " iconos disponibles.";
