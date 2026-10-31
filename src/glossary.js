@@ -47,6 +47,7 @@
     unused_glove: { w: "Grave Glovewort", es: "Las Grave Glovewort mejoran las cenizas de espíritu normales y las Ghost Glovewort las especiales (con nombre), en la Mesa Redonda con Roderika una vez formada como ajustadora de espíritus." },
     unused_dragon: { w: "Ancient Dragon Smithing Stone", es: "Solo hay unas pocas por partida y llevan un arma del +24 al +25 (o del +9 al +10 las sombrías). Guárdalas para el arma que vayas a usar hasta el final." },
     unused_other: { w: "Larval Tear", es: "La Larval Tear permite redistribuir atributos con Rennala (tras vencerla). El Arco de Runa activa la runa mayor equipada hasta la siguiente muerte." },
+    bonus: { w: "Talismans", es: "Algunos talismanes y cascos suben atributos (Scarseal/Soreseal, los Heirloom, coronas de glintstone, Albinauric Mask…) y cuentan para los requisitos de armas y hechizos, pero solo mientras los lleves: si te los quitas, el arma pasa a usarse penalizada." },
     deathblight: { w: "Death Blight", es: "Muerte súbita: al llenarse, mueres. La vitalidad (arcano) frena su acumulación." },
   };
   root.GLOSSARY = G;

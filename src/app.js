@@ -122,17 +122,40 @@ async function main(DB, FLAGS, REQS){
   function reqOf(it) { if (!it) return null;
     if (it.kind === "weapon") { const n = wikiName(it); return RQ.weapons[n] || RQ.weapons[n.replace(INF_WORDS, "").trim()] || null; }
     if (it.cat === "sorceries" || it.cat === "incantations") return RQ.spells[it.name] || null; return null; }
-  // {ok, twoHand, missing:[{k, need, have}], req, scale}; two-handing counts strength ×1.5 (weapons only)
+  // Equipment that raises attributes (counts for requirements). Values from the wiki; armor list is the well-known set, not exhaustive.
+  const STAT_BOOST = {
+    "Radagon's Scarseal": { vigor: 3, endurance: 3, strength: 3, dexterity: 3 }, "Radagon's Soreseal": { vigor: 5, endurance: 5, strength: 5, dexterity: 5 },
+    "Marika's Scarseal": { mind: 3, intelligence: 3, faith: 3, arcane: 3 }, "Marika's Soreseal": { mind: 5, intelligence: 5, faith: 5, arcane: 5 },
+    "Starscourge Heirloom": { strength: 5 }, "Prosthesis-Wearer Heirloom": { dexterity: 5 }, "Stargazer Heirloom": { intelligence: 5 }, "Two Fingers Heirloom": { faith: 5 },
+    "Albinauric Mask": { arcane: 4 }, "Marais Mask": { arcane: 1 }, "Imp Head (Cat)": { arcane: 1 }, "Queen's Crescent Crown": { intelligence: 3 }, "Twinsage Glintstone Crown": { intelligence: 6 },
+    "Olivinus Glintstone Crown": { intelligence: 2 }, "Lazuli Glintstone Crown": { intelligence: 2 }, "Karolos Glintstone Crown": { intelligence: 3 }, "Hierodas Glintstone Crown": { intelligence: 2, faith: 2 }, "Haima Glintstone Crown": { strength: 2, intelligence: 2 }, "Haligtree Knight Helm": { faith: 1 },
+  };
+  // {stat: [{src, v}]} from equipped talismans, armor and an active Godrick's Great Rune
+  function statBonuses(c) {
+    const out = {}; const E = c.enriched && c.enriched.equipped; if (!E) return out;
+    const add = (src, b) => { for (const k in b) (out[k] = out[k] || []).push({ src, v: b[k] }); };
+    for (const it of [E.head, E.chest, E.arms, E.legs].concat(E.talismans || [])) if (it && STAT_BOOST[it.name]) add(it.name, STAT_BOOST[it.name]);
+    if (c.greatRuneActive && E.greatRune && /Godrick/.test(E.greatRune.name)) add("Godrick's Great Rune", { vigor: 5, mind: 5, endurance: 5, strength: 5, dexterity: 5, intelligence: 5, faith: 5, arcane: 5 });
+    return out;
+  }
+  const effStats = c => { const B = statBonuses(c), S = Object.assign({}, c.stats); for (const k in B) S[k] = (S[k] | 0) + B[k].reduce((a, x) => a + x.v, 0); return S; };
+  // {ok, boosted, twoHand, missing:[{k, need, have}], req, scale, via}; two-handing counts strength ×1.5 (weapons only)
   function canUse(c, it) {
     const rq = reqOf(it); if (!rq || !c) return null;
-    const S = c.stats, miss = [], miss2h = [];
-    for (const k of Object.keys(rq.req)) { const need = rq.req[k] | 0; if (!need) continue; const have = S[STAT_KEY[k]] | 0;
-      if (have < need) { miss.push({ k, need, have }); if (!(it.kind === "weapon" && k === "str" && Math.floor(have * 1.5) >= need)) miss2h.push({ k, need, have }); } }
-    return { ok: !miss.length, twoHand: !!miss.length && !miss2h.length, missing: miss2h.length ? miss2h : miss, req: rq.req, scale: rq.scale || null, info: rq };
+    const check = S => { const miss = [], miss2h = [];
+      for (const k of Object.keys(rq.req)) { const need = rq.req[k] | 0; if (!need) continue; const have = S[STAT_KEY[k]] | 0;
+        if (have < need) { miss.push({ k, need, have }); if (!(it.kind === "weapon" && k === "str" && Math.floor(have * 1.5) >= need)) miss2h.push({ k, need, have }); } }
+      return { ok: !miss.length, twoHand: !!miss.length && !miss2h.length, missing: miss2h.length ? miss2h : miss }; };
+    const base = check(c.stats);
+    if (base.ok) return Object.assign(base, { boosted: false, req: rq.req, scale: rq.scale || null, info: rq });
+    const B = statBonuses(c); const eff = Object.keys(B).length ? check(effStats(c)) : null;
+    if (eff && (eff.ok || eff.twoHand)) { const via = [...new Set(Object.keys(B).filter(k => base.missing.some(m => STAT_KEY[m.k] === k)).flatMap(k => B[k].map(x => x.src)))]; return Object.assign(eff, { boosted: true, via, req: rq.req, scale: rq.scale || null, info: rq }); }
+    return Object.assign(base, { boosted: false, req: rq.req, scale: rq.scale || null, info: rq });
   }
   self.TL_USE = (c, it) => canUse(c, it); // used by cloud.js when building the account summary
-  const useTag = u => !u || u.ok ? "" : u.twoHand ? '<span class="tag use2h">a dos manos</span>' : `<span class="tag nope">faltan ${u.missing.map(m => `${STAT_SHORT[m.k]} ${m.need - m.have}`).join(", ")}</span>`;
-  const useMeta = u => !u ? "" : u.ok ? "" : u.twoHand ? "solo a dos manos" : "no cumples: " + u.missing.map(m => `${STAT_SHORT[m.k]} ${m.need} (tienes ${m.have})`).join(", ");
+  const useCls = u => !u ? "" : u.boosted ? " boost" : u.ok ? "" : u.twoHand ? " use2h" : " nope";
+  const useTag = u => !u ? "" : u.boosted ? `<span class="tag boost">con ${esc(u.via.join(" + "))}${u.twoHand ? ", a dos manos" : ""}</span>` : u.ok ? "" : u.twoHand ? '<span class="tag use2h">a dos manos</span>' : `<span class="tag nope">faltan ${u.missing.map(m => `${STAT_SHORT[m.k]} ${m.need - m.have}`).join(", ")}</span>`;
+  const useMeta = u => !u ? "" : u.boosted ? `solo gracias a ${u.via.join(" y ")}${u.twoHand ? " (y a dos manos)" : ""}: tus atributos base no llegan` : u.ok ? "" : u.twoHand ? "solo a dos manos" : "no cumples: " + u.missing.map(m => `${STAT_SHORT[m.k]} ${m.need} (tienes ${m.have})`).join(", ");
   const reqLine = u => { if (!u) return ""; const req = Object.entries(u.req).filter(([, v]) => v).map(([k, v]) => `${STAT_SHORT[k]} ${v}`).join(" · "); const sc = u.scale ? Object.entries(u.scale).map(([k, v]) => `${STAT_SHORT[k]} ${v}`).join(" · ") : ""; return `${req ? "Requisitos: " + req : "Sin requisitos"}${sc ? " · Escalado: " + sc : ""}${u.info.fp != null ? " · FP " + u.info.fp : ""}${u.info.slots ? " · huecos " + u.info.slots : ""}`; };
   function renderChar(c) {
     CUR = c;
@@ -144,7 +167,8 @@ async function main(DB, FLAGS, REQS){
     const gauge = (label, v, max, color, g) => `<div class="bar g" data-g="${g}"><span>${label}</span><i><b style="width:${max ? Math.min(100, 100 * v / max) : 0}%;background:${color}"></b></i><span class="num">${v} / ${max}</span></div>`;
     $("#gauges").innerHTML = gauge("HP", c.hp, c.maxHp, "var(--hp)", "hp") + gauge("FP", c.fp, c.maxFp, "var(--fp)", "fp") + gauge("SP", c.sp, c.maxSp, "var(--sp)", "sp");
     const S = c.stats, names = { vigor: "Vigor", mind: "Mente", endurance: "Resistencia", strength: "Fuerza", dexterity: "Destreza", intelligence: "Inteligencia", faith: "Fe", arcane: "Arcano" };
-    $("#stats").innerHTML = Object.keys(names).map(k => kvr(svg(k) + names[k], S[k], null, k)).join("");
+    const BN = statBonuses(c);
+    $("#stats").innerHTML = Object.keys(names).map(k => kvr(svg(k) + names[k], BN[k] ? `${S[k]} <span class="bonus" title="${esc(BN[k].map(x => x.src + " +" + x.v).join(", "))}">+${BN[k].reduce((a, x) => a + x.v, 0)}</span>` : S[k], BN[k] ? `${S[k] + BN[k].reduce((a, x) => a + x.v, 0)} efectivo con ${esc(BN[k].map(x => x.src).join(" y "))}` : null, k)).join("");
     const gr = c.enriched.equipped.greatRune;
     $("#kv").innerHTML = kvr("Nivel", c.level, null, "level") + kvr("Clase", wlink(c.className, esc(c.className)), null, "class") + kvr("Regalo", c.gift ? wlink(c.giftName, esc(c.giftName)) : "ninguno", null, "gift") + kvr("Runas totales", c.totalRunes.toLocaleString("es"), null, "runes") + kvr("Muertes", c.deaths, null, "deaths") + kvr("Ciclo", ng, null, "ng") + kvr("Nivel de arma (matchmaking)", "+" + c.matchmakingWpnLvl, null, "mmlvl") + kvr("Runa mayor equipada", gr ? wlink(gr.name, esc(gr.name)) : "ninguna", null, "greatrune") + kvr("Runa mayor activa (Arco de Runa)", c.greatRuneActive ? "sí" : "no", null, "runearc") + kvr("Huecos de talismán", 1 + c.talismanSlots, null, "talismans");
     const B = c.buildups;
@@ -247,7 +271,7 @@ async function main(DB, FLAGS, REQS){
   // ---- equipment screen -----------------------------------------------------
   const EQSEL = { k: null };
   function slot(it, lbl, extra) { const has = it && real(it); const img = has ? ICONS.size && iconCandidates(it).map(k => ICONS.get(k)).find(Boolean) : null; const u = has ? canUse(CUR, it) : null;
-    return `<div class="slot${has ? "" : " empty"}${u && !u.ok ? (u.twoHand ? " use2h" : " nope") : ""}" data-item="${has ? esc(JSON.stringify({ n: it.display, w: wikiName(it), d: [it.sub, it.infusion && it.infusion !== "Standard" ? it.infusion : null, it.aow ? "Ceniza: " + it.aow : null, weightOf(it) ? "Peso " + weightOf(it) : null, useMeta(u)].filter(Boolean).join(" · "), r: reqLine(u), i: img || "" })) : ""}" role="button" tabindex="0">${img ? `<img src="${img}" alt="">` : has ? `<span style="font-size:.6rem;text-align:center;padding:4px;color:var(--fg-2)">${esc(it.display)}</span>` : ""}${has && it.kind === "weapon" && it.level ? `<span class="lvl">+${it.level}</span>` : ""}<span class="lbl">${lbl}</span></div>`; }
+    return `<div class="slot${has ? "" : " empty"}${useCls(u)}" data-item="${has ? esc(JSON.stringify({ n: it.display, w: wikiName(it), d: [it.sub, it.infusion && it.infusion !== "Standard" ? it.infusion : null, it.aow ? "Ceniza: " + it.aow : null, weightOf(it) ? "Peso " + weightOf(it) : null, useMeta(u)].filter(Boolean).join(" · "), r: reqLine(u), i: img || "" })) : ""}" role="button" tabindex="0">${img ? `<img src="${img}" alt="">` : has ? `<span style="font-size:.6rem;text-align:center;padding:4px;color:var(--fg-2)">${esc(it.display)}</span>` : ""}${has && it.kind === "weapon" && it.level ? `<span class="lvl">+${it.level}</span>` : ""}<span class="lbl">${lbl}</span></div>`; }
   function renderEquip(c) {
     const E = c.enriched.equipped;
     $("#eqArms").innerHTML = [0, 1, 2].map(i => slot(E.rh[i], "Dcha " + (i + 1))).join("") + [0, 1, 2].map(i => slot(E.lh[i], "Izq " + (i + 1))).join("") + slot(E.arrows[0], "Flecha 1") + slot(E.arrows[1], "Flecha 2") + slot(E.bolts[0], "Virote 1") + slot(E.bolts[1], "Virote 2");
@@ -390,7 +414,7 @@ async function main(DB, FLAGS, REQS){
     else $("#count").textContent = items.length + " objetos";
     const cell = i => { const img = ICONS.size ? iconCandidates(i).map(k => ICONS.get(k)).find(Boolean) : null; const e = DB.items[i.id]; const u = canUse(c, i);
       const meta = [CAT_ES[i.cat] || i.cat, i.sub, i.infusion && i.infusion !== "Standard" ? i.infusion : null, i.aow ? "Ceniza: " + i.aow : null, i.qty > 1 ? "×" + i.qty : null, i.stored ? "en el cofre" : null, i.kind === "weapon" && i.maxLevel ? `+${i.level}/${i.maxLevel}` : null, useMeta(u)].filter(Boolean).join(" · ");
-      return `<div class="cell${i.missing ? " miss" : ""}${i.stored ? " stored" : ""}${u && !u.ok ? (u.twoHand ? " use2h" : " nope") : ""}" data-item="${esc(JSON.stringify({ n: i.display, w: wikiName(i), d: meta, r: reqLine(u), l: e && e.loc ? e.loc.replace(/\s*\[\s*Map Link\s*\]\s*;?/g, "").replace(/\s+([.,;])/g, "$1").replace(/\s{2,}/g, " ") : "", i: img || "" }))}" role="button" tabindex="0" title="${esc(i.display)}">${img ? `<img src="${img}" alt="" loading="lazy">` : `<span class="nm">${esc(i.display)}</span>`}${i.qty > 1 ? `<span class="q">${i.qty}</span>` : ""}${i.kind === "weapon" && i.level ? `<span class="lv">+${i.level}</span>` : ""}</div>`; };
+      return `<div class="cell${i.missing ? " miss" : ""}${i.stored ? " stored" : ""}${useCls(u)}" data-item="${esc(JSON.stringify({ n: i.display, w: wikiName(i), d: meta, r: reqLine(u), l: e && e.loc ? e.loc.replace(/\s*\[\s*Map Link\s*\]\s*;?/g, "").replace(/\s+([.,;])/g, "$1").replace(/\s{2,}/g, " ") : "", i: img || "" }))}" role="button" tabindex="0" title="${esc(i.display)}">${img ? `<img src="${img}" alt="" loading="lazy">` : `<span class="nm">${esc(i.display)}</span>`}${i.qty > 1 ? `<span class="q">${i.qty}</span>` : ""}${i.kind === "weapon" && i.level ? `<span class="lv">+${i.level}</span>` : ""}</div>`; };
     $("#inv").innerHTML = items.slice(0, limit).map(cell).join("");
     const more = $("#more"); more.hidden = items.length <= limit; if (!more.hidden) more.textContent = `Mostrar ${Math.min(250, items.length - limit)} más (${items.length - limit} restantes)`;
     $("#invDetail").innerHTML = `<div class="d help">Toca un objeto para ver el detalle.</div>`;

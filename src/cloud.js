@@ -27,7 +27,7 @@
         progress: c.progress || null, itemCount: (c.all || []).length, haveKeys: (c.all || []).map(i => i.id).slice(0, 3000),
         // for the advisor: what matters for build/route advice, by name (ids are resolved client-side already)
         weapons: (c.all || []).filter(i => i.kind === "weapon" && i.maxLevel > 0 && i.cat !== "arrows_and_bolts").map(i => { const u = root.TL_USE ? root.TL_USE(c, i) : null; return { n: i.name.replace(/\s*\+\d+$/, ""), inf: i.infusion && i.infusion !== "Standard" ? i.infusion : undefined, lvl: i.level, max: i.maxLevel, cat: i.sub || i.cat, stored: i.stored || undefined,
-          req: u ? u.req : undefined, sc: u && u.scale ? u.scale : undefined, use: u ? (u.ok ? "ok" : u.twoHand ? "2h" : "no") : undefined, miss: u && !u.ok && !u.twoHand ? u.missing.map(m => m.k + "+" + (m.need - m.have)).join(" ") : undefined }; }),
+          req: u ? u.req : undefined, sc: u && u.scale ? u.scale : undefined, use: u ? (u.boosted ? "boost" : u.ok ? "ok" : u.twoHand ? "2h" : "no") : undefined, via: u && u.boosted ? u.via.join(" + ") : undefined, miss: u && !u.ok && !u.twoHand ? u.missing.map(m => m.k + "+" + (m.need - m.have)).join(" ") : undefined }; }),
         talismans: (c.all || []).filter(i => i.kind === "talisman").map(i => i.name),
         spells: (c.enriched && c.enriched.spells || []).map(n).filter(Boolean),
         spellsOwned: (c.all || []).filter(i => i.cat === "sorceries" || i.cat === "incantations").map(i => { const u = root.TL_USE ? root.TL_USE(c, i) : null; return u && !u.ok ? i.name + " (faltan " + u.missing.map(m => m.k + "+" + (m.need - m.have)).join(" ") + ")" : i.name; }),
