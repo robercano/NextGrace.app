@@ -72,7 +72,7 @@ async function generate(context, row, S) {
   const data = await r.json().catch(() => ({}));
   if (!r.ok) throw bad("model error: " + (data.error && data.error.message || r.status), 502);
   const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("\n").trim();
-  if (!text) throw bad("empty report", 502);
+  if (!text) throw bad(`empty report (model ${model}, stop_reason ${data.stop_reason || "?"}, blocks ${JSON.stringify((data.content || []).map(b => b.type))}, raw ${JSON.stringify(data).slice(0, 300)})`, 502);
   return { text, model, usage: data.usage || null };
 }
 
