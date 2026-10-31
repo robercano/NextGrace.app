@@ -304,7 +304,8 @@ async function main(DB, FLAGS){
     if (!chars.length) { $("#msg").innerHTML = `<span class="err">No hay personajes legibles en este archivo.</span>`; return; }
     $("#app").hidden = false; $("#dropSec").hidden = true; $("#barOpen").hidden = false; $("#barSteam").hidden = false; $("#modes").hidden = false; $("#tabs").hidden = false; let t0 = location.hash.slice(1); try { t0 = t0 || localStorage.getItem("tl.tab") || "status"; } catch (e) {} showTab(document.getElementById("s-" + t0) ? t0 : "status");
     $("#foot").textContent = `${name} · ${when}`;
-    pick(chars, chars[0].slot);
+    let cur = null; try { cur = localStorage.getItem("tl.cur"); } catch (e) {}
+    pick(chars, chars.some(c => String(c.slot) === cur) ? +cur : chars[0].slot); // keep the character you were looking at (same as the map)
   }
   function pick(chars, slot) {
     const c = chars.find(x => x.slot == slot); if (!c) return;
