@@ -419,7 +419,7 @@ async function main(DB, FLAGS, REQS){
     let items = src.filter(i => (!cats || cats.includes(i.cat)) && (!q || i.name.toLowerCase().includes(q) || (i.aow || "").toLowerCase().includes(q)));
     const ORDER = ["melee_armaments", "ranged_and_catalysts", "shields", "arrows_and_bolts", "head", "chest", "arms", "legs", "talismans", "ashes_of_war", "ashes", "sorceries", "incantations", "tools", "crafting_materials", "bolstering_materials", "key_items", "info", "gestures"];
     const oi = c => { const i = ORDER.indexOf(c); return i < 0 ? 99 : i; };
-    if (useFilter !== "all") items = items.filter(i => { const u = canUse(c, i); if (!u) return useFilter === "ok"; return useFilter === "ok" ? u.ok || u.twoHand : !u.ok && !u.twoHand; });
+    if (useFilter !== "all") items = items.filter(i => { const u = canUse(c, i); if (!u) return useFilter === "ok"; if (useFilter === "boost") return !!u.boosted; if (useFilter === "ok") return !u.boosted && (u.ok || u.twoHand); return !u.ok && !u.twoHand; });
     items = items.slice().sort((a, b) => oi(a.cat) - oi(b.cat) || a.name.localeCompare(b.name));
     if (mode === "missing") { const tot = CATALOG.filter(i => !cats || cats.includes(i.cat)).length; $("#count").textContent = `${items.length} por conseguir de ${tot}` + (q ? " (filtrado)" : ""); }
     else $("#count").textContent = items.length + " objetos";
@@ -431,8 +431,10 @@ async function main(DB, FLAGS, REQS){
     $("#invDetail").innerHTML = `<div class="d help">Toca un objeto para ver el detalle.</div>`;
   }
 
-  function modeChips() { $("#mode").innerHTML = [["have", "Tengo"], ["missing", "No tengo"]].map(([m, l]) => `<button class="cat" aria-pressed="${m === mode}" data-m="${m}">${l}</button>`).join("") + (Object.keys(RQ.weapons).length ? [["all", "Todo"], ["ok", "Puedo usar"], ["no", "No cumplo"]].map(([m, l]) => `<button class="cat" aria-pressed="${m === useFilter}" data-u="${m}" style="margin-left:${m === "all" ? 8 : 0}px">${l}</button>`).join("") : ""); }
-  $("#mode").addEventListener("click", e => { const b = e.target.closest(".cat"); if (!b) return; if (b.dataset.u) { useFilter = b.dataset.u; limit = 250; modeChips(); renderInv(); return; } mode = b.dataset.m; limit = 250; modeChips(); renderInv(); });
+  function modeChips() { $("#mode").innerHTML = [["have", "Tengo"], ["missing", "No tengo"]].map(([m, l]) => `<button class="cat" aria-pressed="${m === mode}" data-m="${m}">${l}</button>`).join("");
+    const u = $("#useMode"); if (u) { u.hidden = !Object.keys(RQ.weapons).length; u.innerHTML = [["all", "Todo"], ["ok", "Puedo usar"], ["boost", "Solo con bonus"], ["no", "No cumplo"]].map(([m, l]) => `<button class="cat" aria-pressed="${m === useFilter}" data-u="${m}" title="${m === "ok" ? "Con tus atributos base (a una o dos manos)" : m === "boost" ? "Solo gracias a talismanes, cascos o runa mayor" : m === "no" ? "Ni con el equipo actual" : ""}">${l}</button>`).join(""); } }
+  $("#useMode").addEventListener("click", e => { const b = e.target.closest(".cat"); if (!b) return; useFilter = b.dataset.u; limit = 250; modeChips(); renderInv(); });
+  $("#mode").addEventListener("click", e => { const b = e.target.closest(".cat"); if (!b) return; mode = b.dataset.m; limit = 250; modeChips(); renderInv(); });
   modeChips();
   function chips() { $("#chips").innerHTML = GROUPS.map(g => `<button class="cat" aria-pressed="${g[0] === group}" data-g="${g[0]}">${g[0]}</button>`).join(""); }
   $("#chips").addEventListener("click", e => { const b = e.target.closest(".cat"); if (!b) return; group = b.dataset.g; limit = 250; chips(); renderInv(); });

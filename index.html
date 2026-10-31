@@ -112,6 +112,7 @@ main{padding:14px max(14px,env(safe-area-inset-right,0px)) 40px max(14px,env(saf
 .invtop{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .invtop input[type=search]{flex:1;min-width:160px;background:var(--panel-s);border:1px solid var(--line);padding:7px 10px}
 .cats{display:flex;overflow-x:auto;gap:4px;scrollbar-width:none;padding-bottom:2px}
+#useMode{margin:6px 0 4px;flex-wrap:wrap;overflow:visible}
 .cats::-webkit-scrollbar{display:none}
 .cat{flex:none;background:none;border:1px solid var(--line);color:var(--fg-2);font-family:var(--display);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px}
 .cat[aria-pressed=true]{border-color:var(--gold);color:var(--gold-2);background:#c9a44a14}
@@ -302,6 +303,7 @@ details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font
         <div class="icohdr"><label class="btn" for="icons" id="iconsBtn">Cargar iconos</label><input id="icons" type="file" multiple accept=".zip,image/*"></div>
       </div>
       <p class="help" id="iconsMsg" style="margin:0"></p>
+      <div class="cats" id="useMode" hidden></div>
       <div class="cats" id="chips"></div>
       <div class="cnt" id="count"></div>
       <div class="grid" id="inv"></div>
