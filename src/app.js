@@ -18,7 +18,12 @@ async function main(DB, FLAGS, REQS){
   const iconKey = i => i.kind === "weapon" ? String(i.id - (i.id % 10000)) : String(i.id);
   // some icons were saved with the wiki group as a prefix ("item_armorer_s_cookbook", "material_smithing_stone_1"): alias them without it
   const ICON_PREFIX = /^(item|material|weapon|armor|spell|talisman|goods|key|gesture|info|tool|ash|spirit)_/;
-  function iconAliases() { for (const [k, v] of [...ICONS]) { if (ICON_PREFIX.test(k)) { const bare = k.replace(ICON_PREFIX, ""); if (!ICONS.has(bare)) ICONS.set(bare, v); } } }
+  // last resort for families that share one picture in the game (bell bearings, cookbooks, letters…): reuse a sibling's icon
+  const GENERIC = [["bell", /bell bearing/i, /bell_bearing/], ["cook", /cookbook|recipe \[/i, /cookbook/], ["letter", /letter|^note:/i, /_letter$|^note_/], ["tear", /crystal tear/i, /crystal_tear/], ["grease", /grease$/i, /_grease$/], ["jerky", /jerky$/i, /jerky/], ["attire", /spectral steed attire/i, /spectral_steed_attire/]];
+  function iconAliases() {
+    for (const [k, v] of [...ICONS]) { if (ICON_PREFIX.test(k)) { const bare = k.replace(ICON_PREFIX, ""); if (!ICONS.has(bare)) ICONS.set(bare, v); } }
+    for (const [key, , filePat] of GENERIC) { if (ICONS.has("__" + key)) continue; const hit = [...ICONS.keys()].find(k => filePat.test(k)); if (hit) ICONS.set("__" + key, ICONS.get(hit)); }
+  }
   function iconCandidates(i) {
     const c = [iconKey(i), slug(i.name)];
     const nb = i.name.replace(/\s*\[\d+\]\s*$/, ""); if (nb !== i.name) c.push(slug(nb)); // "Armorer's Cookbook [1]" → shared cookbook icon
@@ -26,6 +31,7 @@ async function main(DB, FLAGS, REQS){
     const plain = i.name.replace(/\s*\+\d+$/, ""); if (plain !== i.name) c.push(slug(plain));
     if (i.name.includes(": ")) c.push(slug(i.name.split(": ").slice(1).join(": ")));
     const bare = i.name.replace(/\s*\+\s*\d+\s*$/, "").replace(/\b(Heavy|Keen|Quality|Fire|Flame Art|Lightning|Sacred|Magic|Cold|Poison|Blood|Occult|Bloody)\s+/g, "").trim(); if (bare !== i.name) c.push(slug(bare));
+    for (const [key, namePat] of GENERIC) if (namePat.test(i.name)) { c.push("__" + key); break; }
     return c;
   }
   function ic(i) {
