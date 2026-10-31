@@ -213,10 +213,17 @@ def parse_weapon(txt):
                 if m:
                     scale[s] = m.group(1)
         w = num(pick(low, ["weight", "wt"]) or "")
-        up = (pick(low, ["upgrade", "upgrade_type", "upgrades", "smithing", "stone", "reinforce", "reinforcement"]) or "").lower()
-        somber = "somber" in up or "special" in up
+        rec = {"req": req, "scale": scale, "weight": w, "type": re.sub(r"\[\[|\]\]", "", pick(low, ["type"]) or "")}
+        for k in ("sorcery_scaling", "incant_scaling"):
+            v = num(low.get(k) or "")
+            if v:
+                rec[k.split("_")[0]] = v
+        sk = pick(low, ["skills", "skill"]) or ""
+        m = re.search(r"\[\[(?:[^|\]]*\|)?([^\]]+)\]\]", sk)
+        if m:
+            rec["skill"] = m.group(1)
         if any(req.values()) or scale:
-            return {"req": req, "scale": scale, "weight": w, "somber": somber, "_t": name}
+            return rec
     return None
 
 
@@ -231,10 +238,10 @@ def parse_spell(txt):
             n = num(v) if v is not None else None
             req[s] = int(n) if n is not None else 0
         fp = num(pick(p, ["fp", "fp_cost", "cost", "fpcost"]) or "")
-        slots = num(pick(p, ["slots", "slot", "memory", "memory_slots"]) or "")
+        slots = num(pick(p, ["slots_used", "slots", "slot", "memory", "memory_slots"]) or "")
         kind = "incantation" if "incant" in (name + " " + str(p.get("type", ""))).lower() else "sorcery"
         if any(req.values()) or fp is not None:
-            return {"req": req, "fp": fp, "slots": slots, "kind": kind, "_t": name}
+            return {"req": req, "fp": fp, "slots": slots, "kind": kind, "effect": re.sub(r"\[\[(?:[^|\]]*\|)?([^\]]+)\]\]", r"\1", p.get("item_effect", ""))[:120]}
     return None
 
 
