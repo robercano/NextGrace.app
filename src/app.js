@@ -21,6 +21,7 @@ async function main(DB, FLAGS, REQS){
     if (i.kind === "weapon" && i.infusion && i.infusion !== "Standard" && i.name.startsWith(i.infusion + " ")) c.push(slug(i.name.slice(i.infusion.length + 1)));
     const plain = i.name.replace(/\s*\+\d+$/, ""); if (plain !== i.name) c.push(slug(plain));
     if (i.name.includes(": ")) c.push(slug(i.name.split(": ").slice(1).join(": ")));
+    const bare = i.name.replace(/\s*\+\s*\d+\s*$/, "").replace(/\b(Heavy|Keen|Quality|Fire|Flame Art|Lightning|Sacred|Magic|Cold|Poison|Blood|Occult|Bloody)\s+/g, "").trim(); if (bare !== i.name) c.push(slug(bare));
     return c;
   }
   function ic(i) {
