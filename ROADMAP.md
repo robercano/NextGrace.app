@@ -14,7 +14,7 @@ Usuario: Rob (SteamID REPLACE_WITH_YOUR_STEAMID64, moderador). Dos personajes: G
 - **Despliegue**: Cloudflare **Worker con assets estáticos** (no Pages): `wrangler.toml` + `worker/index.js`, que enruta `/api/*` a los handlers de `functions/api/**` (escritos con la forma de Pages Functions, por si se vuelve a Pages) y sirve el resto como ficheros (`html_handling = "none"`, `/` → `index.html` en el worker). `.assetsignore` excluye código y herramientas. Deploy automático en cada push a `main` (Workers Builds, `npx wrangler deploy`). Los bindings viven en `wrangler.toml`: D1 `DB` (`tarnished-ledger`, id `1e0ef758-…`) y `ADMIN_STEAMIDS`. Secreto en el panel: `ANTHROPIC_API_KEY`.
 - **Base de datos (D1)**: `db/schema.sql` (+ `db/migrations/`). Tablas: `users`, `sessions` (token hasheado, cookie `tl_session` 30 días), `characters` (`char_key = <steamid>:<slot>`, resumen JSON; nunca el .sl2), `marks` (marcas manuales por personaje), `markers` (comunidad; `pending|approved|rejected`), `advice` y `advice_log` (consejero).
 - **Auth**: Steam OpenID (solo identidad pública). Un personaje solo puede sincronizarlo la cuenta de Steam dueña del save.
-- **Datos del juego**: `data/items.json` (4184 objetos, de SaveForge + ER-Save-Editor), `data/flags.json` (BST de event flags; 396 gracias, 173 jefes, 318 objetos únicos, 271 zonas de mapa), `data/places.json` + `data/map.json` (marcadores del mapa interactivo de eldenring.wiki.gg, CC BY-NC-SA), `data/progression.json` (tabla curada: zonas, niveles, softcaps, piedras, bell bearings), `data/user_markers.json` (marcadores estáticos, legado).
+- **Datos del juego**: `data/reqs.json` (requisitos/escalado desde la wiki; el workflow `reqs` lo regenera y deja el log en `tools/reqs_log.txt` porque los logs de Actions no se pueden leer desde la sesión), `data/items.json` (4184 objetos, de SaveForge + ER-Save-Editor), `data/flags.json` (BST de event flags; 396 gracias, 173 jefes, 318 objetos únicos, 271 zonas de mapa), `data/places.json` + `data/map.json` (marcadores del mapa interactivo de eldenring.wiki.gg, CC BY-NC-SA), `data/progression.json` (tabla curada: zonas, niveles, softcaps, piedras, bell bearings), `data/user_markers.json` (marcadores estáticos, legado).
 - **Arte**: `icons/*.webp` (2858 iconos de la wiki) y `icons/map/*.webp` (fondos 4K). Es arte de FromSoftware: solo en repo privado; los workflows se niegan si el repo es público. Antes de abrir el repo hay que sacarlos del historial.
 
 ## Formato del save (lo que costó encontrar)
@@ -45,12 +45,12 @@ Usuario: Rob (SteamID REPLACE_WITH_YOUR_STEAMID64, moderador). Dos personajes: G
 8. Glosario con explicaciones y enlaces en la ficha; moderación con casilla "enviar como pendiente".
 9. Progreso con casillas tocables → listas pendientes/hechos/todos por región y enlace al mapa filtrado (`map.html#l=boss&t=main&s=todo`); selector Todo/Pendiente/Hecho en el mapa.
 10. Consejero (pestaña + API + migración 002); respuesta en streaming con latidos; enlaces del informe al mapa (`#focus=`).
+12. "¿Puedo usarlo?": `tools/fetch_reqs.py` + workflow `reqs` → `data/reqs.json` (requisitos, escalado, tipo, skill, FP/huecos de hechizos; 740/748 armas). Marcas rojas/amarillas (no cumples / solo a dos manos) en inventario, equipo y forja, filtro "Puedo usar / No cumplo", requisitos en el detalle, y el Consejero recibe por arma requisitos, escalado y usabilidad.
 11. Estado: "Pendiente de aplicar" (semillas, runas sin consumir, remembranzas, libros/pergaminos, campanas, gloveworts, piedras de dragón) y planificador de nivel (coste real por nivel, soft caps, runas en objetos). Forja: cenizas de espíritu con gloveworts. Progreso: diario de sesión (tabla `history`, creada por el Worker al vuelo; snapshot por cada tiempo de juego distinto).
 
 ## Pendiente / ideas
 
 - [ ] Rob: ejecutar `db/migrations/002_advice.sql`, poner `ANTHROPIC_API_KEY` y probar el primer informe; ajustar el prompt con el resultado.
-- [ ] "¿Puedo usarlo?": requisitos y escalado de armas/hechizos desde la wiki (script tipo fetch_icons) → marcar en inventario/forja y pasarlo al Consejero.
 - [ ] Consejero: herramienta de wiki (que compruebe escalado/requisitos de armas antes de recomendarlas); quizá pedir "qué hacer hoy en 1 hora".
 - [ ] Confirmar la tabla de ids de runa mayor (valores distintos de 0, 3 y 10).
 - [ ] Mapa: más coordenadas (solo 17 de 35 jefes principales tienen pin; vía marcadores de la comunidad); iconos por objeto en marcadores comunitarios; filtro de tipo de jefe visible en la UI (hoy solo por hash).

@@ -1,5 +1,5 @@
 /* app.js — Tarnished Ledger UI. Expects window.ERSave (src/ersave.js) and the items DB passed to main(). */
-async function main(DB, FLAGS){
+async function main(DB, FLAGS, REQS){
   const $ = s => document.querySelector(s);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   let SAVE = null, CUR = null, FILENAME = "";
@@ -70,7 +70,7 @@ async function main(DB, FLAGS){
   // ---- rendering ---------------------------------------------------------
   const CAT_ES = { melee_armaments: "Armas", ranged_and_catalysts: "Arcos y catalizadores", shields: "Escudos", arrows_and_bolts: "Munición", head: "Cascos", chest: "Pechos", arms: "Brazos", legs: "Piernas", talismans: "Talismanes", ashes_of_war: "Cenizas de guerra", ashes: "Cenizas espirituales", sorceries: "Hechicerías", incantations: "Encantamientos", tools: "Herramientas", key_items: "Objetos clave", crafting_materials: "Materiales", bolstering_materials: "Mejora", info: "Información", gestures: "Gestos" };
   const GROUPS = [["Todo", null], ["Armas", ["melee_armaments", "ranged_and_catalysts", "shields", "arrows_and_bolts"]], ["Armadura", ["head", "chest", "arms", "legs"]], ["Talismanes", ["talismans"]], ["Cenizas", ["ashes_of_war", "ashes"]], ["Magia", ["sorceries", "incantations"]], ["Consumibles", ["tools", "crafting_materials", "bolstering_materials"]], ["Clave", ["key_items", "info", "gestures"]]];
-  let group = "Armas", limit = 250, mode = "have";
+  let group = "Armas", limit = 250, mode = "have", useFilter = "all";
   // Catálogo de coleccionables para "No tengo"
   const CATALOG_CATS = new Set(["melee_armaments", "ranged_and_catalysts", "shields", "head", "chest", "arms", "legs", "talismans", "ashes_of_war", "ashes", "sorceries", "incantations", "key_items"]);
   const baseKey = i => { let n = i.name || ""; if (i.kind === "weapon" && i.infusion && i.infusion !== "Standard" && n.startsWith(i.infusion + " ")) n = n.slice(i.infusion.length + 1); if (i.kind !== "talisman") n = n.replace(/\s*\+\d+$/, ""); return n.toLowerCase(); };
@@ -113,6 +113,27 @@ async function main(DB, FLAGS){
   });
 
   function weightOf(it) { const e = it && DB.items[it.id]; return e && e.w ? e.w : 0; }
+
+  // ---- requirements (data/reqs.json, from the wiki) --------------------------
+  const RQ = REQS || { weapons: {}, spells: {} };
+  const STAT_SHORT = { str: "FUE", dex: "DES", int: "INT", fai: "FE", arc: "ARC" };
+  const STAT_KEY = { str: "strength", dex: "dexterity", int: "intelligence", fai: "faith", arc: "arcane" };
+  const INF_WORDS = /\b(Heavy|Keen|Quality|Fire|Flame Art|Lightning|Sacred|Magic|Cold|Poison|Blood|Occult|Bloody)\s+/g;
+  function reqOf(it) { if (!it) return null;
+    if (it.kind === "weapon") { const n = wikiName(it); return RQ.weapons[n] || RQ.weapons[n.replace(INF_WORDS, "").trim()] || null; }
+    if (it.cat === "sorceries" || it.cat === "incantations") return RQ.spells[it.name] || null; return null; }
+  // {ok, twoHand, missing:[{k, need, have}], req, scale}; two-handing counts strength ×1.5 (weapons only)
+  function canUse(c, it) {
+    const rq = reqOf(it); if (!rq || !c) return null;
+    const S = c.stats, miss = [], miss2h = [];
+    for (const k of Object.keys(rq.req)) { const need = rq.req[k] | 0; if (!need) continue; const have = S[STAT_KEY[k]] | 0;
+      if (have < need) { miss.push({ k, need, have }); if (!(it.kind === "weapon" && k === "str" && Math.floor(have * 1.5) >= need)) miss2h.push({ k, need, have }); } }
+    return { ok: !miss.length, twoHand: !!miss.length && !miss2h.length, missing: miss2h.length ? miss2h : miss, req: rq.req, scale: rq.scale || null, info: rq };
+  }
+  self.TL_USE = (c, it) => canUse(c, it); // used by cloud.js when building the account summary
+  const useTag = u => !u || u.ok ? "" : u.twoHand ? '<span class="tag use2h">a dos manos</span>' : `<span class="tag nope">faltan ${u.missing.map(m => `${STAT_SHORT[m.k]} ${m.need - m.have}`).join(", ")}</span>`;
+  const useMeta = u => !u ? "" : u.ok ? "" : u.twoHand ? "solo a dos manos" : "no cumples: " + u.missing.map(m => `${STAT_SHORT[m.k]} ${m.need} (tienes ${m.have})`).join(", ");
+  const reqLine = u => { if (!u) return ""; const req = Object.entries(u.req).filter(([, v]) => v).map(([k, v]) => `${STAT_SHORT[k]} ${v}`).join(" · "); const sc = u.scale ? Object.entries(u.scale).map(([k, v]) => `${STAT_SHORT[k]} ${v}`).join(" · ") : ""; return `${req ? "Requisitos: " + req : "Sin requisitos"}${sc ? " · Escalado: " + sc : ""}${u.info.fp != null ? " · FP " + u.info.fp : ""}${u.info.slots ? " · huecos " + u.info.slots : ""}`; };
   function renderChar(c) {
     CUR = c;
     $("#cName").textContent = c.name || ("Slot " + (c.slot + 1));
@@ -225,8 +246,8 @@ async function main(DB, FLAGS){
 
   // ---- equipment screen -----------------------------------------------------
   const EQSEL = { k: null };
-  function slot(it, lbl, extra) { const has = it && real(it); const img = has ? ICONS.size && iconCandidates(it).map(k => ICONS.get(k)).find(Boolean) : null;
-    return `<div class="slot${has ? "" : " empty"}" data-item="${has ? esc(JSON.stringify({ n: it.display, w: wikiName(it), d: [it.sub, it.infusion && it.infusion !== "Standard" ? it.infusion : null, it.aow ? "Ceniza: " + it.aow : null, weightOf(it) ? "Peso " + weightOf(it) : null].filter(Boolean).join(" · "), i: img || "" })) : ""}" role="button" tabindex="0">${img ? `<img src="${img}" alt="">` : has ? `<span style="font-size:.6rem;text-align:center;padding:4px;color:var(--fg-2)">${esc(it.display)}</span>` : ""}${has && it.kind === "weapon" && it.level ? `<span class="lvl">+${it.level}</span>` : ""}<span class="lbl">${lbl}</span></div>`; }
+  function slot(it, lbl, extra) { const has = it && real(it); const img = has ? ICONS.size && iconCandidates(it).map(k => ICONS.get(k)).find(Boolean) : null; const u = has ? canUse(CUR, it) : null;
+    return `<div class="slot${has ? "" : " empty"}${u && !u.ok ? (u.twoHand ? " use2h" : " nope") : ""}" data-item="${has ? esc(JSON.stringify({ n: it.display, w: wikiName(it), d: [it.sub, it.infusion && it.infusion !== "Standard" ? it.infusion : null, it.aow ? "Ceniza: " + it.aow : null, weightOf(it) ? "Peso " + weightOf(it) : null, useMeta(u)].filter(Boolean).join(" · "), r: reqLine(u), i: img || "" })) : ""}" role="button" tabindex="0">${img ? `<img src="${img}" alt="">` : has ? `<span style="font-size:.6rem;text-align:center;padding:4px;color:var(--fg-2)">${esc(it.display)}</span>` : ""}${has && it.kind === "weapon" && it.level ? `<span class="lvl">+${it.level}</span>` : ""}<span class="lbl">${lbl}</span></div>`; }
   function renderEquip(c) {
     const E = c.enriched.equipped;
     $("#eqArms").innerHTML = [0, 1, 2].map(i => slot(E.rh[i], "Dcha " + (i + 1))).join("") + [0, 1, 2].map(i => slot(E.lh[i], "Izq " + (i + 1))).join("") + slot(E.arrows[0], "Flecha 1") + slot(E.arrows[1], "Flecha 2") + slot(E.bolts[0], "Virote 1") + slot(E.bolts[1], "Virote 2");
@@ -239,7 +260,7 @@ async function main(DB, FLAGS){
   }
   document.addEventListener("click", e => { const s = e.target.closest(".slot[data-item], .cell[data-item]"); if (!s) return; const d = JSON.parse(s.dataset.item); const box = s.classList.contains("slot") ? $("#eqDetail") : $("#invDetail");
     for (const x of s.parentElement.querySelectorAll(".sel")) x.classList.remove("sel"); s.classList.add("sel");
-    box.innerHTML = `${d.i ? `<img src="${d.i}" alt="">` : ""}<div><div class="t">${esc(d.n)}</div><div class="d">${esc(d.d || "")}</div>${d.l ? `<div class="d">${esc(d.l)}</div>` : ""}<a class="wl" href="${WIKI}${encodeURIComponent(d.w.replace(/ /g, "_"))}" target="_blank" rel="noopener">Ver en la wiki</a></div>`; });
+    box.innerHTML = `${d.i ? `<img src="${d.i}" alt="">` : ""}<div><div class="t">${esc(d.n)}</div><div class="d">${esc(d.d || "")}</div>${d.r ? `<div class="d" style="color:var(--gold-2)">${esc(d.r)}</div>` : ""}${d.l ? `<div class="d">${esc(d.l)}</div>` : ""}<a class="wl" href="${WIKI}${encodeURIComponent(d.w.replace(/ /g, "_"))}" target="_blank" rel="noopener">Ver en la wiki</a></div>`; });
 
   // ---- forge ----------------------------------------------------------------
   function renderForge(c) {
@@ -256,7 +277,7 @@ async function main(DB, FLAGS){
     sel.selectedIndex = Math.max(0, weapons.findIndex(w => w.level > 0 && w.level < w.maxLevel));
     c.weapons = weapons; planUpdate(true);
     renderSpirits(c);
-    const wrow = w => `<div class="row click${w.stored ? " stored" : ""}" data-w="${weapons.indexOf(w)}" role="button" tabindex="0"><div class="n">${ic(w)}${link(w, esc(w.display))}${w.level >= w.maxLevel ? '<span class="tag max">máx</span>' : ""}${w.aow ? `<span class="tag">${esc(w.aow)}</span>` : ""}<span class="lvlbar"><b style="width:${100 * w.level / w.maxLevel}%"></b></span></div><div class="q">+${w.level} / ${w.maxLevel}</div></div>`;
+    const wrow = w => `<div class="row click${w.stored ? " stored" : ""}" data-w="${weapons.indexOf(w)}" role="button" tabindex="0"><div class="n">${ic(w)}${link(w, esc(w.display))}${useTag(canUse(c, w))}${w.level >= w.maxLevel ? '<span class="tag max">máx</span>' : ""}${w.aow ? `<span class="tag">${esc(w.aow)}</span>` : ""}<span class="lvlbar"><b style="width:${100 * w.level / w.maxLevel}%"></b></span></div><div class="q">+${w.level} / ${w.maxLevel}</div></div>`;
     const pending = weapons.filter(w => w.level > 0 && w.level < w.maxLevel), maxed = weapons.filter(w => w.level >= w.maxLevel);
     $("#upgradeable").innerHTML = (pending.map(wrow).join("") || `<p class="help">Ninguna arma a medias: todo lo que has tocado está al máximo.</p>`) + (maxed.length ? `<details><summary>${maxed.length} armas al máximo</summary><div class="list">${maxed.map(wrow).join("")}</div></details>` : "");
   }
@@ -363,19 +384,20 @@ async function main(DB, FLAGS){
     let items = src.filter(i => (!cats || cats.includes(i.cat)) && (!q || i.name.toLowerCase().includes(q) || (i.aow || "").toLowerCase().includes(q)));
     const ORDER = ["melee_armaments", "ranged_and_catalysts", "shields", "arrows_and_bolts", "head", "chest", "arms", "legs", "talismans", "ashes_of_war", "ashes", "sorceries", "incantations", "tools", "crafting_materials", "bolstering_materials", "key_items", "info", "gestures"];
     const oi = c => { const i = ORDER.indexOf(c); return i < 0 ? 99 : i; };
+    if (useFilter !== "all") items = items.filter(i => { const u = canUse(c, i); if (!u) return useFilter === "ok"; return useFilter === "ok" ? u.ok || u.twoHand : !u.ok && !u.twoHand; });
     items = items.slice().sort((a, b) => oi(a.cat) - oi(b.cat) || a.name.localeCompare(b.name));
     if (mode === "missing") { const tot = CATALOG.filter(i => !cats || cats.includes(i.cat)).length; $("#count").textContent = `${items.length} por conseguir de ${tot}` + (q ? " (filtrado)" : ""); }
     else $("#count").textContent = items.length + " objetos";
-    const cell = i => { const img = ICONS.size ? iconCandidates(i).map(k => ICONS.get(k)).find(Boolean) : null; const e = DB.items[i.id];
-      const meta = [CAT_ES[i.cat] || i.cat, i.sub, i.infusion && i.infusion !== "Standard" ? i.infusion : null, i.aow ? "Ceniza: " + i.aow : null, i.qty > 1 ? "×" + i.qty : null, i.stored ? "en el cofre" : null, i.kind === "weapon" && i.maxLevel ? `+${i.level}/${i.maxLevel}` : null].filter(Boolean).join(" · ");
-      return `<div class="cell${i.missing ? " miss" : ""}${i.stored ? " stored" : ""}" data-item="${esc(JSON.stringify({ n: i.display, w: wikiName(i), d: meta, l: e && e.loc ? e.loc.replace(/\s*\[\s*Map Link\s*\]\s*;?/g, "").replace(/\s+([.,;])/g, "$1").replace(/\s{2,}/g, " ") : "", i: img || "" }))}" role="button" tabindex="0" title="${esc(i.display)}">${img ? `<img src="${img}" alt="" loading="lazy">` : `<span class="nm">${esc(i.display)}</span>`}${i.qty > 1 ? `<span class="q">${i.qty}</span>` : ""}${i.kind === "weapon" && i.level ? `<span class="lv">+${i.level}</span>` : ""}</div>`; };
+    const cell = i => { const img = ICONS.size ? iconCandidates(i).map(k => ICONS.get(k)).find(Boolean) : null; const e = DB.items[i.id]; const u = canUse(c, i);
+      const meta = [CAT_ES[i.cat] || i.cat, i.sub, i.infusion && i.infusion !== "Standard" ? i.infusion : null, i.aow ? "Ceniza: " + i.aow : null, i.qty > 1 ? "×" + i.qty : null, i.stored ? "en el cofre" : null, i.kind === "weapon" && i.maxLevel ? `+${i.level}/${i.maxLevel}` : null, useMeta(u)].filter(Boolean).join(" · ");
+      return `<div class="cell${i.missing ? " miss" : ""}${i.stored ? " stored" : ""}${u && !u.ok ? (u.twoHand ? " use2h" : " nope") : ""}" data-item="${esc(JSON.stringify({ n: i.display, w: wikiName(i), d: meta, r: reqLine(u), l: e && e.loc ? e.loc.replace(/\s*\[\s*Map Link\s*\]\s*;?/g, "").replace(/\s+([.,;])/g, "$1").replace(/\s{2,}/g, " ") : "", i: img || "" }))}" role="button" tabindex="0" title="${esc(i.display)}">${img ? `<img src="${img}" alt="" loading="lazy">` : `<span class="nm">${esc(i.display)}</span>`}${i.qty > 1 ? `<span class="q">${i.qty}</span>` : ""}${i.kind === "weapon" && i.level ? `<span class="lv">+${i.level}</span>` : ""}</div>`; };
     $("#inv").innerHTML = items.slice(0, limit).map(cell).join("");
     const more = $("#more"); more.hidden = items.length <= limit; if (!more.hidden) more.textContent = `Mostrar ${Math.min(250, items.length - limit)} más (${items.length - limit} restantes)`;
     $("#invDetail").innerHTML = `<div class="d help">Toca un objeto para ver el detalle.</div>`;
   }
 
-  function modeChips() { $("#mode").innerHTML = [["have", "Tengo"], ["missing", "No tengo"]].map(([m, l]) => `<button class="cat" aria-pressed="${m === mode}" data-m="${m}">${l}</button>`).join(""); }
-  $("#mode").addEventListener("click", e => { const b = e.target.closest(".cat"); if (!b) return; mode = b.dataset.m; limit = 250; modeChips(); renderInv(); });
+  function modeChips() { $("#mode").innerHTML = [["have", "Tengo"], ["missing", "No tengo"]].map(([m, l]) => `<button class="cat" aria-pressed="${m === mode}" data-m="${m}">${l}</button>`).join("") + (Object.keys(RQ.weapons).length ? [["all", "Todo"], ["ok", "Puedo usar"], ["no", "No cumplo"]].map(([m, l]) => `<button class="cat" aria-pressed="${m === useFilter}" data-u="${m}" style="margin-left:${m === "all" ? 8 : 0}px">${l}</button>`).join("") : ""); }
+  $("#mode").addEventListener("click", e => { const b = e.target.closest(".cat"); if (!b) return; if (b.dataset.u) { useFilter = b.dataset.u; limit = 250; modeChips(); renderInv(); return; } mode = b.dataset.m; limit = 250; modeChips(); renderInv(); });
   modeChips();
   function chips() { $("#chips").innerHTML = GROUPS.map(g => `<button class="cat" aria-pressed="${g[0] === group}" data-g="${g[0]}">${g[0]}</button>`).join(""); }
   $("#chips").addEventListener("click", e => { const b = e.target.closest(".cat"); if (!b) return; group = b.dataset.g; limit = 250; chips(); renderInv(); });
@@ -558,5 +580,5 @@ async function main(DB, FLAGS){
   } catch (e) {}
 }
 
-Promise.all([fetch("data/items.json").then(r => r.json()), fetch("data/flags.json").then(r => r.json())]).then(([db, fl]) => main(db, fl)).catch(e => { document.getElementById("msg").textContent = "No se pudo cargar la base de datos de objetos: " + e.message; });
+Promise.all([fetch("data/items.json").then(r => r.json()), fetch("data/flags.json").then(r => r.json()), fetch("data/reqs.json").then(r => r.ok ? r.json() : null).catch(() => null)]).then(([db, fl, rq]) => main(db, fl, rq)).catch(e => { document.getElementById("msg").textContent = "No se pudo cargar la base de datos de objetos: " + e.message; });
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
