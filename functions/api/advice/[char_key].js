@@ -5,7 +5,7 @@
 // the progress flags resolved to names, and a curated progression table (data/progression.json).
 import { handler, requireUser, json, bad, sha256 } from "../../_lib.js";
 
-const COOLDOWN_H = 1, DAILY_CAP = 5, MAX_TOKENS = 2200;
+const COOLDOWN_H = 1, DAILY_CAP = 5, MAX_TOKENS = 12000; // los modelos 5.x piensan por defecto y el razonamiento cuenta en max_tokens
 const DEFAULT_MODEL = "claude-sonnet-5-5";
 
 async function asset(context, path) {
