@@ -351,7 +351,17 @@ async function main(DB, FLAGS){
     }
     close(); return out.join("");
   }
-  const ADV = { busy: false, err: null };
+  const ADV = { busy: false, err: null, linker: null };
+  // Turn known place / boss / grace names inside the report into links to the map (longest names first).
+  async function reportLinker() {
+    if (ADV.linker) return ADV.linker;
+    let names = [];
+    try { const P = await fetch("data/places.json").then(r => r.json()); names = P.places.map(p => p.name); } catch (e) {}
+    names = names.concat(FLAGS.bosses.map(b => b.name), FLAGS.graces.map(g => g.name));
+    const uniq = [...new Set(names.filter(n => n && n.length > 3))].sort((a, b) => b.length - a.length);
+    const re = new RegExp("(?<![\\w'])(" + uniq.map(n => esc(n).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")(?![\\w'])", "g");
+    return ADV.linker = html => html.replace(re, m => `<a class="ml" href="map.html#focus=${encodeURIComponent(m.replace(/&amp;/g, "&"))}" title="Ver en el mapa">${m}</a>`);
+  }
   const ERR_ES = { "summary too old: open the save again while logged in": "el resumen guardado es de una versión anterior; vuelve a abrir el .sl2 con la sesión iniciada.", "advisor not configured (ANTHROPIC_API_KEY)": "falta la clave de la API en el servidor.", "daily cap reached": "has llegado al máximo diario.", "unknown character; open the save while logged in first": "este personaje no está en tu cuenta todavía; abre el .sl2 con la sesión iniciada." };
   async function renderAdvice(c) {
     const el = $("#advice"); if (!el) return;
@@ -366,6 +376,7 @@ async function main(DB, FLAGS){
       ${why ? `<p class="help">${esc(why)}</p>` : ""}
       ${ADV.err ? `<p class="err">No se pudo generar el informe: ${esc(ADV.err)}</p>` : ""}
       ${r.advice ? `<div class="pane frame md">${md(r.advice.text)}</div>` : ""}`;
+    if (r.advice) { const link = await reportLinker(); const box = el.querySelector(".md"); if (box && CUR === c) { for (const n of [...box.querySelectorAll("h2, p, li")]) { if (!n.querySelector("a")) n.innerHTML = link(n.innerHTML); } } }
     $("#advRefresh").onclick = async () => {
       ADV.busy = true; const btn = $("#advRefresh"); btn.disabled = true; btn.textContent = "Generando…";
       const st = document.createElement("p"); st.className = "help"; st.id = "advStatus"; st.textContent = "Pidiendo el informe a Claude (suele tardar entre 15 y 40 segundos)…"; el.insertBefore(st, el.children[1] || null);

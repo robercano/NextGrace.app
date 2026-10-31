@@ -282,6 +282,17 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   $("#legend").innerHTML = [["grace todo", "grace", "gracia pendiente"], ["grace", "grace", "visitada"], ["boss todo", "boss", "jefe pendiente"], ["boss", "boss", "vencido"], ["miss", "weapon", "objetos que te faltan"], ["place seen", "cave", "lugar visitado"], ["place todo", "cave", "lugar pendiente"], ["place", "cave", "lugar sin datos"], ["user", "user", "añadido"]].map(([c, k, t]) => `<span><span class="pin ${c}" style="display:inline-flex;width:16px;height:16px;vertical-align:middle;margin-right:5px">${glyph(k, 10)}</span>${t}</span>`).join("");
   render();
   syncMarks();
+  // #focus=<name>: centre on a place (from the report or the progress lists); bosses and graces resolve to their place
+  (function focus() {
+    const h = new URLSearchParams(location.hash.slice(1)); const name = h.get("focus"); if (!name) return;
+    let p = findPlace(name), label = name, kind = "Lugar";
+    if (!p) { const b = F.bosses.find(x => x.name.toLowerCase() === name.toLowerCase()); if (b) { p = findPlace(b.region) || findPlace(b.name); kind = "Jefe"; label = b.name + (p ? " · " + p.name : ""); } }
+    if (!p) { const g = F.graces.find(x => x.name.toLowerCase() === name.toLowerCase()); if (g) { p = findPlace(g.name) || findPlace(g.region); kind = "Gracia"; label = g.name; } }
+    if (!p) { L.popup().setLatLng([H / 2, W / 2]).setContent(`<div class="popup"><h4>${esc(name)}</h4><div class="m">No tengo coordenadas de este sitio todavía.</div></div>`).openOn(map); return; }
+    const lay = layerOf(p); if ($("#layerSel").value !== lay) { $("#layerSel").value = lay; setBg(lay); render(); }
+    map.setView(at(p), 0, { animate: false });
+    L.popup({ offset: [0, -8] }).setLatLng(at(p)).setContent(`<div class="popup"><h4>${wl(p.article || p.name, esc(label))}</h4><div class="m">${kind} · ${esc(KIND_ES[GROUP_KIND[p.group]] || p.group || "")}</div></div>`).openOn(map);
+  })();
   if (CUR && !CUR.progress) { L.popup().setLatLng([H / 2, W / 2]).setContent('<div class="popup"><h4>Falta el progreso</h4><div class="m">Esta copia de la partida se guardó con una versión anterior. Vuelve a abrir tu .sl2 en la <a href="./">ficha</a> para ver gracias y jefes visitados.</div></div>').openOn(map); }
   if (!CUR) { L.popup().setLatLng([H / 2, W / 2]).setContent('<div class="popup"><h4>Sin partida cargada</h4><div class="m">Abre tu .sl2 en la <a href="./">ficha</a> y vuelve: verás gracias, jefes y objetos pendientes.</div></div>').openOn(map); }
 })();
