@@ -58,10 +58,10 @@
     async pending() { const r = await api("/admin/markers"); return r.markers || []; },
     async history(charKey) { const r = await api("/history/" + encodeURIComponent(charKey)); return r.history || []; },
     // Advisor (server-side report cached in the account)
-    async advice(charKey) { return api("/advice/" + encodeURIComponent(charKey)); },
+    async advice(charKey) { return api("/advice/" + encodeURIComponent(charKey) + "?lang=" + (root.I18N ? root.I18N.lang : "es")); },
     // POST streams ndjson: {beat}/{progress} lines while the model works, then {advice} or {error}
     async adviceRefresh(charKey, onProgress) {
-      const r = await fetch("/api/advice/" + encodeURIComponent(charKey), { method: "POST", credentials: "same-origin", headers: { "content-type": "application/json" }, body: "{}" });
+      const r = await fetch("/api/advice/" + encodeURIComponent(charKey), { method: "POST", credentials: "same-origin", headers: { "content-type": "application/json" }, body: JSON.stringify({ lang: root.I18N ? root.I18N.lang : "es" }) });
       if (r.status === 401) return { error: "login", status: 401 };
       const ct = r.headers.get("content-type") || "";
       if (!ct.includes("ndjson")) { let d = null; try { d = await r.json(); } catch (e) {} return r.ok ? d : Object.assign({ error: (d && d.error) || r.statusText, status: r.status }, d || {}); }

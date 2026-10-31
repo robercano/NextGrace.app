@@ -91,3 +91,7 @@ Ver [ROADMAP.md](ROADMAP.md): estado del proyecto, decisiones, formato del save 
 Formato del save reconstruido a partir de [ClayAmore/ER-Save-Editor](https://github.com/ClayAmore/ER-Save-Editor), [Ariescyn/EldenRing-Save-Manager](https://github.com/Ariescyn/EldenRing-Save-Manager) y la especificación de [oisis/EldenRing-SaveForge](https://github.com/oisis/EldenRing-SaveForge). Base de datos de objetos derivada de SaveForge y ER-Save-Editor. Elden Ring es una marca de FromSoftware / Bandai Namco; este proyecto no está afiliado.
 
 <!-- deploy: 2026-10-29T16:18:37Z -->
+
+## Idioma
+
+La interfaz está en español y en inglés. El botón ES/EN de la cabecera cambia el idioma (también `?lang=en` en la URL); la elección se guarda en el navegador. Los nombres de objetos, jefes y lugares se mantienen en inglés, como en la wiki. Para añadir textos nuevos: escribirlos en español dentro de `T()` (o con `data-i18n` en el HTML) y añadir la traducción a la tabla `EN` de `src/i18n.js`.

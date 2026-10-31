@@ -72,55 +72,58 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   <h1>Tarnished Ledger</h1>
   <select id="charSel" aria-label="Personaje" hidden></select>
   <select id="layerSel" aria-label="Capa">
-    <option value="tlb">Tierras Intermedias</option>
-    <option value="gugr">Subsuelo</option>
-    <option value="sote">Reino de las Sombras</option>
+    <option value="tlb" data-i18n="Tierras Intermedias">Tierras Intermedias</option>
+    <option value="gugr" data-i18n="Subsuelo">Subsuelo</option>
+    <option value="sote" data-i18n="Reino de las Sombras">Reino de las Sombras</option>
   </select>
   <select id="stateSel" aria-label="Estado">
-    <option value="all">Todo</option>
-    <option value="todo">Pendiente</option>
-    <option value="done">Hecho</option>
+    <option value="all" data-i18n="Todo">Todo</option>
+    <option value="todo" data-i18n="Pendiente">Pendiente</option>
+    <option value="done" data-i18n="Hecho">Hecho</option>
   </select>
+  <button class="btn" data-lang-toggle style="margin-left:auto;padding:5px 8px;font-size:.7rem;letter-spacing:.1em">EN</button>
 </div>
-<div class="modes"><a class="mode" href="./">Ficha</a><a class="mode" aria-current="true" href="map.html">Mapa</a></div>
+<div class="modes"><a class="mode" href="./" data-i18n="Ficha">Ficha</a><a class="mode" aria-current="true" href="map.html" data-i18n="Mapa">Mapa</a></div>
 <div class="tools">
-  <input id="q" type="search" placeholder="Buscar lugar, gracia u objeto…" autocomplete="off">
-  <button class="chip" data-l="grace" aria-pressed="true"><i style="background:var(--ok)"></i>Gracias</button>
-  <button class="chip" data-l="boss" aria-pressed="true"><i style="background:#ff3b6b"></i>Jefes</button>
-  <button class="chip" data-l="place" aria-pressed="false"><i style="background:#8a8577"></i>Lugares</button>
-  <button class="chip" data-l="miss" aria-pressed="true"><i style="background:var(--bad)"></i>Me faltan</button>
-  <button class="chip" data-l="user" aria-pressed="true"><i style="background:var(--user)"></i>Añadidos</button>
-  <button class="btn" id="addBtn">+ Añadir</button>
+  <input id="q" type="search" placeholder="Buscar lugar, gracia u objeto…" data-i18n-ph="Buscar lugar, gracia u objeto…" autocomplete="off">
+  <button class="chip" data-l="grace" aria-pressed="true"><i style="background:var(--ok)"></i><span data-i18n="Gracias">Gracias</span></button>
+  <button class="chip" data-l="boss" aria-pressed="true"><i style="background:#ff3b6b"></i><span data-i18n="Jefes">Jefes</span></button>
+  <button class="chip" data-l="place" aria-pressed="false"><i style="background:#8a8577"></i><span data-i18n="Lugares">Lugares</span></button>
+  <button class="chip" data-l="miss" aria-pressed="true"><i style="background:var(--bad)"></i><span data-i18n="Me faltan">Me faltan</span></button>
+  <button class="chip" data-l="user" aria-pressed="true"><i style="background:var(--user)"></i><span data-i18n="Añadidos">Añadidos</span></button>
+  <button class="btn" id="addBtn" data-i18n="+ Añadir">+ Añadir</button>
 </div>
 <div class="tools sub" id="placeTypes" hidden></div>
 <div class="wrap">
   <div id="map"></div>
-  <div class="hint" id="hint" hidden>Toca el mapa donde está el objeto</div>
+  <div class="hint" id="hint" hidden data-i18n="Toca el mapa donde está el objeto.">Toca el mapa donde está el objeto</div>
   <div class="legend" id="legend"></div>
 </div>
 
 <div class="sheet" id="sheet" hidden>
-  <h3>Nuevo marcador</h3>
-  <div class="row"><input id="mItem" list="items" placeholder="Objeto (empieza a escribir)" autocomplete="off"><datalist id="items"></datalist></div>
-  <div class="row"><input id="mNote" placeholder="Nota (opcional): cofre, enemigo, cómo llegar…"></div>
-  <label class="row small" id="mPendRow" hidden style="align-items:center;gap:6px"><input type="checkbox" id="mPend" style="flex:0 0 auto"> Enviar como propuesta pendiente (para probar la moderación)</label>
-  <div class="row"><button class="btn primary" id="mSave">Guardar</button><button class="btn" id="mCancel">Cancelar</button></div>
-  <p class="muted small" style="margin:0" id="sheetNote">Se guarda en este navegador. Desde <b>Añadidos → Exportar</b> puedes copiar el JSON y enviarlo al repo para compartirlo.</p>
+  <h3 data-i18n="Nuevo marcador">Nuevo marcador</h3>
+  <div class="row"><input id="mItem" list="items" placeholder="Objeto (empieza a escribir)" data-i18n-ph="Objeto (empieza a escribir)" autocomplete="off"><datalist id="items"></datalist></div>
+  <div class="row"><input id="mNote" placeholder="Nota (opcional): cofre, enemigo, cómo llegar…" data-i18n-ph="Nota (opcional): cofre, enemigo, cómo llegar…"></div>
+  <label class="row small" id="mPendRow" hidden style="align-items:center;gap:6px"><input type="checkbox" id="mPend" style="flex:0 0 auto"> <span data-i18n="Enviar como propuesta pendiente (para probar la moderación)">Enviar como propuesta pendiente (para probar la moderación)</span></label>
+  <div class="row"><button class="btn primary" id="mSave" data-i18n="Guardar">Guardar</button><button class="btn" id="mCancel" data-i18n="Cancelar">Cancelar</button></div>
+  <p class="muted small" style="margin:0" id="sheetNote" data-i18n="Se guarda en este navegador. Desde <b>Añadidos → Exportar</b> puedes copiar el JSON y enviarlo al repo para compartirlo.">Se guarda en este navegador. Desde <b>Añadidos → Exportar</b> puedes copiar el JSON y enviarlo al repo para compartirlo.</p>
 </div>
 
 <div class="sheet" id="userSheet" hidden>
-  <h3>Marcadores añadidos</h3>
+  <h3 data-i18n="Marcadores añadidos">Marcadores añadidos</h3>
   <div id="userList" class="small"></div>
-  <div class="row"><button class="btn" id="exportBtn">Copiar JSON</button><label class="btn" for="importFile">Importar JSON</label><input id="importFile" type="file" accept=".json,application/json" hidden><button class="btn" id="userClose">Cerrar</button></div>
+  <div class="row"><button class="btn" id="exportBtn" data-i18n="Copiar JSON">Copiar JSON</button><label class="btn" for="importFile" data-i18n="Importar JSON">Importar JSON</label><input id="importFile" type="file" accept=".json,application/json" hidden><button class="btn" id="userClose" data-i18n="Cerrar">Cerrar</button></div>
   <p class="muted small" style="margin:0" id="exportMsg"></p>
 </div>
 
 <script src="vendor/leaflet/leaflet.js"></script>
+<script src="src/i18n.js"></script>
 <script src="src/marks.js"></script>
 <script src="src/cloud.js"></script>
 <script>
 (async function () {
   const $ = s => document.querySelector(s);
+  I18N.apply();
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
   const WIKI = "https://eldenring.wiki.gg/wiki/";
   const wl = (name, text) => `<a href="${WIKI}${encodeURIComponent(name.replace(/ /g, "_"))}" target="_blank" rel="noopener">${text || esc(name)}</a>`;
@@ -182,7 +185,9 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   };
   const GROUP_KIND = { SiteofGrace: "grace", SiteOfGrace: "grace", Church: "church", Ruins: "ruins", UndergroundRuins: "ruins", Cave: "cave", Catacombs: "catacombs", "Hero'sGrave": "catacombs", Tunnels: "tunnel", TunnelEntrance: "tunnel", LegacyDungeon: "dungeon", OldCastle: "dungeon", Fort: "fort", Rise: "tower", LookoutTower: "tower", DivineTower: "tower", Evergaol: "evergaol", MinorErdtree: "tree", Spiritstream: "stream", RebirthMonument: "mausoleum", RiverWell: "well", Village: "village", Town: "village", SunkenTown: "village", EternalCity: "village", FurnaceGolem: "golem", PotThrowingLocation: "pot", Shack: "village", Windmill: "village", Colosseum: "evergaol", GrandLift: "tower", Gateway: "tower", SubRegion: "region", Map: "item" };
   const CAT_KIND = { melee_armaments: "weapon", ranged_and_catalysts: "weapon", shields: "weapon", head: "armor", chest: "armor", arms: "armor", legs: "armor", talismans: "talisman", ashes_of_war: "aow", ashes: "aow", sorceries: "spell", incantations: "spell", key_items: "key" };
-  const KIND_ES = { grace: "Gracias", church: "Iglesias", ruins: "Ruinas", cave: "Cuevas", catacombs: "Catacumbas", tunnel: "Túneles", dungeon: "Mazmorras", fort: "Fuertes", tower: "Torres", evergaol: "Evergaols", tree: "Árboles menores", stream: "Corrientes", mausoleum: "Mausoleos", well: "Pozos", village: "Aldeas", golem: "Gólems", pot: "Ollas", region: "Regiones", place: "Otros", item: "Mapas" };
+  const KIND_ES0 = { grace: "Gracias", church: "Iglesias", ruins: "Ruinas", cave: "Cuevas", catacombs: "Catacumbas", tunnel: "Túneles", dungeon: "Mazmorras", fort: "Fuertes", tower: "Torres", evergaol: "Evergaols", tree: "Árboles menores", stream: "Corrientes", mausoleum: "Mausoleos", well: "Pozos", village: "Aldeas", golem: "Gólems", pot: "Ollas", region: "Regiones", place: "Otros", item: "Mapas" };
+  const KIND_EN = { grace: "Graces", church: "Churches", ruins: "Ruins", cave: "Caves", catacombs: "Catacombs", tunnel: "Tunnels", dungeon: "Dungeons", fort: "Forts", tower: "Towers", evergaol: "Evergaols", tree: "Minor Erdtrees", stream: "Rivers", mausoleum: "Mausoleums", well: "Wells", village: "Villages", golem: "Golems", pot: "Pots", region: "Regions", place: "Other", item: "Maps" };
+  const KIND_ES = I18N.lang === "en" ? KIND_EN : KIND_ES0;
   let placeKinds = null; // null = all
   const glyph = (k, size) => `<svg viewBox="0 0 16 16" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round">${G[k] || G.place}</svg>`;
   const pin = (cls, kind, label) => { const big = cls.includes("miss") || cls.includes("todo"); const s = big ? 26 : 18;
@@ -217,36 +222,36 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
     const graceNames = new Set();
     for (const g of F.graces) { const p = findPlace(g.name); if (!p || layerOf(p) !== layer) continue; graceNames.add(p.name.toLowerCase()); if (!match(g.name)) continue;
       const done = gv.has(g.id) || manual.has("grace:" + g.id); if (state !== "all" && (state === "done") !== done) continue;
-      L.marker(at(p), { icon: pin("grace" + (done ? "" : " todo"), "grace") }).bindPopup(`<div class="popup"><h4>${wl(g.name)}</h4><div class="m">Gracia · ${esc(g.region)} · ${done ? "visitada" : "pendiente"}</div></div>`).addTo(layers.grace); }
+      L.marker(at(p), { icon: pin("grace" + (done ? "" : " todo"), "grace") }).bindPopup(`<div class="popup"><h4>${wl(g.name)}</h4><div class="m">${T("Gracia")} · ${esc(g.region)} · ${done ? T("visitada") : T("pendiente")}</div></div>`).addTo(layers.grace); }
     // bosses: placed by region/place name
     for (const b of F.bosses) { if (bossType === "main" && b.type !== "main") continue; if (bossType === "field" && b.type === "main") continue; if (bossType === "rem" && !b.rem) continue;
       const p = findPlace(b.region) || findPlace(b.name); if (!p || layerOf(p) !== layer || !match(b.name)) continue; const done = bd.has(b.id) || manual.has("boss:" + b.id); if (state !== "all" && (state === "done") !== done) continue;
-      L.marker(at(p), { icon: pin("boss" + (done ? "" : " todo"), "boss") }).bindPopup(`<div class="popup"><h4>${wl(b.name)}</h4><div class="m">Jefe · ${esc(b.region)} · ${done ? "vencido" : "pendiente"}${b.rem ? " · remembranza" : ""}</div></div>`).addTo(layers.boss); }
+      L.marker(at(p), { icon: pin("boss" + (done ? "" : " todo"), "boss") }).bindPopup(`<div class="popup"><h4>${wl(b.name)}</h4><div class="m">${T("Jefe")} · ${esc(b.region)} · ${done ? T("vencido") : T("pendiente")}${b.rem ? " · " + T("remembranza") : ""}</div></div>`).addTo(layers.boss); }
     // places
     for (const p of P.places) { if (p.region || layerOf(p) !== layer || graceNames.has(p.name.toLowerCase()) || !match(p.name)) continue; const pk = GROUP_KIND[p.group] || "place"; if (placeKinds && !placeKinds.has(pk)) continue;
       const k = p.name.toLowerCase(), man = manual.has("place:" + p.id), st = seen.has(k) || man ? "seen" : known.has(k) && CUR ? "todo" : "";
       if (state === "done" && st !== "seen") continue; if (state === "todo" && st === "seen") continue;
-      L.marker(at(p), { icon: pin("place " + st, GROUP_KIND[p.group] || "place") }).bindPopup(`<div class="popup"><h4>${wl(p.article || p.name, esc(p.name))}</h4><div class="m">${esc(KIND_ES[GROUP_KIND[p.group]] || p.group)}${seen.has(k) ? " · visitado (según el save)" : man ? " · visitado (marcado a mano)" : st === "todo" ? " · pendiente" : ""}</div>${CUR ? `<button class="chip" data-mark="place|${p.id}" aria-pressed="${man}" style="margin-top:6px">${man ? "✓ Visitado" : "Marcar como visitado"}</button>` : ""}</div>`).addTo(layers.place); }
+      L.marker(at(p), { icon: pin("place " + st, GROUP_KIND[p.group] || "place") }).bindPopup(`<div class="popup"><h4>${wl(p.article || p.name, esc(p.name))}</h4><div class="m">${esc(KIND_ES[GROUP_KIND[p.group]] || p.group)}${seen.has(k) ? " · " + T("visitado (según el save)") : man ? " · " + T("visitado (marcado a mano)") : st === "todo" ? " · " + T("pendiente") : ""}</div>${CUR ? `<button class="chip" data-mark="place|${p.id}" aria-pressed="${man}" style="margin-top:6px">${man ? T("✓ Visitado") : T("Marcar como visitado")}</button>` : ""}</div>`).addTo(layers.place); }
     // missing items grouped by place
     if (have) {
       const byPlace = new Map();
       for (const it of CATALOG) { if (have.has(baseKey({ name: it.name, kind: it.kind })) || picked.has(it.id) || manual.has("item:" + it.id)) continue; const pls = P.items[it.id]; if (!pls) continue;
         for (const pi of pls) { const p = P.places[pi]; if (p.region || layerOf(p) !== layer) continue; if (!match(it.name) && !match(p.name)) continue; (byPlace.get(pi) || byPlace.set(pi, []).get(pi)).push(it); } }
       for (const [pi, list] of byPlace) { const p = P.places[pi];
-        L.marker(at(p), { icon: pin("miss", (() => { const n = {}; for (const it of list) { const k = CAT_KIND[it.cat] || "item"; n[k] = (n[k] || 0) + 1; } return Object.entries(n).sort((a, b) => b[1] - a[1])[0][0]; })(), list.length), zIndexOffset: 500 }).bindPopup(`<div class="popup"><h4>${esc(p.name)}</h4><div class="m">${list.length} objeto${list.length > 1 ? "s" : ""} que te faltan</div><ul>${list.map(it => `<li>${wl(it.name)} <button class="chip" data-mark="item|${it.id}" aria-pressed="false" style="font-size:.72rem;padding:1px 7px">conseguido</button><div class="m">${esc(it.loc.replace(/\s*\[\s*Map Link\s*\]\s*;?/g, ""))}</div></li>`).join("")}</ul></div>`, { maxWidth: 320 }).addTo(layers.miss); }
+        L.marker(at(p), { icon: pin("miss", (() => { const n = {}; for (const it of list) { const k = CAT_KIND[it.cat] || "item"; n[k] = (n[k] || 0) + 1; } return Object.entries(n).sort((a, b) => b[1] - a[1])[0][0]; })(), list.length), zIndexOffset: 500 }).bindPopup(`<div class="popup"><h4>${esc(p.name)}</h4><div class="m">${T("{0} objeto{1} que te faltan", list.length, list.length > 1 ? "s" : "")}</div><ul>${list.map(it => `<li>${wl(it.name)} <button class="chip" data-mark="item|${it.id}" aria-pressed="false" style="font-size:.72rem;padding:1px 7px">${T("conseguido")}</button><div class="m">${esc(it.loc.replace(/\s*\[\s*Map Link\s*\]\s*;?/g, ""))}</div></li>`).join("")}</ul></div>`, { maxWidth: 320 }).addTo(layers.miss); }
     }
     // user + community markers
     const remoteIds = new Set(community.filter(m => m.remote).map(m => m.id));
     for (const m of community.concat(userMarkers.filter(m => !(m.remoteId && remoteIds.has(m.remoteId))))) { if ((m.layer || "tlb") !== layer || !match(m.item || "") && !match(m.note || "")) continue; const own = have ? have.has((m.item || "").toLowerCase().replace(/\s*\+\d+$/, "")) : false;
-      const st = m.status === "pending" ? " · pendiente de revisión" : m.status === "rejected" ? " · rechazado" : m.remote ? "" : m.remoteId ? " · enviado" : " · solo en este navegador";
-      L.marker([m.y, m.x], { icon: pin("user" + (m.status === "pending" ? " todo" : ""), "user") }).bindPopup(`<div class="popup"><h4>${m.item ? wl(m.item) : "Marcador"}</h4><div class="m">${esc(m.note || "")}${own ? " · ya lo tienes" : ""}${m.by ? " · por " + esc(m.by) : ""}${st}</div></div>`).addTo(layers.user); }
+      const st = m.status === "pending" ? T(" · pendiente de revisión") : m.status === "rejected" ? T(" · rechazado") : m.remote ? "" : m.remoteId ? T(" · enviado") : T(" · solo en este navegador");
+      L.marker([m.y, m.x], { icon: pin("user" + (m.status === "pending" ? " todo" : ""), "user") }).bindPopup(`<div class="popup"><h4>${m.item ? wl(m.item) : T("Marcador")}</h4><div class="m">${esc(m.note || "")}${own ? " · " + T("ya lo tienes") : ""}${m.by ? " · " + T("por {0}", esc(m.by)) : ""}${st}</div></div>`).addTo(layers.user); }
     for (const k in layers) { if (vis[k]) map.addLayer(layers[k]); else map.removeLayer(layers[k]); }
   }
   (function buildPlaceTypes() {
     const cnt = {}; for (const p of P.places) { if (p.region) continue; const k = GROUP_KIND[p.group] || "place"; cnt[k] = (cnt[k] || 0) + 1; }
     const kinds = Object.keys(cnt).filter(k => k !== "grace").sort((a, b) => cnt[b] - cnt[a]);
     const box = $("#placeTypes");
-    box.innerHTML = `<button class="chip" data-pk="*" aria-pressed="true">Todos</button>` + kinds.map(k => `<button class="chip" data-pk="${k}" aria-pressed="false">${glyph(k, 12)}${KIND_ES[k] || k} <span style="opacity:.6">${cnt[k]}</span></button>`).join("");
+    box.innerHTML = `<button class="chip" data-pk="*" aria-pressed="true">${T("Todos")}</button>` + kinds.map(k => `<button class="chip" data-pk="${k}" aria-pressed="false">${glyph(k, 12)}${KIND_ES[k] || k} <span style="opacity:.6">${cnt[k]}</span></button>`).join("");
     box.onclick = e => { const b = e.target.closest("[data-pk]"); if (!b) return; const k = b.dataset.pk;
       if (k === "*") placeKinds = null; else { placeKinds = placeKinds || new Set(); if (placeKinds.has(k)) placeKinds.delete(k); else placeKinds.add(k); if (!placeKinds.size) placeKinds = null; }
       for (const c of box.querySelectorAll("[data-pk]")) c.setAttribute("aria-pressed", c.dataset.pk === "*" ? !placeKinds : !!(placeKinds && placeKinds.has(c.dataset.pk)));
@@ -260,8 +265,8 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   // ---- editor --------------------------------------------------------------
   $("#items").innerHTML = CATALOG.map(i => `<option value="${esc(i.name)}">`).join("");
   if (Cloud.isAdmin()) $("#mPendRow").hidden = false;
-  if (Cloud.user()) $("#sheetNote").innerHTML = Cloud.isAdmin() ? "Se publica directamente en el mapa de la comunidad (eres moderador)." : "Se envía al mapa de la comunidad y aparecerá para todos cuando un moderador lo apruebe. Mientras, lo verás solo tú.";
-  else if (Cloud.available()) $("#sheetNote").innerHTML = 'Se guarda en este navegador. Si entras con Steam desde la <a href="./">ficha</a>, tus marcadores se envían al mapa de la comunidad.';
+  if (Cloud.user()) $("#sheetNote").innerHTML = Cloud.isAdmin() ? T("Se publica directamente en el mapa de la comunidad (eres moderador).") : T("Se envía al mapa de la comunidad y aparecerá para todos cuando un moderador lo apruebe. Mientras, lo verás solo tú.");
+  else if (Cloud.available()) $("#sheetNote").innerHTML = T('Se guarda en este navegador. Si entras con Steam desde la <a href="./">ficha</a>, tus marcadores se envían al mapa de la comunidad.');
   let adding = false, pending = null;
   $("#addBtn").onclick = () => { adding = !adding; $("#hint").hidden = !adding; $("#addBtn").setAttribute("aria-pressed", adding); };
   map.on("click", e => { if (!adding) return; pending = { x: Math.round(e.latlng.lng * 10) / 10, y: Math.round(e.latlng.lat * 10) / 10, layer: $("#layerSel").value }; $("#mItem").value = ""; $("#mNote").value = ""; $("#sheet").hidden = false; $("#mItem").focus(); });
@@ -269,32 +274,32 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   $("#mSave").onclick = () => { if (!pending) return; const item = $("#mItem").value.trim(); if (!item) { $("#mItem").focus(); return; }
     const m = Object.assign(pending, { item, note: $("#mNote").value.trim(), at: new Date().toISOString().slice(0, 10) }); userMarkers.push(m); saveUser(); $("#sheet").hidden = true; adding = false; $("#hint").hidden = true; $("#addBtn").setAttribute("aria-pressed", "false"); render();
     if (Cloud.user()) Cloud.proposeMarker({ layer: m.layer, x: m.x, y: m.y, item: m.item, note: m.note, pending: $("#mPend").checked }).then(r => { if (r && !r.error) { m.remoteId = r.id; m.status = r.status; community.push(Object.assign({}, m, { remote: true, id: r.id, by: Cloud.user().name })); saveUser(); render(); } }); };
-  function openUser() { $("#userList").innerHTML = userMarkers.length ? userMarkers.map((m, i) => `<div>${esc(m.item)} <span class="muted">(${m.x}, ${m.y}, ${m.layer})${m.note ? " · " + esc(m.note) : ""}</span> <button class="chip" data-del="${i}">quitar</button></div>`).join("") : `<span class="muted">Todavía no has añadido marcadores. Pulsa “+ Añadir” y toca el mapa.</span>`; $("#userSheet").hidden = false; }
+  function openUser() { $("#userList").innerHTML = userMarkers.length ? userMarkers.map((m, i) => `<div>${esc(m.item)} <span class="muted">(${m.x}, ${m.y}, ${m.layer})${m.note ? " · " + esc(m.note) : ""}</span> <button class="chip" data-del="${i}">${T("quitar")}</button></div>`).join("") : `<span class="muted">${T("Todavía no has añadido marcadores. Pulsa “+ Añadir” y toca el mapa.")}</span>`; $("#userSheet").hidden = false; }
   $("#userList").onclick = e => { const b = e.target.closest("[data-del]"); if (!b) return; userMarkers.splice(+b.dataset.del, 1); saveUser(); openUser(); render(); };
   $("#userClose").onclick = () => { $("#userSheet").hidden = true; };
-  $("#exportBtn").onclick = async () => { const txt = JSON.stringify(userMarkers, null, 1); try { await navigator.clipboard.writeText(txt); $("#exportMsg").textContent = "Copiado. Pégalo en data/user_markers.json del repo (o en un issue)."; } catch (e) { $("#exportMsg").textContent = txt; } };
-  $("#importFile").onchange = async e => { const f = e.target.files[0]; if (!f) return; try { const arr = JSON.parse(await f.text()); if (Array.isArray(arr)) { userMarkers = userMarkers.concat(arr.filter(m => typeof m.x === "number" && typeof m.y === "number")); saveUser(); openUser(); render(); } } catch (err) { $("#exportMsg").textContent = "JSON no válido."; } };
+  $("#exportBtn").onclick = async () => { const txt = JSON.stringify(userMarkers, null, 1); try { await navigator.clipboard.writeText(txt); $("#exportMsg").textContent = T("Copiado. Pégalo en data/user_markers.json del repo (o en un issue)."); } catch (e) { $("#exportMsg").textContent = txt; } };
+  $("#importFile").onchange = async e => { const f = e.target.files[0]; if (!f) return; try { const arr = JSON.parse(await f.text()); if (Array.isArray(arr)) { userMarkers = userMarkers.concat(arr.filter(m => typeof m.x === "number" && typeof m.y === "number")); saveUser(); openUser(); render(); } } catch (err) { $("#exportMsg").textContent = T("JSON no válido."); } };
 
   $("#stateSel").value = state; $("#stateSel").onchange = e => { state = e.target.value; render(); };
   for (const b of document.querySelectorAll(".chip[data-l]")) b.setAttribute("aria-pressed", !!vis[b.dataset.l]);
   if (vis.place) $("#placeTypes").hidden = false;
   if (q) $("#q").value = q;
-  $("#legend").innerHTML = [["grace todo", "grace", "gracia pendiente"], ["grace", "grace", "visitada"], ["boss todo", "boss", "jefe pendiente"], ["boss", "boss", "vencido"], ["miss", "weapon", "objetos que te faltan"], ["place seen", "cave", "lugar visitado"], ["place todo", "cave", "lugar pendiente"], ["place", "cave", "lugar sin datos"], ["user", "user", "añadido"]].map(([c, k, t]) => `<span><span class="pin ${c}" style="display:inline-flex;width:16px;height:16px;vertical-align:middle;margin-right:5px">${glyph(k, 10)}</span>${t}</span>`).join("");
+  $("#legend").innerHTML = [["grace todo", "grace", "gracia pendiente"], ["grace", "grace", "visitada"], ["boss todo", "boss", "jefe pendiente"], ["boss", "boss", "vencido"], ["miss", "weapon", "objetos que te faltan"], ["place seen", "cave", "lugar visitado"], ["place todo", "cave", "lugar pendiente"], ["place", "cave", "lugar sin datos"], ["user", "user", "añadido"]].map(([c, k, t0]) => [c, k, T(t0)]).map(([c, k, t]) => `<span><span class="pin ${c}" style="display:inline-flex;width:16px;height:16px;vertical-align:middle;margin-right:5px">${glyph(k, 10)}</span>${t}</span>`).join("");
   render();
   syncMarks();
   // #focus=<name>: centre on a place (from the report or the progress lists); bosses and graces resolve to their place
   (function focus() {
     const h = new URLSearchParams(location.hash.slice(1)); const name = h.get("focus"); if (!name) return;
-    let p = findPlace(name), label = name, kind = "Lugar";
-    if (!p) { const b = F.bosses.find(x => x.name.toLowerCase() === name.toLowerCase()); if (b) { p = findPlace(b.region) || findPlace(b.name); kind = "Jefe"; label = b.name + (p ? " · " + p.name : ""); } }
-    if (!p) { const g = F.graces.find(x => x.name.toLowerCase() === name.toLowerCase()); if (g) { p = findPlace(g.name) || findPlace(g.region); kind = "Gracia"; label = g.name; } }
-    if (!p) { L.popup().setLatLng([H / 2, W / 2]).setContent(`<div class="popup"><h4>${esc(name)}</h4><div class="m">No tengo coordenadas de este sitio todavía.</div></div>`).openOn(map); return; }
+    let p = findPlace(name), label = name, kind = T("Lugar");
+    if (!p) { const b = F.bosses.find(x => x.name.toLowerCase() === name.toLowerCase()); if (b) { p = findPlace(b.region) || findPlace(b.name); kind = T("Jefe"); label = b.name + (p ? " · " + p.name : ""); } }
+    if (!p) { const g = F.graces.find(x => x.name.toLowerCase() === name.toLowerCase()); if (g) { p = findPlace(g.name) || findPlace(g.region); kind = T("Gracia"); label = g.name; } }
+    if (!p) { L.popup().setLatLng([H / 2, W / 2]).setContent(`<div class="popup"><h4>${esc(name)}</h4><div class="m">${T("No tengo coordenadas de este sitio todavía.")}</div></div>`).openOn(map); return; }
     const lay = layerOf(p); if ($("#layerSel").value !== lay) { $("#layerSel").value = lay; setBg(lay); render(); }
     map.setView(at(p), 0, { animate: false });
     L.popup({ offset: [0, -8] }).setLatLng(at(p)).setContent(`<div class="popup"><h4>${wl(p.article || p.name, esc(label))}</h4><div class="m">${kind} · ${esc(KIND_ES[GROUP_KIND[p.group]] || p.group || "")}</div></div>`).openOn(map);
   })();
-  if (CUR && !CUR.progress) { L.popup().setLatLng([H / 2, W / 2]).setContent('<div class="popup"><h4>Falta el progreso</h4><div class="m">Esta copia de la partida se guardó con una versión anterior. Vuelve a abrir tu .sl2 en la <a href="./">ficha</a> para ver gracias y jefes visitados.</div></div>').openOn(map); }
-  if (!CUR) { L.popup().setLatLng([H / 2, W / 2]).setContent('<div class="popup"><h4>Sin partida cargada</h4><div class="m">Abre tu .sl2 en la <a href="./">ficha</a> y vuelve: verás gracias, jefes y objetos pendientes.</div></div>').openOn(map); }
+  if (CUR && !CUR.progress) { L.popup().setLatLng([H / 2, W / 2]).setContent(`<div class="popup"><h4>${T("Falta el progreso")}</h4><div class="m">${T('Esta copia de la partida se guardó con una versión anterior. Vuelve a abrir tu .sl2 en la <a href="./">ficha</a> para ver gracias y jefes visitados.')}</div></div>`).openOn(map); }
+  if (!CUR) { L.popup().setLatLng([H / 2, W / 2]).setContent(`<div class="popup"><h4>${T("Sin partida cargada")}</h4><div class="m">${T('Abre tu .sl2 en la <a href="./">ficha</a> y vuelve: verás gracias, jefes y objetos pendientes.')}</div></div>`).openOn(map); }
 })();
 </script>
 </body>

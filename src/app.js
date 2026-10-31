@@ -1,6 +1,7 @@
 /* app.js — Tarnished Ledger UI. Expects window.ERSave (src/ersave.js) and the items DB passed to main(). */
 async function main(DB, FLAGS, REQS){
   const $ = s => document.querySelector(s);
+  I18N.apply();
   const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   let SAVE = null, CUR = null, FILENAME = "";
   const WIKI = "https://eldenring.wiki.gg/wiki/";
@@ -41,29 +42,29 @@ async function main(DB, FLAGS, REQS){
   }
   function idb() { return new Promise((res, rej) => { const r = indexedDB.open("tl", 1); r.onupgradeneeded = () => r.result.createObjectStore("icons"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
   async function iconsLoad() {
-    try { const r = await fetch("icons/index.json", { cache: "no-cache" }); if (r.ok) { for (const n of await r.json()) ICONS.set(n.replace(/\.[a-z0-9]+$/i, ""), "icons/" + n); iconAliases(); if (ICONS.size) { $("#iconsMsg").textContent = ICONS.size + " iconos del sitio."; $("#iconsBtn").textContent = "Añadir iconos"; } } } catch (e) {}
+    try { const r = await fetch("icons/index.json", { cache: "no-cache" }); if (r.ok) { for (const n of await r.json()) ICONS.set(n.replace(/\.[a-z0-9]+$/i, ""), "icons/" + n); iconAliases(); if (ICONS.size) { $("#iconsMsg").textContent = T("{0} iconos del sitio.", ICONS.size); $("#iconsBtn").textContent = T("Añadir iconos"); } } } catch (e) {}
     try { const db = await idb(); const tx = db.transaction("icons"); const st = tx.objectStore("icons");
       await new Promise((res, rej) => { const cur = st.openCursor(); cur.onsuccess = () => { const c = cur.result; if (!c) return res(); ICONS.set(c.key, URL.createObjectURL(c.value)); c.continue(); }; cur.onerror = () => rej(cur.error); });
-      if (ICONS.size) $("#iconsMsg").textContent = ICONS.size + " iconos disponibles.";
+      if (ICONS.size) $("#iconsMsg").textContent = T("{0} iconos disponibles.", ICONS.size);
     } catch (e) {}
   }
   async function iconsImport(files) {
     const entries = [];
     for (const f of files) {
       if (/\.zip$/i.test(f.name)) {
-        if (typeof JSZip === "undefined") { $("#iconsMsg").textContent = "No se pudo cargar el lector de zip; sube las imágenes sueltas."; return; }
+        if (typeof JSZip === "undefined") { $("#iconsMsg").textContent = T("No se pudo cargar el lector de zip; sube las imágenes sueltas."); return; }
         const z = await JSZip.loadAsync(f);
         for (const [p, e] of Object.entries(z.files)) if (!e.dir && /\.(png|webp|jpe?g|gif|svg)$/i.test(p)) entries.push([p.split("/").pop(), await e.async("blob")]);
       } else entries.push([f.name, f]);
     }
-    let db; try { db = await idb(); } catch (e) { $("#iconsMsg").textContent = "Este navegador no permite guardar los iconos."; return; }
+    let db; try { db = await idb(); } catch (e) { $("#iconsMsg").textContent = T("Este navegador no permite guardar los iconos."); return; }
     const tx = db.transaction("icons", "readwrite"); const st = tx.objectStore("icons");
     for (const [name, blob] of entries) { const key = name.replace(/\.[a-z0-9]+$/i, ""); st.put(blob, key); const old = ICONS.get(key); if (old) URL.revokeObjectURL(old); ICONS.set(key, URL.createObjectURL(blob)); }
     await new Promise(res => { tx.oncomplete = res; tx.onerror = res; });
-    $("#iconsMsg").textContent = ICONS.size + " iconos guardados en este navegador.";
+    $("#iconsMsg").textContent = T("{0} iconos guardados en este navegador.", ICONS.size);
     if (CUR) renderChar(CUR);
   }
-  $("#icons").addEventListener("change", e => { if (e.target.files.length) iconsImport(Array.from(e.target.files)).catch(err => { $("#iconsMsg").textContent = "Error al importar: " + err.message; }); });
+  $("#icons").addEventListener("change", e => { if (e.target.files.length) iconsImport(Array.from(e.target.files)).catch(err => { $("#iconsMsg").textContent = T("Error al importar: {0}", err.message); }); });
 
   // ---- upgrade economics -------------------------------------------------
   const STONE = {};  // name -> item id
@@ -84,8 +85,9 @@ async function main(DB, FLAGS, REQS){
     Axes: "Hachas", "Backhand Blades": "Hojas de revés", "Beast Claws": "Garras de bestia", Claws: "Garras", "Colossal Swords": "Espadas colosales", "Colossal Weapons": "Armas colosales", "Curved Greatswords": "Espadones curvos", "Curved Swords": "Espadas curvas", Daggers: "Dagas", Fists: "Puños", Flails: "Manguales", "Great Hammers": "Martillos grandes", "Great Katanas": "Katanas grandes", "Great Spears": "Lanzas grandes", Greataxes: "Hachas grandes", Greatswords: "Espadones", Halberds: "Alabardas", Hammers: "Martillos", "Hand-to-Hand": "Cuerpo a cuerpo", "Heavy Thrusting Swords": "Estoques pesados", Katanas: "Katanas", "Light Greatswords": "Espadones ligeros", "Perfume Bottles": "Frascos de perfume", Reapers: "Guadañas", Spears: "Lanzas", "Straight Swords": "Espadas rectas", "Throwing Blades": "Hojas arrojadizas", "Thrusting Swords": "Estoques", Twinblades: "Hojas dobles", Whips: "Látigos",
     Ballistas: "Balistas", Bows: "Arcos", Crossbows: "Ballestas", "Glintstone Staffs": "Bastones de glintstone", Greatbows: "Arcos grandes", "Light Bows": "Arcos ligeros", "Sacred Seals": "Sellos sagrados", Greatshields: "Escudos grandes", "Medium Shields": "Escudos medianos", "Small Shields": "Escudos pequeños", "Thrusting Shields": "Escudos de estocada", Torches: "Antorchas",
     Consumables: "Consumibles", Flasks: "Frascos", "Golden Runes": "Runas doradas", Grease: "Grasas", "Miscellaneous Tools": "Herramientas varias", "Multiplayer Items": "Objetos multijugador", "Perfume Arts": "Artes de perfume", Remembrances: "Remembranzas", "Reusable Tools": "Herramientas reutilizables", Throwables: "Arrojadizos", "Throwing Pots": "Vasijas arrojadizas" };
-  const subEs = s => s ? (SUB_ES[s] || s) : s;
-  const CAT_ES = { melee_armaments: "Armas", ranged_and_catalysts: "Arcos y catalizadores", shields: "Escudos", arrows_and_bolts: "Munición", head: "Cascos", chest: "Pechos", arms: "Brazos", legs: "Piernas", talismans: "Talismanes", ashes_of_war: "Cenizas de guerra", ashes: "Cenizas espirituales", sorceries: "Hechicerías", incantations: "Encantamientos", tools: "Herramientas", key_items: "Objetos clave", crafting_materials: "Materiales", bolstering_materials: "Mejora", info: "Información", gestures: "Gestos" };
+  const subEs = s => s ? (I18N.lang === "en" ? s : (SUB_ES[s] || s)) : s;
+  const CAT_ES0 = { melee_armaments: "Armas", ranged_and_catalysts: "Arcos y catalizadores", shields: "Escudos", arrows_and_bolts: "Munición", head: "Cascos", chest: "Pechos", arms: "Brazos", legs: "Piernas", talismans: "Talismanes", ashes_of_war: "Cenizas de guerra", ashes: "Cenizas espirituales", sorceries: "Hechicerías", incantations: "Encantamientos", tools: "Herramientas", key_items: "Objetos clave", crafting_materials: "Materiales", bolstering_materials: "Mejora", info: "Información", gestures: "Gestos" };
+  const CAT_ES = new Proxy(CAT_ES0, { get: (o, k) => typeof k === "string" && o[k] ? T(o[k]) : o[k] });
   const GROUPS = [["Todo", null], ["Armas", ["melee_armaments", "ranged_and_catalysts", "shields", "arrows_and_bolts"]], ["Armadura", ["head", "chest", "arms", "legs"]], ["Talismanes", ["talismans"]], ["Cenizas", ["ashes_of_war", "ashes"]], ["Magia", ["sorceries", "incantations"]], ["Consumibles", ["tools", "crafting_materials", "bolstering_materials"]], ["Clave", ["key_items", "info", "gestures"]]];
   let group = "Armas", limit = 250, mode = "have", useFilter = "all";
   // Catálogo de coleccionables para "No tengo"
@@ -126,7 +128,7 @@ async function main(DB, FLAGS, REQS){
     const g = GLOSSARY[row.dataset.g]; if (!g) return;
     let tip = row.querySelector(".tip");
     if (tip) { tip.remove(); row.classList.remove("open"); return; }
-    tip = document.createElement("div"); tip.className = "tip"; tip.innerHTML = `${row.dataset.extra ? `<div style="color:#e08a3c;margin-bottom:4px">${esc(row.dataset.extra)}</div>` : ""}${esc(g.es)} ${wlink(g.w, "Ver en la wiki ↗")}`; row.appendChild(tip); row.classList.add("open");
+    tip = document.createElement("div"); tip.className = "tip"; tip.innerHTML = `${row.dataset.extra ? `<div style="color:#e08a3c;margin-bottom:4px">${esc(row.dataset.extra)}</div>` : ""}${esc(I18N.lang === "en" && g.en ? g.en : g.es)} ${wlink(g.w, T("Ver en la wiki ↗"))}`; row.appendChild(tip); row.classList.add("open");
   });
 
   // weights come from 32-bit floats in the game data; upgraded weapons carry their level in the id, so look up the base entry; ammo weighs nothing
@@ -137,7 +139,7 @@ async function main(DB, FLAGS, REQS){
 
   // ---- requirements (data/reqs.json, from the wiki) --------------------------
   const RQ = REQS || { weapons: {}, spells: {} };
-  const STAT_SHORT = { str: "FUE", dex: "DES", int: "INT", fai: "FE", arc: "ARC" };
+  const STAT_SHORT0 = { str: "FUE", dex: "DES", int: "INT", fai: "FE", arc: "ARC" }; const STAT_SHORT = new Proxy(STAT_SHORT0, { get: (o, k) => o[k] ? T(o[k]) : o[k] });
   const STAT_KEY = { str: "strength", dex: "dexterity", int: "intelligence", fai: "faith", arc: "arcane" };
   const INF_WORDS = /\b(Heavy|Keen|Quality|Fire|Flame Art|Lightning|Sacred|Magic|Cold|Poison|Blood|Occult|Bloody)\s+/g;
   function reqOf(it) { if (!it) return null;
@@ -175,29 +177,29 @@ async function main(DB, FLAGS, REQS){
   }
   self.TL_USE = (c, it) => canUse(c, it); // used by cloud.js when building the account summary
   const useCls = u => !u ? "" : u.boosted ? " boost" : u.ok ? "" : u.twoHand ? " use2h" : " nope";
-  const useTag = u => !u ? "" : u.boosted ? `<span class="tag boost">con ${esc(u.via.join(" + "))}${u.twoHand ? ", a dos manos" : ""}</span>` : u.ok ? "" : u.twoHand ? '<span class="tag use2h">a dos manos</span>' : `<span class="tag nope">faltan ${u.missing.map(m => `${STAT_SHORT[m.k]} ${m.need - m.have}`).join(", ")}</span>`;
-  const useMeta = u => !u ? "" : u.boosted ? `solo gracias a ${u.via.join(" y ")}${u.twoHand ? " (y a dos manos)" : ""}: tus atributos base no llegan` : u.ok ? "" : u.twoHand ? "solo a dos manos" : "no cumples: " + u.missing.map(m => `${STAT_SHORT[m.k]} ${m.need} (tienes ${m.have})`).join(", ");
+  const useTag = u => !u ? "" : u.boosted ? `<span class="tag boost">${T("con {0}", esc(u.via.join(" + ")))}${u.twoHand ? T(", a dos manos") : ""}</span>` : u.ok ? "" : u.twoHand ? `<span class="tag use2h">${T("a dos manos")}</span>` : `<span class="tag nope">${T("faltan {0}", u.missing.map(m => `${STAT_SHORT[m.k]} ${m.need - m.have}`).join(", "))}</span>`;
+  const useMeta = u => !u ? "" : u.boosted ? T("solo gracias a {0}{1}: tus atributos base no llegan", u.via.join(I18N.lang === "en" ? " and " : " y "), u.twoHand ? T(" (y a dos manos)") : "") : u.ok ? "" : u.twoHand ? T("solo a dos manos") : T("no cumples: {0}", u.missing.map(m => T("{0} {1} (tienes {2})", STAT_SHORT[m.k], m.need, m.have)).join(", "));
   // one line each: requirements, scaling, (spells) FP and memory slots
   const reqLine = u => { if (!u) return ""; const req = Object.entries(u.req).filter(([, v]) => v).map(([k, v]) => `${STAT_SHORT[k]} ${v}`).join(" · "); const sc = u.scale ? Object.entries(u.scale).map(([k, v]) => `${STAT_SHORT[k]} ${v}`).join(" · ") : "";
-    const lines = [req ? "Requisitos: " + req : "Sin requisitos"]; if (sc) lines.push("Escalado: " + sc); if (u.info.fp != null || u.info.slots) lines.push([u.info.fp != null ? "FP " + u.info.fp : null, u.info.slots ? "huecos " + u.info.slots : null].filter(Boolean).join(" · ")); return lines.join("\n"); };
+    const lines = [req ? T("Requisitos: {0}", req) : T("Sin requisitos")]; if (sc) lines.push(T("Escalado: {0}", sc)); if (u.info.fp != null || u.info.slots) lines.push([u.info.fp != null ? "FP " + u.info.fp : null, u.info.slots ? T("huecos {0}", u.info.slots) : null].filter(Boolean).join(" · ")); return lines.join("\n"); };
   function renderChar(c) {
     CUR = c;
     $("#cName").textContent = c.name || ("Slot " + (c.slot + 1));
     $("#cLevel").textContent = c.level;
-    $("#cRunes").textContent = c.runes.toLocaleString("es");
+    $("#cRunes").textContent = c.runes.toLocaleString(I18N.locale());
     const ng = c.clearCount ? "NG+" + c.clearCount : "NG";
-    $("#cSub").textContent = `${c.className} · ${ng} · ${ERSave.fmtTime(c.playtimeSec)} · ${c.deaths} muertes`;
+    $("#cSub").textContent = `${c.className} · ${ng} · ${ERSave.fmtTime(c.playtimeSec)} · ${T("{0} muertes", c.deaths)}`;
     const gauge = (label, v, max, color, g) => `<div class="bar g" data-g="${g}"><span>${label}</span><i><b style="width:${max ? Math.min(100, 100 * v / max) : 0}%;background:${color}"></b></i><span class="num">${v} / ${max}</span></div>`;
     $("#gauges").innerHTML = gauge("HP", c.hp, c.maxHp, "var(--hp)", "hp") + gauge("FP", c.fp, c.maxFp, "var(--fp)", "fp") + gauge("SP", c.sp, c.maxSp, "var(--sp)", "sp");
-    const S = c.stats, names = { vigor: "Vigor", mind: "Mente", endurance: "Resistencia", strength: "Fuerza", dexterity: "Destreza", intelligence: "Inteligencia", faith: "Fe", arcane: "Arcano" };
+    const S = c.stats, names = STAT_ES;
     const BN = statBonuses(c);
     // like the game's status screen: the effective total, tinted when equipment raises it; the breakdown shows when the row is expanded
     $("#stats").innerHTML = Object.keys(names).map(k => { const b = BN[k] ? BN[k].reduce((a, x) => a + x.v, 0) : 0;
-      return kvr(svg(k) + names[k], b ? `<span class="bonus" title="Base ${S[k]} + ${b}">${S[k] + b}</span>` : S[k], null, k, b ? `Base ${S[k]} · ${BN[k].map(x => "+" + x.v + " " + x.src).join(" · ")}` : null); }).join("");
+      return kvr(svg(k) + names[k], b ? `<span class="bonus" title="${T("Base {0} + {1}", S[k], b)}">${S[k] + b}</span>` : S[k], null, k, b ? T("Base {0} · {1}", S[k], BN[k].map(x => "+" + x.v + " " + x.src).join(" · ")) : null); }).join("");
     const gr = c.enriched.equipped.greatRune;
-    $("#kv").innerHTML = kvr("Nivel", c.level, null, "level") + kvr("Clase", wlink(c.className, esc(c.className)), null, "class") + kvr("Regalo", c.gift ? wlink(c.giftName, esc(c.giftName)) : "ninguno", null, "gift") + kvr("Runas totales", c.totalRunes.toLocaleString("es"), null, "runes") + kvr("Muertes", c.deaths, null, "deaths") + kvr("Ciclo", ng, null, "ng") + kvr("Nivel de arma (matchmaking)", "+" + c.matchmakingWpnLvl, null, "mmlvl") + kvr("Runa mayor equipada", gr ? wlink(gr.name, esc(gr.name)) : "ninguna", null, "greatrune") + kvr("Runa mayor activa (Arco de Runa)", c.greatRuneActive ? "sí" : "no", null, "runearc") + kvr("Huecos de talismán", 1 + c.talismanSlots, null, "talismans");
+    $("#kv").innerHTML = kvr(T("Nivel"), c.level, null, "level") + kvr(T("Clase"), wlink(c.className, esc(c.className)), null, "class") + kvr(T("Regalo"), c.gift ? wlink(c.giftName, esc(c.giftName)) : T("ninguno"), null, "gift") + kvr(T("Runas totales"), c.totalRunes.toLocaleString(I18N.locale()), null, "runes") + kvr(T("Muertes"), c.deaths, null, "deaths") + kvr(T("Ciclo"), ng, null, "ng") + kvr(T("Nivel de arma (matchmaking)"), "+" + c.matchmakingWpnLvl, null, "mmlvl") + kvr(T("Runa mayor equipada"), gr ? wlink(gr.name, esc(gr.name)) : T("ninguna"), null, "greatrune") + kvr(T("Runa mayor activa (Arco de Runa)"), c.greatRuneActive ? T("sí") : T("no"), null, "runearc") + kvr(T("Huecos de talismán"), 1 + c.talismanSlots, null, "talismans");
     const B = c.buildups;
-    $("#resist").innerHTML = kvr("Veneno", B.poison, null, "poison") + kvr("Putrefacción", B.rot, null, "rot") + kvr("Hemorragia", B.bleed, null, "bleed") + kvr("Congelación", B.frost, null, "frost") + kvr("Sueño", B.sleep, null, "sleep") + kvr("Locura", B.madness, null, "madness") + kvr("Muerte", B.deathblight, null, "deathblight");
+    $("#resist").innerHTML = kvr(T("Veneno"), B.poison, null, "poison") + kvr(T("Putrefacción"), B.rot, null, "rot") + kvr(T("Hemorragia"), B.bleed, null, "bleed") + kvr(T("Congelación"), B.frost, null, "frost") + kvr(T("Sueño"), B.sleep, null, "sleep") + kvr(T("Locura"), B.madness, null, "madness") + kvr(T("Muerte"), B.deathblight, null, "deathblight");
     const E = c.enriched.equipped;
     const worn = [E.head, E.chest, E.arms, E.legs].concat(E.rh, E.lh, E.talismans, E.arrows, E.bolts).filter(x => x && real(x));
     const load = worn.reduce((a, it) => a + weightOf(it), 0);
@@ -205,8 +207,8 @@ async function main(DB, FLAGS, REQS){
     const endEff = effStats(c).endurance | 0, lerp = (x, x0, y0, x1, y1) => y0 + (y1 - y0) * (x - x0) / (x1 - x0);
     const maxLoad = endEff <= 8 ? 45 : endEff <= 25 ? lerp(endEff, 8, 45, 25, 72) : endEff <= 60 ? lerp(endEff, 25, 72, 60, 120) : lerp(Math.min(endEff, 99), 60, 120, 99, 160);
     const ratio = load / maxLoad, rollK = ratio < .3 ? "light" : ratio < .7 ? "medium" : ratio <= 1 ? "heavy" : "over";
-    const ROLL = { light: ["Carga ligera", "#7fc8ff"], medium: ["Carga media", "var(--fg)"], heavy: ["Carga pesada", "#e0b23c"], over: ["Sobrecargado", "var(--bad)"] };
-    $("#misc").innerHTML = kvr("Carga de equipo", `${load.toFixed(1)} / ${maxLoad.toFixed(1)}`, `<span style="color:${ROLL[rollK][1]};font-weight:600">${ROLL[rollK][0]}</span> · ${Math.round(ratio * 100)} % (aprox.)`, "load") + kvr("Frasco carmesí", c.crimsonFlasks, null, "crimson") + kvr("Frasco cerúleo", c.ceruleanFlasks, null, "cerulean") + kvr("Hechizos memorizados", c.enriched.spells.length, null, "spells");
+    const ROLL = { light: [T("Carga ligera"), "#7fc8ff"], medium: [T("Carga media"), "var(--fg)"], heavy: [T("Carga pesada"), "#e0b23c"], over: [T("Sobrecargado"), "var(--bad)"] };
+    $("#misc").innerHTML = kvr(T("Carga de equipo"), `${load.toFixed(1)} / ${maxLoad.toFixed(1)}`, `<span style="color:${ROLL[rollK][1]};font-weight:600">${ROLL[rollK][0]}</span> · ${Math.round(ratio * 100)} % ${T("(aprox.)")}`, "load") + kvr(T("Frasco carmesí"), c.crimsonFlasks, null, "crimson") + kvr(T("Frasco cerúleo"), c.ceruleanFlasks, null, "cerulean") + kvr(T("Hechizos memorizados"), c.enriched.spells.length, null, "spells");
 
     renderUnused(c);
     PLAN.add = {}; renderPlanner(c);
@@ -221,7 +223,8 @@ async function main(DB, FLAGS, REQS){
   const LOW = [673, 689, 706, 723, 740, 757, 775, 793, 811, 829, 847];
   const levelCost = x => { if (x < 12) return LOW[x - 1]; const y = x + 1; return Math.floor(0.02 * y ** 3 + 3.06 * y ** 2 + 105.6 * y - 895); };
   const SOFT = { vigor: [40, 60], mind: [40, 60], endurance: [50, 60], strength: [55, 80], dexterity: [55, 80], intelligence: [60, 80], faith: [60, 80], arcane: [60, 80] };
-  const STAT_ES = { vigor: "Vigor", mind: "Mente", endurance: "Resistencia", strength: "Fuerza", dexterity: "Destreza", intelligence: "Inteligencia", faith: "Fe", arcane: "Arcano" };
+  const STAT_ES0 = { vigor: "Vigor", mind: "Mente", endurance: "Resistencia", strength: "Fuerza", dexterity: "Destreza", intelligence: "Inteligencia", faith: "Fe", arcane: "Arcano" };
+  const STAT_ES = new Proxy(STAT_ES0, { get: (o, k) => typeof k === "string" && o[k] ? T(o[k]) : o[k], ownKeys: o => Reflect.ownKeys(o), getOwnPropertyDescriptor: (o, k) => Reflect.getOwnPropertyDescriptor(o, k) });
   const PLAN = { open: false, add: {} };
   function renderPlanner(c) {
     const box = $("#planner"); if (!box) return; box.hidden = !PLAN.open; $("#planBtn").setAttribute("aria-pressed", PLAN.open); if (!PLAN.open) return;
@@ -232,16 +235,16 @@ async function main(DB, FLAGS, REQS){
     let nextLv = c.level + n, affordable = 0, acc = 0; for (let l = c.level; l < 713; l++) { acc += levelCost(l); if (acc > avail) break; affordable++; }
     const row = k => { const v = S[k] + (add[k] || 0), [s1, s2] = SOFT[k]; const cls = v >= 99 ? "cap" : v >= s2 ? "cap" : v >= s1 ? "soft" : "";
       const bn = (BNp[k] || []).reduce((a, x) => a + x.v, 0);
-      return `<div class="pr"><span>${svg(k)}${STAT_ES[k]}<span class="help" style="margin-left:6px">cap ${s1}/${s2}</span></span><span class="cur" title="${bn ? "base; con bonus " + (S[k] + bn) : ""}">${S[k]}${bn ? `<small class="help"> (${S[k] + bn})</small>` : ""}</span><span class="new ${cls}" title="${v >= s2 ? "por encima del segundo soft cap: rinde muy poco" : v >= s1 ? "por encima del primer soft cap: rinde menos" : ""}">${v}</span><span class="pm"><button data-pl-stat="${k}" data-d="-1" ${add[k] ? "" : "disabled"}>−</button><button data-pl-stat="${k}" data-d="1" ${v >= 99 ? "disabled" : ""}>+</button></span></div>`; };
+      return `<div class="pr"><span>${svg(k)}${STAT_ES[k]}<span class="help" style="margin-left:6px">${T("cap {0}/{1}", s1, s2)}</span></span><span class="cur" title="${bn ? T("base; con bonus {0}", S[k] + bn) : ""}">${S[k]}${bn ? `<small class="help"> (${S[k] + bn})</small>` : ""}</span><span class="new ${cls}" title="${v >= s2 ? T("por encima del segundo soft cap: rinde muy poco") : v >= s1 ? T("por encima del primer soft cap: rinde menos") : ""}">${v}</span><span class="pm"><button data-pl-stat="${k}" data-d="-1" ${add[k] ? "" : "disabled"}>−</button><button data-pl-stat="${k}" data-d="1" ${v >= 99 ? "disabled" : ""}>+</button></span></div>`; };
     box.className = "planner";
     box.innerHTML = Object.keys(STAT_ES).map(row).join("") + `<div class="sum">
-      <span>Nivel</span><span><b>${c.level}</b> → <b>${nextLv}</b> (+${n})</span>
-      <span>Coste en runas</span><span><b>${cost.toLocaleString("es")}</b></span>
-      <span>Runas disponibles${pocket ? " (incl. " + pocket.toLocaleString("es") + " en objetos)" : ""}</span><span><b>${avail.toLocaleString("es")}</b></span>
-      <span>${left >= 0 ? "Te sobrarían" : "Te faltarían"}</span><span class="${left < 0 ? "neg" : ""}"><b>${Math.abs(left).toLocaleString("es")}</b></span>
-      <span>Con lo que tienes puedes subir</span><span><b>${affordable}</b> nivel${affordable === 1 ? "" : "es"} (hasta ${c.level + affordable})</span></div>
-      <div style="display:flex;gap:8px;margin-top:8px"><button class="btn" id="planReset">Reiniciar</button><button class="btn" id="planFill" title="Reparte los niveles que puedes pagar en los atributos que ya has tocado, o en Vigor si no has tocado ninguno">Gastar lo disponible</button></div>
-      <p class="help" style="margin-top:6px">Soft caps: a partir del primero cada punto rinde menos; a partir del segundo, casi nada. El coste por nivel es el del juego (crece con el nivel, no con el atributo). Se planifica sobre el valor base; entre paréntesis, el efectivo con tu equipo.</p>`;
+      <span>${T("Nivel")}</span><span><b>${c.level}</b> → <b>${nextLv}</b> (+${n})</span>
+      <span>${T("Coste en runas")}</span><span><b>${cost.toLocaleString(I18N.locale())}</b></span>
+      <span>${T("Runas disponibles")}${pocket ? T(" (incl. {0} en objetos)", pocket.toLocaleString(I18N.locale())) : ""}</span><span><b>${avail.toLocaleString(I18N.locale())}</b></span>
+      <span>${left >= 0 ? T("Te sobrarían") : T("Te faltarían")}</span><span class="${left < 0 ? "neg" : ""}"><b>${Math.abs(left).toLocaleString(I18N.locale())}</b></span>
+      <span>${T("Con lo que tienes puedes subir")}</span><span>${T("{0} nivel{1} (hasta {2})", `<b>${affordable}</b>`, affordable === 1 ? "" : T("es"), c.level + affordable)}</span></div>
+      <div style="display:flex;gap:8px;margin-top:8px"><button class="btn" id="planReset">${T("Reiniciar")}</button><button class="btn" id="planFill" title="${T("Reparte los niveles que puedes pagar en los atributos que ya has tocado, o en Vigor si no has tocado ninguno")}">${T("Gastar lo disponible")}</button></div>
+      <p class="help" style="margin-top:6px">${T("Soft caps: a partir del primero cada punto rinde menos; a partir del segundo, casi nada. El coste por nivel es el del juego (crece con el nivel, no con el atributo). Se planifica sobre el valor base; entre paréntesis, el efectivo con tu equipo.")}</p>`;
     $("#planReset").onclick = () => { PLAN.add = {}; renderPlanner(c); };
     $("#planFill").onclick = () => { const keys = Object.keys(add).filter(k => add[k] > 0); const target = keys.length ? keys : ["vigor"]; let i = 0; while (Object.values(PLAN.add).reduce((a, b) => a + b, 0) < affordable) { const k = target[i++ % target.length]; if (S[k] + (PLAN.add[k] || 0) >= 99) { if (target.every(t => S[t] + (PLAN.add[t] || 0) >= 99)) break; continue; } PLAN.add[k] = (PLAN.add[k] || 0) + 1; } renderPlanner(c); };
   }
@@ -265,10 +268,10 @@ async function main(DB, FLAGS, REQS){
     el.innerHTML = ashes.map(a => {
       let reach = a.level, next = null; const pool = Object.assign({}, have);
       while (reach < 10) { const g = gloveName(a.ghost, reach + 1); if (pool[g] > 0) { pool[g]--; reach++; } else { next = g; break; } }
-      const status = a.level >= 10 ? '<span class="tag max">máx</span>' : reach > a.level ? `<span class="tag" style="color:var(--ok);border-color:var(--ok)">puedes subir a +${reach}</span>` : "";
-      const miss = a.level < 10 && next ? `<div class="m">${reach > a.level ? `para +${reach + 1}` : `para +${a.level + 1}`} falta ${link({ name: next, kind: "goods" }, esc(next))}</div>` : "";
+      const status = a.level >= 10 ? `<span class="tag max">${T("máx")}</span>` : reach > a.level ? `<span class="tag" style="color:var(--ok);border-color:var(--ok)">${T("puedes subir a +{0}", reach)}</span>` : "";
+      const miss = a.level < 10 && next ? `<div class="m">${T("para +{0} falta {1}", reach > a.level ? reach + 1 : a.level + 1, link({ name: next, kind: "goods" }, esc(next)))}</div>` : "";
       return `<div class="row"><div class="n">${ic(a.it)}${link({ name: a.base, kind: "goods" }, esc(a.base))} <b>+${a.level}</b>${status}</div><div class="q">${a.ghost ? "Ghost" : "Grave"}</div>${miss}</div>`;
-    }).join("") || '<p class="help">Sin cenizas de espíritu.</p>';
+    }).join("") || `<p class="help">${T("Sin cenizas de espíritu.")}</p>`;
   }
 
   // ---- unused upgrades / deliverables ---------------------------------------
@@ -281,18 +284,18 @@ async function main(DB, FLAGS, REQS){
     const rows = [];
     const grace = [["Golden Seed", qty("Golden Seed")], ["Sacred Tear", qty("Sacred Tear")], ["Scadutree Fragment", qty("Scadutree Fragment")], ["Revered Spirit Ash", qty("Revered Spirit Ash")]].filter(x => x[1] > 0);
     const maxed = (c.crimsonFlasks + c.ceruleanFlasks) >= 14;
-    rows.push(row("En un lugar de gracia", grace, "unused_grace", "Se aplican desde el menú de la gracia: más cargas y curación de los frascos; en la expansión, la bendición del Scadutree y de las cenizas." + (maxed && qty("Golden Seed") ? " Ya tienes las 14 cargas máximas: las semillas sobrantes no se pueden usar." : "")));
+    rows.push(row(T("En un lugar de gracia"), grace, "unused_grace", T("Se aplican desde el menú de la gracia: más cargas y curación de los frascos; en la expansión, la bendición del Scadutree y de las cenizas.") + (maxed && qty("Golden Seed") ? T(" Ya tienes las 14 cargas máximas: las semillas sobrantes no se pueden usar.") : "")));
     const runes = list(n => RUNE_VALUE[n]).sort((x, y) => RUNE_VALUE[y[0]] - RUNE_VALUE[x[0]]); const total = runes.reduce((a, [n, q]) => a + RUNE_VALUE[n] * q, 0);
-    rows.push(row("Runas sin consumir", runes, "unused_runes", total ? `Valen ${total.toLocaleString("es")} runas en total; úsalas cuando vayas a subir de nivel o comprar.` : ""));
-    rows.push(row("Remembranzas", list(n => /^Remembrance of /.test(n)), "unused_rem", "Enia (Mesa Redonda) las cambia por el arma o hechizo del jefe; también se pueden consumir por runas."));
-    rows.push(row("Entregar a un PNJ", list(n => /Prayerbook$|Scroll$/.test(n) || n === "Deathroot" || n === "Dragon Heart"), "unused_npc", "Libros de oración → Corhyn o Miriel; pergaminos → Sellen o Thops; Deathroot → Gurranq; Dragon Heart → altares de Comunión Dragón."));
-    rows.push(row("Campanas de vendedor", list(n => /Bell Bearing/.test(n)), "unused_bell", "Entrégalas a las Gemelas Vendedoras de la Mesa Redonda para comprar lo que vendía ese mercader (piedras incluidas)."));
+    rows.push(row(T("Runas sin consumir"), runes, "unused_runes", total ? T("Valen {0} runas en total; úsalas cuando vayas a subir de nivel o comprar.", total.toLocaleString(I18N.locale())) : ""));
+    rows.push(row(T("Remembranzas"), list(n => /^Remembrance of /.test(n)), "unused_rem", T("Enia (Mesa Redonda) las cambia por el arma o hechizo del jefe; también se pueden consumir por runas.")));
+    rows.push(row(T("Entregar a un PNJ"), list(n => /Prayerbook$|Scroll$/.test(n) || n === "Deathroot" || n === "Dragon Heart"), "unused_npc", T("Libros de oración → Corhyn o Miriel; pergaminos → Sellen o Thops; Deathroot → Gurranq; Dragon Heart → altares de Comunión Dragón.")));
+    rows.push(row(T("Campanas de vendedor"), list(n => /Bell Bearing/.test(n)), "unused_bell", T("Entrégalas a las Gemelas Vendedoras de la Mesa Redonda para comprar lo que vendía ese mercader (piedras incluidas).")));
     const glove = list(n => /^(Great )?(Grave|Ghost) Glovewort/.test(n));
-    rows.push(row("Para Roderika (espíritus)", glove, "unused_glove", "Mejoran las cenizas de espíritu en la Mesa Redonda."));
+    rows.push(row(T("Para Roderika (espíritus)"), glove, "unused_glove", T("Mejoran las cenizas de espíritu en la Mesa Redonda.")));
     const dragon = list(n => /Ancient Dragon Smithing Stone$/.test(n));
-    rows.push(row("Piedras de dragón", dragon, "unused_dragon", "Suben un arma al máximo (+25 o +10 sombría). Elige bien: no se compran."));
+    rows.push(row(T("Piedras de dragón"), dragon, "unused_dragon", T("Suben un arma al máximo (+25 o +10 sombría). Elige bien: no se compran.")));
     const other = list(n => n === "Larval Tear" || n === "Rune Arc");
-    rows.push(row("Otros", other, "unused_other", "Larval Tear: redistribuir atributos con Rennala. Rune Arc: activa la runa mayor equipada."));
+    rows.push(row(T("Otros"), other, "unused_other", T("Larval Tear: redistribuir atributos con Rennala. Rune Arc: activa la runa mayor equipada.")));
     const html = rows.join("");
     pane.hidden = !html; el.innerHTML = html || "";
   }
@@ -300,53 +303,53 @@ async function main(DB, FLAGS, REQS){
   // ---- equipment screen -----------------------------------------------------
   const EQSEL = { k: null };
   function slot(it, lbl, extra) { const has = it && real(it); const img = has ? ICONS.size && iconCandidates(it).map(k => ICONS.get(k)).find(Boolean) : null; const u = has ? canUse(CUR, it) : null;
-    return `<div class="slot${has ? "" : " empty"}${useCls(u)}" data-item="${has ? esc(JSON.stringify({ n: it.display, w: wikiName(it), d: [subEs(it.sub), it.infusion && it.infusion !== "Standard" ? it.infusion : null, it.aow ? "Ceniza: " + it.aow : null, weightOf(it) ? "Peso " + weightOf(it) : null, useMeta(u)].filter(Boolean).join(" · "), r: reqLine(u), i: img || "" })) : ""}" role="button" tabindex="0">${img ? `<img src="${img}" alt="">` : has ? `<span style="font-size:.6rem;text-align:center;padding:4px;color:var(--fg-2)">${esc(it.display)}</span>` : ""}${has && it.kind === "weapon" && it.level ? `<span class="lvl">+${it.level}</span>` : ""}<span class="lbl">${lbl}</span></div>`; }
+    return `<div class="slot${has ? "" : " empty"}${useCls(u)}" data-item="${has ? esc(JSON.stringify({ n: it.display, w: wikiName(it), d: [subEs(it.sub), it.infusion && it.infusion !== "Standard" ? it.infusion : null, it.aow ? T("Ceniza: {0}", it.aow) : null, weightOf(it) ? T("Peso {0}", weightOf(it)) : null, useMeta(u)].filter(Boolean).join(" · "), r: reqLine(u), i: img || "" })) : ""}" role="button" tabindex="0">${img ? `<img src="${img}" alt="">` : has ? `<span style="font-size:.6rem;text-align:center;padding:4px;color:var(--fg-2)">${esc(it.display)}</span>` : ""}${has && it.kind === "weapon" && it.level ? `<span class="lvl">+${it.level}</span>` : ""}<span class="lbl">${lbl}</span></div>`; }
   function renderEquip(c) {
     const E = c.enriched.equipped;
-    $("#eqArms").innerHTML = [0, 1, 2].map(i => slot(E.rh[i], "Dcha " + (i + 1))).join("") + [0, 1, 2].map(i => slot(E.lh[i], "Izq " + (i + 1))).join("") + slot(E.arrows[0], "Flecha 1") + slot(E.arrows[1], "Flecha 2") + slot(E.bolts[0], "Virote 1") + slot(E.bolts[1], "Virote 2");
-    $("#eqArmor").innerHTML = slot(E.head, "Cabeza") + slot(E.chest, "Pecho") + slot(E.arms, "Brazos") + slot(E.legs, "Piernas") + slot(E.greatRune, "Runa mayor") + E.talismans.slice(0, Math.max(1 + (c.talismanSlots || 0), E.talismans.filter(t => t && real(t)).length)).map((t, i) => slot(t, "Talismán " + (i + 1))).join(""); // only the slots unlocked (1 + talisman pouches)
+    $("#eqArms").innerHTML = [0, 1, 2].map(i => slot(E.rh[i], T("Dcha {0}", i + 1))).join("") + [0, 1, 2].map(i => slot(E.lh[i], T("Izq {0}", i + 1))).join("") + slot(E.arrows[0], T("Flecha {0}", 1)) + slot(E.arrows[1], T("Flecha {0}", 2)) + slot(E.bolts[0], T("Virote {0}", 1)) + slot(E.bolts[1], T("Virote {0}", 2));
+    $("#eqArmor").innerHTML = slot(E.head, T("Cabeza")) + slot(E.chest, T("Pecho")) + slot(E.arms, T("Brazos")) + slot(E.legs, T("Piernas")) + slot(E.greatRune, T("Runa mayor")) + E.talismans.slice(0, Math.max(1 + (c.talismanSlots || 0), E.talismans.filter(t => t && real(t)).length)).map((t, i) => slot(t, T("Talismán {0}", i + 1))).join(""); // only the slots unlocked (1 + talisman pouches)
     const Q = c.enriched.quick, P = c.enriched.pouch;
-    $("#eqQuick").innerHTML = Array.from({ length: Math.max(3, Q.length) }, (_, i) => slot(Q[i], "Rápido " + (i + 1))).join("") + Array.from({ length: Math.max(6, P.length) }, (_, i) => slot(P[i], "Bolsa " + (i + 1))).join("");
+    $("#eqQuick").innerHTML = Array.from({ length: Math.max(3, Q.length) }, (_, i) => slot(Q[i], T("Rápido {0}", i + 1))).join("") + Array.from({ length: Math.max(6, P.length) }, (_, i) => slot(P[i], T("Bolsa {0}", i + 1))).join("");
     const Sp = c.enriched.spells, phys = c.physick.map(id => { const e = DB.items[id]; return e ? { id, name: e.n, display: e.n, kind: e.k, cat: e.c, sub: e.s || "" } : null; });
-    $("#eqSpells").innerHTML = Sp.map((s, i) => slot(s, "Hechizo " + (i + 1))).join("") + phys.map((p, i) => slot(p, "Físico " + (i + 1))).join("");
-    $("#eqDetail").innerHTML = `<div class="d help">Toca un hueco para ver el objeto.</div>`;
+    $("#eqSpells").innerHTML = Sp.map((s, i) => slot(s, T("Hechizo {0}", i + 1))).join("") + phys.map((p, i) => slot(p, T("Físico {0}", i + 1))).join("");
+    $("#eqDetail").innerHTML = `<div class="d help">${T("Toca un hueco para ver el objeto.")}</div>`;
   }
   document.addEventListener("click", e => { const s = e.target.closest(".slot[data-item], .cell[data-item]"); if (!s) return; const d = JSON.parse(s.dataset.item); const box = s.classList.contains("slot") ? $("#eqDetail") : $("#invDetail");
     for (const x of s.parentElement.querySelectorAll(".sel")) x.classList.remove("sel"); s.classList.add("sel");
-    box.innerHTML = `${d.i ? `<img src="${d.i}" alt="">` : ""}<div><div class="t">${esc(d.n)}</div><div class="d">${esc(d.d || "")}</div>${d.r ? d.r.split("\n").map(l => `<div class="d" style="color:var(--gold-2)">${esc(l)}</div>`).join("") : ""}${d.l ? `<div class="d">${esc(d.l)}</div>` : ""}<a class="wl" href="${WIKI}${encodeURIComponent(d.w.replace(/ /g, "_"))}" target="_blank" rel="noopener">Ver en la wiki</a></div>`; });
+    box.innerHTML = `${d.i ? `<img src="${d.i}" alt="">` : ""}<div><div class="t">${esc(d.n)}</div><div class="d">${esc(d.d || "")}</div>${d.r ? d.r.split("\n").map(l => `<div class="d" style="color:var(--gold-2)">${esc(l)}</div>`).join("") : ""}${d.l ? `<div class="d">${esc(d.l)}</div>` : ""}<a class="wl" href="${WIKI}${encodeURIComponent(d.w.replace(/ /g, "_"))}" target="_blank" rel="noopener">${T("Ver en la wiki")}</a></div>`; });
 
   // ---- forge ----------------------------------------------------------------
   function renderForge(c) {
     const sc = stoneCounts(c);
     const tile = (n, lbl) => `<div class="${sc[n] ? "" : "zero"}" title="${esc(n)}"><b>${sc[n] || 0}</b><span>${lbl}</span></div>`;
-    $("#stonesN").innerHTML = [1,2,3,4,5,6,7,8].map(n => tile("Smithing Stone [" + n + "]", "[" + n + "]")).join("") + tile("Ancient Dragon Smithing Stone", "Dragón");
-    $("#stonesS").innerHTML = [1,2,3,4,5,6,7,8,9].map(n => tile("Somber Smithing Stone [" + n + "]", "[" + n + "]")).join("") + tile("Somber Ancient Dragon Smithing Stone", "Dragón");
+    $("#stonesN").innerHTML = [1,2,3,4,5,6,7,8].map(n => tile("Smithing Stone [" + n + "]", "[" + n + "]")).join("") + tile("Ancient Dragon Smithing Stone", T("Dragón"));
+    $("#stonesS").innerHTML = [1,2,3,4,5,6,7,8,9].map(n => tile("Somber Smithing Stone [" + n + "]", "[" + n + "]")).join("") + tile("Somber Ancient Dragon Smithing Stone", T("Dragón"));
     const weapons = c.all.filter(i => i.kind === "weapon" && i.maxLevel > 0 && !["arrows_and_bolts"].includes(i.cat));
     weapons.sort((a, b) => (a.level >= a.maxLevel) - (b.level >= b.maxLevel) || b.level - a.level || a.name.localeCompare(b.name));
     const sel = $("#planWeapon");
-    sel.innerHTML = weapons.map((w, i) => `<option value="${i}">${esc(w.display)} (máx +${w.maxLevel})</option>`).join("");
+    sel.innerHTML = weapons.map((w, i) => `<option value="${i}">${esc(w.display)} ${T("(máx +{0})", w.maxLevel)}</option>`).join("");
     sel.onchange = planUpdate;
     $("#planTo").oninput = () => planUpdate("typing"); $("#planTo").onchange = planUpdate;
     sel.selectedIndex = Math.max(0, weapons.findIndex(w => w.level > 0 && w.level < w.maxLevel));
     c.weapons = weapons; planUpdate(true);
     renderSpirits(c);
     // name + level bar on the first line; usability / ash of war tags below, so long names don't get squeezed
-    const wrow = w => { const tags = useTag(canUse(c, w)) + (w.level >= w.maxLevel ? '<span class="tag max">máx</span>' : "") + (w.aow ? `<span class="tag">${esc(w.aow)}</span>` : "");
+    const wrow = w => { const tags = useTag(canUse(c, w)) + (w.level >= w.maxLevel ? `<span class="tag max">${T("máx")}</span>` : "") + (w.aow ? `<span class="tag">${esc(w.aow)}</span>` : "");
       return `<div class="row click${w.stored ? " stored" : ""}" data-w="${weapons.indexOf(w)}" role="button" tabindex="0"><div class="n">${ic(w)}${link(w, esc(w.display))}</div><div class="q lvq"><span class="lvlbar"><b style="width:${100 * w.level / w.maxLevel}%"></b></span>+${w.level} / ${w.maxLevel}</div>${tags ? `<div class="m tags">${tags}</div>` : ""}</div>`; };
     const pending = weapons.filter(w => w.level > 0 && w.level < w.maxLevel), maxed = weapons.filter(w => w.level >= w.maxLevel);
-    $("#upgradeable").innerHTML = (pending.map(wrow).join("") || `<p class="help">Ninguna arma a medias: todo lo que has tocado está al máximo.</p>`) + (maxed.length ? `<details><summary>${maxed.length} armas al máximo</summary><div class="list">${maxed.map(wrow).join("")}</div></details>` : "");
+    $("#upgradeable").innerHTML = (pending.map(wrow).join("") || `<p class="help">${T("Ninguna arma a medias: todo lo que has tocado está al máximo.")}</p>`) + (maxed.length ? `<details><summary>${T("{0} armas al máximo", maxed.length)}</summary><div class="list">${maxed.map(wrow).join("")}</div></details>` : "");
   }
 
-  function markBtn(k, id) { const on = CUR && Marks.has(Marks.charKey(CUR), k, id); return `<button class="btn mk" data-mark="${k}|${id}" aria-pressed="${!!on}" title="Marcar a mano">${on ? "✓ marcado" : "marcar"}</button>`; }
+  function markBtn(k, id) { const on = CUR && Marks.has(Marks.charKey(CUR), k, id); return `<button class="btn mk" data-mark="${k}|${id}" aria-pressed="${!!on}" title="${T("Marcar a mano")}">${on ? T("✓ marcado") : T("marcar")}</button>`; }
   function markName(e) { if (e.k === "boss") { const b = FLAGS.bosses.find(x => String(x.id) === e.id); return b ? b.name : e.id; } if (e.k === "grace") { const g = FLAGS.graces.find(x => String(x.id) === e.id); return g ? g.name : e.id; } if (e.k === "item") { const it = DB.items[e.id]; return it ? it.n : e.id; } return e.id; }
   document.addEventListener("click", e => { const b = e.target.closest("[data-mark]"); if (b && CUR) { const [k, id] = b.dataset.mark.split("|"); const on = Marks.toggle(Marks.charKey(CUR), k, id); cloudMark(Marks.charKey(CUR), k, id, on); renderProgress(CUR); return; }
     const u = e.target.closest("[data-unmark]"); if (u && CUR) { const [k, id] = u.dataset.unmark.split("|"); Marks.set(Marks.charKey(CUR), k, id, false); cloudMark(Marks.charKey(CUR), k, id, false); renderProgress(CUR); return; }
-    if (e.target.id === "marksExport") { const txt = Marks.export(); navigator.clipboard.writeText(txt).then(() => { e.target.textContent = "Copiado"; setTimeout(() => e.target.textContent = "Exportar", 1500); }).catch(() => { prompt("Copia este JSON:", txt); }); } });
-  document.addEventListener("change", async e => { if (e.target.id === "marksImport" && e.target.files[0]) { try { Marks.import(await e.target.files[0].text()); if (CUR) renderProgress(CUR); } catch (err) { alert("JSON no válido"); } } });
+    if (e.target.id === "marksExport") { const txt = Marks.export(); navigator.clipboard.writeText(txt).then(() => { e.target.textContent = T("Copiado"); setTimeout(() => e.target.textContent = T("Exportar"), 1500); }).catch(() => { prompt(T("Copia este JSON:"), txt); }); } });
+  document.addEventListener("change", async e => { if (e.target.id === "marksImport" && e.target.files[0]) { try { Marks.import(await e.target.files[0].text()); if (CUR) renderProgress(CUR); } catch (err) { alert(T("JSON no válido")); } } });
   // progress tab: tiles → tappable lists (pending / done / all) with a link to the map pre-filtered
   const PL = { view: null, state: "todo", q: "" };
   function renderProgress(c) {
-    const el = $("#progress"); if (!c.progress) { el.innerHTML = `<p class="muted small">Sin datos de progreso (vuelve a abrir el .sl2).</p>`; return; }
+    const el = $("#progress"); if (!c.progress) { el.innerHTML = `<p class="muted small">${T("Sin datos de progreso (vuelve a abrir el .sl2).")}</p>`; return; }
     const CK = Marks.charKey(c), manual = Marks.load(CK);
     const gv = new Set(c.progress.graces), bd = new Set(c.progress.bosses);
     const graceDone = g => gv.has(g.id) || manual.has("grace:" + g.id), bossDone = b => bd.has(b.id) || manual.has("boss:" + b.id);
@@ -355,11 +358,11 @@ async function main(DB, FLAGS, REQS){
     const world = Object.keys(FLAGS.pickups || {}).map(Number).map(id => ({ id, e: DB.items[id] })).filter(x => x.e).sort((a, b) => (a.e.c || "").localeCompare(b.e.c || "") || a.e.n.localeCompare(b.e.n));
     const worldDone = x => picked.has(x.id) || have.has(x.id) || manual.has("item:" + x.id);
     const SETS = {
-      graces: { title: "Gracias", items: FLAGS.graces, done: graceDone, group: g => g.region, k: "grace", map: "l=grace" },
-      main: { title: "Jefes principales", items: main, done: bossDone, group: b => b.region, k: "boss", map: "l=boss&t=main", help: "Jefes de mazmorras legado y de historia." },
-      field: { title: "Jefes de campo y mazmorras", items: field, done: bossDone, group: b => b.region, k: "boss", map: "l=boss&t=field", help: "Según el save; si uno está mal (opcional ya vencido que el juego no marca), márcalo a mano." },
-      rem: { title: "Remembranzas", items: rem, done: bossDone, group: b => b.region, k: "boss", map: "l=boss&t=rem", help: "Jefes que dejan una remembranza al morir." },
-      world: { title: "Objetos únicos del mundo", items: world, done: worldDone, group: x => CAT_ES[x.e.c] || x.e.c || "Otros", k: "item", map: "l=miss", help: "Notas, mapas, cartas, lágrimas, recetarios, llaves… que existen una sola vez y aún no has cogido." },
+      graces: { title: T("Gracias"), items: FLAGS.graces, done: graceDone, group: g => g.region, k: "grace", map: "l=grace" },
+      main: { title: T("Jefes principales"), items: main, done: bossDone, group: b => b.region, k: "boss", map: "l=boss&t=main", help: T("Jefes de mazmorras legado y de historia.") },
+      field: { title: T("Jefes de campo y mazmorras"), items: field, done: bossDone, group: b => b.region, k: "boss", map: "l=boss&t=field", help: T("Según el save; si uno está mal (opcional ya vencido que el juego no marca), márcalo a mano.") },
+      rem: { title: T("Remembranzas"), items: rem, done: bossDone, group: b => b.region, k: "boss", map: "l=boss&t=rem", help: T("Jefes que dejan una remembranza al morir.") },
+      world: { title: T("Objetos únicos del mundo"), items: world, done: worldDone, group: x => CAT_ES[x.e.c] || x.e.c || T("Otros"), k: "item", map: "l=miss", help: T("Notas, mapas, cartas, lágrimas, recetarios, llaves… que existen una sola vez y aún no has cogido.") },
     };
     const cnt = key => { const S = SETS[key]; const d = S.items.filter(S.done).length; return `${d} / ${S.items.length}`; };
     const tile = (key, label) => `<button class="tile${PL.view === key ? " on" : ""}" data-pl="${key}"><b>${cnt(key)}</b><span>${label}</span></button>`;
@@ -371,16 +374,16 @@ async function main(DB, FLAGS, REQS){
       const groups = new Map(); for (const x of rows) { const g = S.group(x); (groups.get(g) || groups.set(g, []).get(g)).push(x); }
       const row = x => { const done = !!S.done(x), nm = nameOf(x), fromSave = S.k === "boss" ? bd.has(x.id) : S.k === "grace" ? gv.has(x.id) : picked.has(x.id) || have.has(x.id);
         const it = S.k === "item" ? { id: x.id, name: x.e.n, kind: x.e.k } : { name: nm, kind: S.k };
-        return `<div class="row${done ? " done" : ""}"><div class="n">${S.k === "item" ? ic(it) : ""}${link(it, esc(nm))}${x.rem ? '<span class="tag">remembranza</span>' : ""}</div><div class="q">${done ? (fromSave ? "✓" : "✓ a mano") : markBtn(S.k, x.id)}</div>${S.k === "item" && x.e.loc ? `<div class="m">${esc(x.e.loc.replace(/\s*\[\s*Map Link\s*\]\s*;?/g, ""))}</div>` : ""}</div>`; };
+        return `<div class="row${done ? " done" : ""}"><div class="n">${S.k === "item" ? ic(it) : ""}${link(it, esc(nm))}${x.rem ? `<span class="tag">${T("remembranza")}</span>` : ""}</div><div class="q">${done ? (fromSave ? "✓" : T("✓ a mano")) : markBtn(S.k, x.id)}</div>${S.k === "item" && x.e.loc ? `<div class="m">${esc(x.e.loc.replace(/\s*\[\s*Map Link\s*\]\s*;?/g, ""))}</div>` : ""}</div>`; };
       const seg = (v, l) => `<button class="cat" data-pls="${v}" aria-pressed="${PL.state === v}">${l}</button>`;
-      panel = `<div class="pane frame plist"><div class="plh"><h3>${S.title} <span class="muted">${rows.length}</span></h3><a class="btn" href="map.html#${S.map}&s=${PL.state}${PL.q ? "&q=" + encodeURIComponent(PL.q) : ""}">Ver en el mapa</a></div>
+      panel = `<div class="pane frame plist"><div class="plh"><h3>${S.title} <span class="muted">${rows.length}</span></h3><a class="btn" href="map.html#${S.map}&s=${PL.state}${PL.q ? "&q=" + encodeURIComponent(PL.q) : ""}">${T("Ver en el mapa")}</a></div>
         ${S.help ? `<p class="help">${S.help}</p>` : ""}
-        <div class="plf">${seg("todo", "Pendientes")}${seg("done", "Hechos")}${seg("all", "Todos")}<input id="plq" type="search" placeholder="Filtrar…" value="${esc(PL.q)}" autocomplete="off"></div>
-        <div class="list">${[...groups].map(([g, xs]) => `<div class="grp"><div class="gh">${esc(g)} <span class="muted">${xs.length}</span></div>${xs.map(row).join("")}</div>`).join("") || `<p class="help">${PL.state === "todo" ? "Nada pendiente." : "Nada todavía."}</p>`}</div></div>`;
+        <div class="plf">${seg("todo", T("Pendientes"))}${seg("done", T("Hechos"))}${seg("all", T("Todos"))}<input id="plq" type="search" placeholder="${T("Filtrar…")}" value="${esc(PL.q)}" autocomplete="off"></div>
+        <div class="list">${[...groups].map(([g, xs]) => `<div class="grp"><div class="gh">${esc(g)} <span class="muted">${xs.length}</span></div>${xs.map(row).join("")}</div>`).join("") || `<p class="help">${PL.state === "todo" ? T("Nada pendiente.") : T("Nada todavía.")}</p>`}</div></div>`;
     }
-    el.innerHTML = `<div id="diary"></div><div class="kv tiles">${tile("graces", "Gracias")}${tile("main", "Jefes principales")}${tile("field", "Jefes de campo")}${tile("rem", "Remembranzas")}${tile("world", "Objetos únicos")}<div><b>${(c.progress.regions || []).length} / ${Object.keys(FLAGS.mapRegions || {}).length}</b><span>Zonas de mapa</span></div></div>
-      ${panel || '<p class="help">Toca una casilla para ver la lista de pendientes y hechos.</p>'}
-      <details><summary>Marcas manuales (${Marks.all(CK).length})</summary><p class="help">Lo que has marcado a mano para este personaje (lugares en el mapa, jefes, gracias, objetos). Se guarda en este navegador${Cloud.user() ? " y en tu cuenta (sincronizado con Steam)" : '; si entras con Steam (botón de cuenta arriba) se sincroniza entre dispositivos'}. "Exportar" copia el JSON.</p><div class="list">${Marks.all(CK).map(e => `<div class="row"><div class="n">${esc(e.k)} · ${esc(markName(e))}</div><div class="q">${e.at} <button class="btn" data-unmark="${esc(e.k)}|${esc(e.id)}">quitar</button></div></div>`).join("") || '<p class="help">Ninguna todavía.</p>'}</div><div style="display:flex;gap:8px;margin-top:8px"><button class="btn" id="marksExport">Exportar</button><label class="btn" for="marksImport">Importar</label><input id="marksImport" type="file" accept=".json" hidden></div></details>`;
+    el.innerHTML = `<div id="diary"></div><div class="kv tiles">${tile("graces", T("Gracias"))}${tile("main", T("Jefes principales"))}${tile("field", T("Jefes de campo"))}${tile("rem", T("Remembranzas"))}${tile("world", T("Objetos únicos"))}<div><b>${(c.progress.regions || []).length} / ${Object.keys(FLAGS.mapRegions || {}).length}</b><span>${T("Zonas de mapa")}</span></div></div>
+      ${panel || `<p class="help">${T("Toca una casilla para ver la lista de pendientes y hechos.")}</p>`}
+      <details><summary>${T("Marcas manuales ({0})", Marks.all(CK).length)}</summary><p class="help">${T("Lo que has marcado a mano para este personaje (lugares en el mapa, jefes, gracias, objetos). Se guarda en este navegador{0}. \"Exportar\" copia el JSON.", Cloud.user() ? T(" y en tu cuenta (sincronizado con Steam)") : T("; si entras con Steam (botón de cuenta arriba) se sincroniza entre dispositivos"))}</p><div class="list">${Marks.all(CK).map(e => `<div class="row"><div class="n">${esc(e.k)} · ${esc(markName(e))}</div><div class="q">${e.at} <button class="btn" data-unmark="${esc(e.k)}|${esc(e.id)}">${T("quitar")}</button></div></div>`).join("") || `<p class="help">${T("Ninguna todavía.")}</p>`}</div><div style="display:flex;gap:8px;margin-top:8px"><button class="btn" id="marksExport">${T("Exportar")}</button><label class="btn" for="marksImport">${T("Importar")}</label><input id="marksImport" type="file" accept=".json" hidden></div></details>`;
     renderDiary(c);
     const pq = $("#plq"); if (pq) pq.oninput = () => { PL.q = pq.value; const pos = pq.selectionStart; renderProgress(c); const n = $("#plq"); if (n) { n.focus(); n.setSelectionRange(pos, pos); } };
   }
@@ -391,26 +394,26 @@ async function main(DB, FLAGS, REQS){
     const ck = Marks.charKey(c);
     let H = DIARY.cache[ck]; if (!H) { H = await Cloud.history(ck); DIARY.cache[ck] = H; }
     if (CUR !== c || !document.getElementById("diary")) return;
-    if (H.length < 2) { $("#diary").innerHTML = H.length === 1 ? `<p class="help">Diario: primera sesión registrada (${esc(new Date(H[0].at.replace(" ", "T") + "Z").toLocaleDateString("es-ES", { dateStyle: "medium" }))}). A partir de la próxima partida que abras verás aquí qué ha cambiado.</p>` : ""; return; }
+    if (H.length < 2) { $("#diary").innerHTML = H.length === 1 ? `<p class="help">${T("Diario: primera sesión registrada ({0}). A partir de la próxima partida que abras verás aquí qué ha cambiado.", esc(new Date(H[0].at.replace(" ", "T") + "Z").toLocaleDateString(I18N.locale(), { dateStyle: "medium" })))}</p>` : ""; return; }
     const prev = H[H.length - 2], now = H[H.length - 1];
     const bossName = id => (FLAGS.bosses.find(b => b.id === id) || {}).name;
     const newBosses = now.bosses.filter(id => !prev.bosses.includes(id)).map(bossName).filter(Boolean);
     const newGraces = now.graces.filter(id => !prev.graces.includes(id)).length;
     const pw = new Map(prev.weapons || []); const ups = (now.weapons || []).filter(([n, l]) => (pw.get(n) || 0) < l).map(([n, l]) => `${n} +${pw.get(n) || 0}→+${l}`);
-    const d = (a, b) => { const v = (b || 0) - (a || 0); return v ? (v > 0 ? "+" : "") + v.toLocaleString("es") : "0"; };
+    const d = (a, b) => { const v = (b || 0) - (a || 0); return v ? (v > 0 ? "+" : "") + v.toLocaleString(I18N.locale()) : "0"; };
     const sec = now.playtime - prev.playtime;
     const statD = Object.keys(now.stats || {}).filter(k => (now.stats[k] || 0) !== ((prev.stats || {})[k] || 0)).map(k => `${STAT_ES[k] || k} ${prev.stats[k]}→${now.stats[k]}`);
     // level sparkline over all snapshots
     const W = 320, Hh = 46, lv = H.map(h => h.level), min = Math.min(...lv), max = Math.max(...lv), span = Math.max(1, max - min);
     const pts = H.map((h, i) => `${(i / Math.max(1, H.length - 1)) * (W - 8) + 4},${Hh - 6 - ((h.level - min) / span) * (Hh - 14)}`).join(" ");
-    const when = h => new Date(h.at.replace(" ", "T") + "Z").toLocaleDateString("es-ES", { day: "numeric", month: "short" });
-    $("#diary").innerHTML = `<div class="pane frame" style="margin-bottom:12px"><h3>Diario · desde la sesión anterior <span class="muted">(${esc(when(prev))} → ${esc(when(now))})</span></h3>
-      <div class="kv"><div><b>${d(prev.level, now.level)}</b><span>nivel (${now.level})</span></div><div><b>${ERSave.fmtTime(sec)}</b><span>jugado</span></div><div><b>${newBosses.length}</b><span>jefes</span></div><div><b>${newGraces}</b><span>gracias</span></div><div><b>${d(prev.items, now.items)}</b><span>objetos</span></div><div><b>${d(prev.deaths, now.deaths)}</b><span>muertes</span></div></div>
-      ${newBosses.length ? `<p style="margin:8px 0 0"><span class="help">Jefes vencidos:</span> ${newBosses.map(n => link({ name: n, kind: "boss" }, esc(n))).join(", ")}</p>` : ""}
-      ${ups.length ? `<p style="margin:6px 0 0"><span class="help">Armas mejoradas:</span> ${ups.map(esc).join(", ")}</p>` : ""}
-      ${statD.length ? `<p style="margin:6px 0 0"><span class="help">Atributos:</span> ${statD.map(esc).join(", ")}</p>` : ""}
-      <svg viewBox="0 0 ${W} ${Hh}" width="100%" height="${Hh}" style="margin-top:8px;display:block" aria-label="Nivel por sesión"><polyline fill="none" stroke="var(--gold)" stroke-width="1.5" points="${pts}"/>${H.map((h, i) => `<circle cx="${(i / Math.max(1, H.length - 1)) * (W - 8) + 4}" cy="${Hh - 6 - ((h.level - min) / span) * (Hh - 14)}" r="2.5" fill="var(--gold-2)"><title>${esc(when(h))}: nivel ${h.level}</title></circle>`).join("")}<text x="4" y="${Hh - 0}" font-size="9" fill="var(--muted)">${esc(when(H[0]))} · nv ${min}</text><text x="${W - 4}" y="10" font-size="9" fill="var(--muted)" text-anchor="end">nv ${max}</text></svg>
-      <p class="help" style="margin:6px 0 0">${H.length} sesiones registradas (una por cada partida con tiempo de juego distinto que abres con la sesión iniciada).</p></div>`;
+    const when = h => new Date(h.at.replace(" ", "T") + "Z").toLocaleDateString(I18N.locale(), { day: "numeric", month: "short" });
+    $("#diary").innerHTML = `<div class="pane frame" style="margin-bottom:12px"><h3>${T("Diario · desde la sesión anterior")} <span class="muted">(${esc(when(prev))} → ${esc(when(now))})</span></h3>
+      <div class="kv"><div><b>${d(prev.level, now.level)}</b><span>${T("nivel ({0})", now.level)}</span></div><div><b>${ERSave.fmtTime(sec)}</b><span>${T("jugado")}</span></div><div><b>${newBosses.length}</b><span>${T("jefes")}</span></div><div><b>${newGraces}</b><span>${T("gracias")}</span></div><div><b>${d(prev.items, now.items)}</b><span>${T("objetos")}</span></div><div><b>${d(prev.deaths, now.deaths)}</b><span>${T("muertes")}</span></div></div>
+      ${newBosses.length ? `<p style="margin:8px 0 0"><span class="help">${T("Jefes vencidos:")}</span> ${newBosses.map(n => link({ name: n, kind: "boss" }, esc(n))).join(", ")}</p>` : ""}
+      ${ups.length ? `<p style="margin:6px 0 0"><span class="help">${T("Armas mejoradas:")}</span> ${ups.map(esc).join(", ")}</p>` : ""}
+      ${statD.length ? `<p style="margin:6px 0 0"><span class="help">${T("Atributos:")}</span> ${statD.map(esc).join(", ")}</p>` : ""}
+      <svg viewBox="0 0 ${W} ${Hh}" width="100%" height="${Hh}" style="margin-top:8px;display:block" aria-label="${T("Nivel por sesión")}"><polyline fill="none" stroke="var(--gold)" stroke-width="1.5" points="${pts}"/>${H.map((h, i) => `<circle cx="${(i / Math.max(1, H.length - 1)) * (W - 8) + 4}" cy="${Hh - 6 - ((h.level - min) / span) * (Hh - 14)}" r="2.5" fill="var(--gold-2)"><title>${T("{0}: nivel {1}", esc(when(h)), h.level)}</title></circle>`).join("")}<text x="4" y="${Hh - 0}" font-size="9" fill="var(--muted)">${esc(when(H[0]))} · ${T("nv {0}", min)}</text><text x="${W - 4}" y="10" font-size="9" fill="var(--muted)" text-anchor="end">${T("nv {0}", max)}</text></svg>
+      <p class="help" style="margin:6px 0 0">${T("{0} sesiones registradas (una por cada partida con tiempo de juego distinto que abres con la sesión iniciada).", H.length)}</p></div>`;
   }
   document.addEventListener("click", e => {
     const t = e.target.closest("[data-pl]"); if (t && CUR) { PL.view = PL.view === t.dataset.pl ? null : t.dataset.pl; PL.q = ""; renderProgress(CUR); return; }
@@ -428,7 +431,7 @@ async function main(DB, FLAGS, REQS){
     const need = costRange(w.level, to, w.maxLevel <= 10), have = stoneCounts(c);
     const lines = Object.entries(need).map(([n, q]) => { const h = have[n] || 0; return `<div class="${h >= q ? "yes" : "no"}"><span>${esc(n)}</span><span>${h} / ${q}</span></div>`; });
     const ok = Object.entries(need).every(([n, q]) => (have[n] || 0) >= q);
-    $("#need").innerHTML = (w.level >= w.maxLevel ? `<div class="yes"><span>Ya está al máximo.</span><span></span></div>` : `<div class="muted small"><span>De +${w.level} a +${to}${w.stored ? " (está en el cofre)" : ""}</span><span>${ok ? "✓ tienes todo" : "faltan piedras"}</span></div>` + lines.join(""));
+    $("#need").innerHTML = (w.level >= w.maxLevel ? `<div class="yes"><span>${T("Ya está al máximo.")}</span><span></span></div>` : `<div class="muted small"><span>${T("De +{0} a +{1}", w.level, to)}${w.stored ? T(" (está en el cofre)") : ""}</span><span>${ok ? T("✓ tienes todo") : T("faltan piedras")}</span></div>` + lines.join(""));
   }
 
   function renderInv() {
@@ -441,22 +444,22 @@ async function main(DB, FLAGS, REQS){
     const oi = c => { const i = ORDER.indexOf(c); return i < 0 ? 99 : i; };
     if (useFilter !== "all") items = items.filter(i => { const u = canUse(c, i); if (!u) return useFilter === "ok"; if (useFilter === "boost") return !!u.boosted; if (useFilter === "ok") return !u.boosted && (u.ok || u.twoHand); return !u.ok && !u.twoHand; });
     items = items.slice().sort((a, b) => oi(a.cat) - oi(b.cat) || a.name.localeCompare(b.name));
-    if (mode === "missing") { const tot = CATALOG.filter(i => !cats || cats.includes(i.cat)).length; $("#count").textContent = `${items.length} por conseguir de ${tot}` + (q ? " (filtrado)" : ""); }
-    else $("#count").textContent = items.length + " objetos";
+    if (mode === "missing") { const tot = CATALOG.filter(i => !cats || cats.includes(i.cat)).length; $("#count").textContent = T("{0} por conseguir de {1}", items.length, tot) + (q ? T(" (filtrado)") : ""); }
+    else $("#count").textContent = T("{0} objetos", items.length);
     const cell = i => { const img = ICONS.size ? iconCandidates(i).map(k => ICONS.get(k)).find(Boolean) : null; const e = DB.items[i.id] || (i.kind === "weapon" ? DB.items[i.id - (i.id % 10000)] : null) || { loc: i.loc }; const u = canUse(c, i);
-      const meta = [CAT_ES[i.cat] || i.cat, subEs(i.sub), i.infusion && i.infusion !== "Standard" ? i.infusion : null, i.aow ? "Ceniza: " + i.aow : null, i.qty > 1 ? "×" + i.qty : null, i.stored ? "en el cofre" : null, i.kind === "weapon" && i.maxLevel ? `+${i.level}/${i.maxLevel}` : null, useMeta(u)].filter(Boolean).join(" · ");
+      const meta = [CAT_ES[i.cat] || i.cat, subEs(i.sub), i.infusion && i.infusion !== "Standard" ? i.infusion : null, i.aow ? T("Ceniza: {0}", i.aow) : null, i.qty > 1 ? "×" + i.qty : null, i.stored ? T("en el cofre") : null, i.kind === "weapon" && i.maxLevel ? `+${i.level}/${i.maxLevel}` : null, useMeta(u)].filter(Boolean).join(" · ");
       return `<div class="cell${i.missing ? " miss" : ""}${i.stored ? " stored" : ""}${useCls(u)}" data-item="${esc(JSON.stringify({ n: i.display, w: wikiName(i), d: meta, r: reqLine(u), l: e && e.loc ? e.loc.replace(/\s*\[\s*Map Link\s*\]\s*;?/g, "").replace(/\s+([.,;])/g, "$1").replace(/\s{2,}/g, " ") : "", i: img || "" }))}" role="button" tabindex="0" title="${esc(i.display)}">${img ? `<img src="${img}" alt="" loading="lazy">` : `<span class="nm">${esc(i.display)}</span>`}${i.qty > 1 ? `<span class="q">${i.qty}</span>` : ""}${i.kind === "weapon" && i.level ? `<span class="lv">+${i.level}</span>` : ""}</div>`; };
     $("#inv").innerHTML = items.slice(0, limit).map(cell).join("");
-    const more = $("#more"); more.hidden = items.length <= limit; if (!more.hidden) more.textContent = `Mostrar ${Math.min(250, items.length - limit)} más (${items.length - limit} restantes)`;
-    $("#invDetail").innerHTML = `<div class="d help">Toca un objeto para ver el detalle.</div>`;
+    const more = $("#more"); more.hidden = items.length <= limit; if (!more.hidden) more.textContent = T("Mostrar {0} más ({1} restantes)", Math.min(250, items.length - limit), items.length - limit);
+    $("#invDetail").innerHTML = `<div class="d help">${T("Toca un objeto para ver el detalle.")}</div>`;
   }
 
-  function modeChips() { $("#mode").innerHTML = [["have", "Tengo"], ["missing", "No tengo"]].map(([m, l]) => `<button class="cat" aria-pressed="${m === mode}" data-m="${m}">${l}</button>`).join("");
-    const u = $("#useMode"); if (u) { u.hidden = !Object.keys(RQ.weapons).length; u.innerHTML = [["all", "Todo"], ["ok", "Puedo usar"], ["boost", "Solo con bonus"], ["no", "No cumplo"]].map(([m, l]) => `<button class="cat" aria-pressed="${m === useFilter}" data-u="${m}" title="${m === "ok" ? "Con tus atributos base (a una o dos manos)" : m === "boost" ? "Solo gracias a talismanes, cascos o runa mayor" : m === "no" ? "Ni con el equipo actual" : ""}">${l}</button>`).join(""); } }
+  function modeChips() { $("#mode").innerHTML = [["have", "Tengo"], ["missing", "No tengo"]].map(([m, l]) => `<button class="cat" aria-pressed="${m === mode}" data-m="${m}">${T(l)}</button>`).join("");
+    const u = $("#useMode"); if (u) { u.hidden = !Object.keys(RQ.weapons).length; u.innerHTML = [["all", "Todo"], ["ok", "Puedo usar"], ["boost", "Solo con bonus"], ["no", "No cumplo"]].map(([m, l]) => `<button class="cat" aria-pressed="${m === useFilter}" data-u="${m}" title="${m === "ok" ? T("Con tus atributos base (a una o dos manos)") : m === "boost" ? T("Solo gracias a talismanes, cascos o runa mayor") : m === "no" ? T("Ni con el equipo actual") : ""}">${T(l)}</button>`).join(""); } }
   $("#useMode").addEventListener("click", e => { const b = e.target.closest(".cat"); if (!b) return; useFilter = b.dataset.u; limit = 250; modeChips(); renderInv(); });
   $("#mode").addEventListener("click", e => { const b = e.target.closest(".cat"); if (!b) return; mode = b.dataset.m; limit = 250; modeChips(); renderInv(); });
   modeChips();
-  function chips() { $("#chips").innerHTML = GROUPS.map(g => `<button class="cat" aria-pressed="${g[0] === group}" data-g="${g[0]}">${g[0]}</button>`).join(""); }
+  function chips() { $("#chips").innerHTML = GROUPS.map(g => `<button class="cat" aria-pressed="${g[0] === group}" data-g="${g[0]}">${T(g[0])}</button>`).join(""); }
   $("#chips").addEventListener("click", e => { const b = e.target.closest(".cat"); if (!b) return; group = b.dataset.g; limit = 250; chips(); renderInv(); });
   $("#upgradeable").addEventListener("click", e => { if (e.target.closest("a")) return; const r = e.target.closest("[data-w]"); if (!r) return; $("#planWeapon").value = r.dataset.w; planUpdate(true); $("#planWeapon").scrollIntoView({ block: "center", behavior: "smooth" }); showTab("forge"); });
   $("#q").addEventListener("input", () => { limit = 250; renderInv(); });
@@ -488,11 +491,11 @@ async function main(DB, FLAGS, REQS){
     sel.hidden = true;
     sel.onchange = () => pick(chars, sel.value);
     const cs = $("#chars"); cs.hidden = chars.length < 2;
-    cs.innerHTML = chars.map(c => `<button data-slot="${c.slot}" aria-pressed="false"><b>${esc(c.name || "Slot " + (c.slot + 1))}</b><span>Nv ${c.level} · ${esc(c.className)}</span></button>`).join("");
+    cs.innerHTML = chars.map(c => `<button data-slot="${c.slot}" aria-pressed="false"><b>${esc(c.name || "Slot " + (c.slot + 1))}</b><span>${T("Nv {0}", c.level)} · ${esc(c.className)}</span></button>`).join("");
     cs.onclick = e => { const b = e.target.closest("[data-slot]"); if (b) pick(chars, b.dataset.slot); };
     const bad = save.chars.filter(c => c.error);
-    $("#msg").innerHTML = bad.length ? `<span class="err">No se pudo leer ${bad.length} slot(s): ${esc(bad[0].error)}</span>` : "";
-    if (!chars.length) { $("#msg").innerHTML = `<span class="err">No hay personajes legibles en este archivo.</span>`; return; }
+    $("#msg").innerHTML = bad.length ? `<span class="err">${T("No se pudo leer {0} slot(s): {1}", bad.length, esc(bad[0].error))}</span>` : "";
+    if (!chars.length) { $("#msg").innerHTML = `<span class="err">${T("No hay personajes legibles en este archivo.")}</span>`; return; }
     $("#app").hidden = false; $("#dropSec").hidden = true; $("#barOpen").hidden = false; $("#barSteam").hidden = false; $("#modes").hidden = false; $("#tabs").hidden = false; let t0 = location.hash.slice(1); try { t0 = t0 || localStorage.getItem("tl.tab") || "status"; } catch (e) {} showTab(document.getElementById("s-" + t0) ? t0 : "status");
     $("#foot").textContent = `${name} · ${when}`;
     let cur = null; try { cur = localStorage.getItem("tl.cur"); } catch (e) {}
@@ -509,12 +512,12 @@ async function main(DB, FLAGS, REQS){
   }
 
   function loadFile(file) {
-    $("#msg").textContent = "Leyendo " + file.name + "…";
+    $("#msg").textContent = T("Leyendo {0}…", file.name);
     file.arrayBuffer().then(buf => {
       const save = ERSave.parse(buf);
       prep(save);
-      Cloud.pushCharacters(save.chars).then(r => { if (r && !r.error) { note("Resumen de personajes guardado en tu cuenta."); DIARY.cache = {}; if (CUR) renderDiary(CUR); } else if (r && r.error) note("No se pudo guardar el resumen en tu cuenta: " + r.error); });
-      const when = new Date().toLocaleString("es-ES", { dateStyle: "medium", timeStyle: "short" });
+      Cloud.pushCharacters(save.chars).then(r => { if (r && !r.error) { note(T("Resumen de personajes guardado en tu cuenta.")); DIARY.cache = {}; if (CUR) renderDiary(CUR); } else if (r && r.error) note(T("No se pudo guardar el resumen en tu cuenta: {0}", r.error)); });
+      const when = new Date().toLocaleString(I18N.locale(), { dateStyle: "medium", timeStyle: "short" });
       showSave(save, file.name, when);
       try { localStorage.setItem("tl.last", JSON.stringify({ name: file.name, when, chars: save.chars.map(slim) })); } catch (e) {}
     }).catch(e => { $("#msg").innerHTML = `<span class="err">${esc(e.message || e)}</span>`; });
@@ -556,30 +559,31 @@ async function main(DB, FLAGS, REQS){
     for (const g of FLAGS.graces) if (!target.has(g.name)) target.set(g.name, { focus: g.name });
     const uniq = [...target.keys()].filter(n => n.length > 3).sort((a, b) => b.length - a.length);
     const re = new RegExp("(?<![\\w'])(" + uniq.map(n => esc(n).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")(?![\\w'])", "g");
-    return ADV.linker = html => html.replace(re, m => { const t = target.get(m.replace(/&amp;/g, "&")); if (!t) return m; return `<a class="ml" href="map.html#focus=${encodeURIComponent(t.focus)}${t.q ? "&q=" + encodeURIComponent(t.q) : ""}" title="Ver en el mapa">${m}</a>`; });
+    return ADV.linker = html => html.replace(re, m => { const t = target.get(m.replace(/&amp;/g, "&")); if (!t) return m; return `<a class="ml" href="map.html#focus=${encodeURIComponent(t.focus)}${t.q ? "&q=" + encodeURIComponent(t.q) : ""}" title="${T("Ver en el mapa")}">${m}</a>`; });
   }
-  const ERR_ES = { "summary too old: open the save again while logged in": "el resumen guardado es de una versión anterior; vuelve a abrir el .sl2 con la sesión iniciada.", "advisor not configured (ANTHROPIC_API_KEY)": "falta la clave de la API en el servidor.", "daily cap reached": "has llegado al máximo diario.", "unknown character; open the save while logged in first": "este personaje no está en tu cuenta todavía; abre el .sl2 con la sesión iniciada." };
+  const ERR_ES0 = { "summary too old: open the save again while logged in": "el resumen guardado es de una versión anterior; vuelve a abrir el .sl2 con la sesión iniciada.", "advisor not configured (ANTHROPIC_API_KEY)": "falta la clave de la API en el servidor.", "daily cap reached": "has llegado al máximo diario.", "unknown character; open the save while logged in first": "este personaje no está en tu cuenta todavía; abre el .sl2 con la sesión iniciada." };
+  const ERR_ES = new Proxy(ERR_ES0, { get: (o, k) => o[k] ? T(o[k]) : o[k] });
   async function renderAdvice(c) {
     const el = $("#advice"); if (!el) return;
-    if (!Cloud.user()) { el.innerHTML = `<div class="pane frame"><p class="help">Entra con Steam (botón de cuenta, arriba) y abre tu .sl2 una vez: el consejero trabaja sobre el resumen del personaje guardado en tu cuenta.</p><button class="btn primary" id="advLogin">Entrar con Steam</button></div>`; $("#advLogin").onclick = () => Cloud.login(); return; }
-    el.innerHTML = `<p class="help">Cargando…</p>`;
+    if (!Cloud.user()) { el.innerHTML = `<div class="pane frame"><p class="help">${T("Entra con Steam (botón de cuenta, arriba) y abre tu .sl2 una vez: el consejero trabaja sobre el resumen del personaje guardado en tu cuenta.")}</p><button class="btn primary" id="advLogin">${T("Entrar con Steam")}</button></div>`; $("#advLogin").onclick = () => Cloud.login(); return; }
+    el.innerHTML = `<p class="help">${T("Cargando…")}</p>`;
     const r = await Cloud.advice(Marks.charKey(c)); if (CUR !== c) return;
-    if (r.error) { el.innerHTML = `<div class="pane frame"><p class="help">${esc(r.status === 404 ? "Este personaje aún no está en tu cuenta: vuelve a abrir el .sl2 con la sesión iniciada." : r.error)}</p></div>`; return; }
-    const when = r.advice ? new Date(r.advice.created_at.replace(" ", "T") + "Z").toLocaleString("es-ES", { dateStyle: "medium", timeStyle: "short" }) : null;
+    if (r.error) { el.innerHTML = `<div class="pane frame"><p class="help">${esc(r.status === 404 ? T("Este personaje aún no está en tu cuenta: vuelve a abrir el .sl2 con la sesión iniciada.") : r.error)}</p></div>`; return; }
+    const when = r.advice ? new Date(r.advice.created_at.replace(" ", "T") + "Z").toLocaleString(I18N.locale(), { dateStyle: "medium", timeStyle: "short" }) : null;
     const canRefresh = r.configured && !ADV.busy && (Cloud.isAdmin() || (r.cooldown === 0 && r.used < r.cap));
-    const why = !r.configured ? "El consejero no está configurado en el servidor (falta la clave de la API)." : r.cooldown > 0 && !Cloud.isAdmin() ? `Podrás pedir otro informe en ${Math.ceil(r.cooldown / 3600)} h.` : r.used >= r.cap && !Cloud.isAdmin() ? "Has llegado al máximo diario de informes." : r.stale && r.advice ? "Has abierto una partida más reciente que la de este informe." : "";
-    el.innerHTML = `<div class="advh"><span class="help">${r.advice ? `Generado el ${when}${r.stale ? " · desactualizado" : ""}` : "Todavía no hay informe para este personaje."} · ${r.used}/${r.cap} hoy</span><button class="btn primary" id="advRefresh" ${canRefresh ? "" : "disabled"}>${ADV.busy ? "Generando…" : r.advice ? "Actualizar" : "Generar informe"}</button></div>
+    const why = !r.configured ? T("El consejero no está configurado en el servidor (falta la clave de la API).") : r.cooldown > 0 && !Cloud.isAdmin() ? T("Podrás pedir otro informe en {0} h.", Math.ceil(r.cooldown / 3600)) : r.used >= r.cap && !Cloud.isAdmin() ? T("Has llegado al máximo diario de informes.") : r.stale && r.advice ? T("Has abierto una partida más reciente que la de este informe.") : "";
+    el.innerHTML = `<div class="advh"><span class="help">${r.advice ? `${T("Generado el {0}", when)}${r.stale ? T(" · desactualizado") : ""}` : T("Todavía no hay informe para este personaje.")}${T(" · {0}/{1} hoy", r.used, r.cap)}</span><button class="btn primary" id="advRefresh" ${canRefresh ? "" : "disabled"}>${ADV.busy ? T("Generando…") : r.advice ? T("Actualizar") : T("Generar informe")}</button></div>
       ${why ? `<p class="help">${esc(why)}</p>` : ""}
-      ${ADV.err ? `<p class="err">No se pudo generar el informe: ${esc(ADV.err)}</p>` : ""}
+      ${ADV.err ? `<p class="err">${T("No se pudo generar el informe: {0}", esc(ADV.err))}</p>` : ""}
       ${r.advice ? `<div class="pane frame md">${md(r.advice.text)}</div>` : ""}`;
     if (r.advice) { const link = await reportLinker(); const box = el.querySelector(".md"); if (box && CUR === c) { for (const n of [...box.querySelectorAll("h2, p, li")]) { if (!n.querySelector("a")) n.innerHTML = link(n.innerHTML); } } }
     $("#advRefresh").onclick = async () => {
-      ADV.busy = true; const btn = $("#advRefresh"); btn.disabled = true; btn.textContent = "Generando…";
-      const st = document.createElement("p"); st.className = "help"; st.id = "advStatus"; st.textContent = "Pidiendo el informe a Claude (suele tardar entre 15 y 40 segundos)…"; el.insertBefore(st, el.children[1] || null);
+      ADV.busy = true; const btn = $("#advRefresh"); btn.disabled = true; btn.textContent = T("Generando…");
+      const st = document.createElement("p"); st.className = "help"; st.id = "advStatus"; st.textContent = T("Pidiendo el informe a Claude (suele tardar entre 15 y 40 segundos)…"); el.insertBefore(st, el.children[1] || null);
       // make sure the account has the current summary (also works from the copy this browser kept) before asking for the report
       let x = null;
-      if (SAVE && SAVE.chars) { st.textContent = "Guardando el resumen del personaje en tu cuenta…"; const p = await Cloud.pushCharacters(SAVE.chars).catch(e => ({ error: String(e && e.message || e) })); if (p && p.error) x = { error: "no se pudo guardar el resumen (" + p.error + ")" }; else if (p && p.skipped && !p.count) x = { error: "este personaje pertenece a otra cuenta de Steam" }; }
-      if (!x) { st.textContent = "Pidiendo el informe a Claude (suele tardar entre 15 y 40 segundos)…"; const t0 = Date.now(); try { x = await Cloud.adviceRefresh(Marks.charKey(c), o => { const sec = Math.round((Date.now() - t0) / 1000); st.textContent = o.progress ? `Claude está escribiendo el informe… (${sec} s)` : `Claude está pensando… (${sec} s)`; }); } catch (e) { x = { error: String(e && e.message || e) }; } }
+      if (SAVE && SAVE.chars) { st.textContent = T("Guardando el resumen del personaje en tu cuenta…"); const p = await Cloud.pushCharacters(SAVE.chars).catch(e => ({ error: String(e && e.message || e) })); if (p && p.error) x = { error: T("no se pudo guardar el resumen ({0})", p.error) }; else if (p && p.skipped && !p.count) x = { error: T("este personaje pertenece a otra cuenta de Steam") }; }
+      if (!x) { st.textContent = T("Pidiendo el informe a Claude (suele tardar entre 15 y 40 segundos)…"); const t0 = Date.now(); try { x = await Cloud.adviceRefresh(Marks.charKey(c), o => { const sec = Math.round((Date.now() - t0) / 1000); st.textContent = o.progress ? T("Claude está escribiendo el informe… ({0} s)", sec) : T("Claude está pensando… ({0} s)", sec); }); } catch (e) { x = { error: String(e && e.message || e) }; } }
       ADV.busy = false;
       if (x && x.error) { ADV.err = ERR_ES[x.error] || x.error; } else ADV.err = null;
       renderAdvice(c);
@@ -588,7 +592,7 @@ async function main(DB, FLAGS, REQS){
 
   // ---- account (optional) ---------------------------------------------------
   function note(t) { const m = $("#msg"); if (!m.textContent) { m.textContent = t; setTimeout(() => { if (m.textContent === t) m.textContent = ""; }, 4000); } }
-  function cloudMark(ck, k, id, on) { if (!Cloud.user()) return; (on ? Cloud.syncMarks(ck) : Cloud.removeMark(ck, k, id)).then(r => { if (r && r.error) note("No se pudo sincronizar la marca: " + r.error); }); }
+  function cloudMark(ck, k, id, on) { if (!Cloud.user()) return; (on ? Cloud.syncMarks(ck) : Cloud.removeMark(ck, k, id)).then(r => { if (r && r.error) note(T("No se pudo sincronizar la marca: {0}", r.error)); }); }
   let synced = new Set();
   function cloudSync(c) {
     if (!Cloud.user() || !c) return; const ck = Marks.charKey(c); if (synced.has(ck)) return; synced.add(ck);
@@ -599,31 +603,31 @@ async function main(DB, FLAGS, REQS){
     const b = $("#acct"); if (!b) return; const u = Cloud.user();
     b.hidden = !Cloud.available();
     if (u) { b.className = "btn acct"; b.innerHTML = `${u.avatar ? `<img src="${esc(u.avatar)}" alt="">` : ""}<span>${esc(u.name || "Steam")}</span>`; }
-    else { b.className = "btn acct out"; b.textContent = "Entrar"; }
+    else { b.className = "btn acct out"; b.textContent = T("Entrar"); }
   }
-  function sheet(html) { let s = $("#sheet"); if (!s) { s = document.createElement("div"); s.id = "sheet"; s.className = "sheet frame"; document.body.appendChild(s); } s.innerHTML = html + `<div style="text-align:right;margin-top:10px"><button class="btn" id="sheetClose">Cerrar</button></div>`; s.hidden = false; $("#sheetClose").onclick = () => { s.hidden = true; }; return s; }
+  function sheet(html) { let s = $("#sheet"); if (!s) { s = document.createElement("div"); s.id = "sheet"; s.className = "sheet frame"; document.body.appendChild(s); } s.innerHTML = html + `<div style="text-align:right;margin-top:10px"><button class="btn" id="sheetClose">${T("Cerrar")}</button></div>`; s.hidden = false; $("#sheetClose").onclick = () => { s.hidden = true; }; return s; }
   async function openAcct() {
     const u = Cloud.user();
     if (!u) {
-      sheet(`<h3>Cuenta</h3><p class="help">Entra con Steam para guardar tus marcas manuales y el resumen de tus personajes en tu cuenta, y para proponer marcadores al mapa de la comunidad. Solo usamos tu identidad pública de Steam (nombre y avatar); nunca pedimos contraseña ni accedemos a tu partida.</p><p class="help">La partida (.sl2) no se sube: todo se lee en este navegador y solo se guarda un resumen (nivel, equipo, progreso).</p><button class="btn primary" id="doLogin">Entrar con Steam</button>`);
+      sheet(`<h3>${T("Cuenta")}</h3><p class="help">${T("Entra con Steam para guardar tus marcas manuales y el resumen de tus personajes en tu cuenta, y para proponer marcadores al mapa de la comunidad. Solo usamos tu identidad pública de Steam (nombre y avatar); nunca pedimos contraseña ni accedemos a tu partida.")}</p><p class="help">${T("La partida (.sl2) no se sube: todo se lee en este navegador y solo se guarda un resumen (nivel, equipo, progreso).")}</p><button class="btn primary" id="doLogin">${T("Entrar con Steam")}</button>`);
       $("#doLogin").onclick = () => Cloud.login(); return;
     }
-    const s = sheet(`<h3>Cuenta</h3><div class="row"><div class="n">${u.avatar ? `<img src="${esc(u.avatar)}" alt="" style="width:28px;height:28px;vertical-align:middle;margin-right:8px">` : ""}<b>${esc(u.name || "")}</b> <span class="help">· ${u.role === "admin" ? "moderador" : "jugador"}</span></div><button class="btn" id="doLogout">Salir</button></div>
-      <div class="row"><div class="n">Marcas de este personaje${CUR ? ` (${Marks.all(Marks.charKey(CUR)).length})` : ""}</div><button class="btn" id="doSync" ${CUR ? "" : "disabled"}>Sincronizar ahora</button></div>
-      <div class="row"><div class="n">Resumen de personajes de la partida abierta</div><button class="btn" id="doPush" ${SAVE ? "" : "disabled"}>Guardar en la cuenta</button></div>
-      ${Cloud.isAdmin() ? `<h3 style="margin-top:14px">Moderación</h3><div id="modq" class="help">Cargando propuestas…</div>` : ""}`);
+    const s = sheet(`<h3>${T("Cuenta")}</h3><div class="row"><div class="n">${u.avatar ? `<img src="${esc(u.avatar)}" alt="" style="width:28px;height:28px;vertical-align:middle;margin-right:8px">` : ""}<b>${esc(u.name || "")}</b> <span class="help">· ${u.role === "admin" ? T("moderador") : T("jugador")}</span></div><button class="btn" id="doLogout">${T("Salir")}</button></div>
+      <div class="row"><div class="n">${T("Marcas de este personaje")}${CUR ? ` (${Marks.all(Marks.charKey(CUR)).length})` : ""}</div><button class="btn" id="doSync" ${CUR ? "" : "disabled"}>${T("Sincronizar ahora")}</button></div>
+      <div class="row"><div class="n">${T("Resumen de personajes de la partida abierta")}</div><button class="btn" id="doPush" ${SAVE ? "" : "disabled"}>${T("Guardar en la cuenta")}</button></div>
+      ${Cloud.isAdmin() ? `<h3 style="margin-top:14px">${T("Moderación")}</h3><div id="modq" class="help">${T("Cargando propuestas…")}</div>` : ""}`);
     $("#doLogout").onclick = async () => { await Cloud.logout(); synced = new Set(); renderAcct(); s.hidden = true; };
-    $("#doSync").onclick = async () => { if (!CUR) return; synced.delete(Marks.charKey(CUR)); const r = await Cloud.syncMarks(Marks.charKey(CUR)); synced.add(Marks.charKey(CUR)); renderProgress(CUR); note(r && r.error ? "Error: " + r.error : "Marcas sincronizadas."); s.hidden = true; };
-    $("#doPush").onclick = async () => { if (!SAVE) return; const r = await Cloud.pushCharacters(SAVE.chars); note(r && r.error ? "Error: " + r.error : "Resumen guardado."); s.hidden = true; };
+    $("#doSync").onclick = async () => { if (!CUR) return; synced.delete(Marks.charKey(CUR)); const r = await Cloud.syncMarks(Marks.charKey(CUR)); synced.add(Marks.charKey(CUR)); renderProgress(CUR); note(r && r.error ? T("Error: {0}", r.error) : T("Marcas sincronizadas.")); s.hidden = true; };
+    $("#doPush").onclick = async () => { if (!SAVE) return; const r = await Cloud.pushCharacters(SAVE.chars); note(r && r.error ? T("Error: {0}", r.error) : T("Resumen guardado.")); s.hidden = true; };
     if (Cloud.isAdmin()) renderModQueue();
   }
   async function renderModQueue() {
     const q = $("#modq"); if (!q) return; const list = await Cloud.pending();
-    q.innerHTML = list.length ? list.map(m => `<div class="row"><div class="n"><b>${esc(m.item || m.kind || "marcador")}</b> <span class="help">· ${esc(m.layer)} (${Math.round(m.x)}, ${Math.round(m.y)}) · ${esc(m.by || m.author)}</span>${m.note ? `<div class="help">${esc(m.note)}</div>` : ""}</div><button class="btn" data-rev="approve|${m.id}">✓</button><button class="btn" data-rev="reject|${m.id}">✗</button></div>`).join("") : "No hay propuestas pendientes.";
+    q.innerHTML = list.length ? list.map(m => `<div class="row"><div class="n"><b>${esc(m.item || m.kind || T("marcador"))}</b> <span class="help">· ${esc(m.layer)} (${Math.round(m.x)}, ${Math.round(m.y)}) · ${esc(m.by || m.author)}</span>${m.note ? `<div class="help">${esc(m.note)}</div>` : ""}</div><button class="btn" data-rev="approve|${m.id}">✓</button><button class="btn" data-rev="reject|${m.id}">✗</button></div>`).join("") : T("No hay propuestas pendientes.");
     q.onclick = async e => { const b = e.target.closest("[data-rev]"); if (!b) return; const [a, id] = b.dataset.rev.split("|"); b.disabled = true; await Cloud.review(+id, a); renderModQueue(); };
   }
   $("#acct").addEventListener("click", openAcct);
-  Cloud.init().then(() => { renderAcct(); if (CUR) { cloudSync(CUR); renderDiary(CUR); } if (CUR && TAB === "advice") renderAdvice(CUR); if (location.hash === "#status" && Cloud.user() && history.replaceState) { /* back from Steam login */ note("Sesión iniciada con Steam."); } });
+  Cloud.init().then(() => { renderAcct(); if (CUR) { cloudSync(CUR); renderDiary(CUR); } if (CUR && TAB === "advice") renderAdvice(CUR); if (location.hash === "#status" && Cloud.user() && history.replaceState) { /* back from Steam login */ note(T("Sesión iniciada con Steam.")); } });
 
   // last file, if this browser kept it
   iconsLoad().then(() => { if (CUR) renderChar(CUR); });
@@ -632,10 +636,10 @@ async function main(DB, FLAGS, REQS){
     if (last && last.chars && last.chars.length) {
       for (const c of last.chars) if (!c.error) c.all = c.enriched.inventory.concat(c.enriched.keyItems, c.enriched.storage, c.enriched.storageKeys).filter(real);
       showSave({ chars: last.chars }, last.name, last.when);
-      $("#foot").textContent = `${last.name} · ${last.when} · última partida abierta en este navegador; usa "Abrir otro .sl2" para actualizar`;
+      $("#foot").textContent = `${last.name} · ${last.when} · ${T("última partida abierta en este navegador; usa \"Abrir otro .sl2\" para actualizar")}`;
     }
   } catch (e) {}
 }
 
-Promise.all([fetch("data/items.json").then(r => r.json()), fetch("data/flags.json").then(r => r.json()), fetch("data/reqs.json").then(r => r.ok ? r.json() : null).catch(() => null)]).then(([db, fl, rq]) => main(db, fl, rq)).catch(e => { document.getElementById("msg").textContent = "No se pudo cargar la base de datos de objetos: " + e.message; });
+Promise.all([fetch("data/items.json").then(r => r.json()), fetch("data/flags.json").then(r => r.json()), fetch("data/reqs.json").then(r => r.ok ? r.json() : null).catch(() => null)]).then(([db, fl, rq]) => main(db, fl, rq)).catch(e => { document.getElementById("msg").textContent = T("No se pudo cargar la base de datos de objetos: {0}", e.message); });
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});

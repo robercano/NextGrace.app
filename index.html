@@ -148,6 +148,7 @@ main{padding:14px max(14px,env(safe-area-inset-right,0px)) 40px max(14px,env(saf
 .btn.acct{display:flex;align-items:center;gap:6px;padding:3px 10px 3px 4px}
 .btn.acct img{width:22px;height:22px;border:1px solid var(--line-2)}
 .btn.acct.out{padding:5px 12px}
+.btn.lang{padding:5px 8px;font-size:.7rem;letter-spacing:.1em}
 .sheet{position:fixed;inset:auto 0 0 0;background:var(--bg);border-top:1px solid var(--gold);padding:14px 16px 24px;z-index:50;max-height:80vh;overflow:auto}
 .sheet h3{margin:0 0 8px;font-family:var(--display);font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
 .sheet .row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
@@ -236,30 +237,30 @@ details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font
   <div class="topi">
     <h1>Tarnished Ledger</h1>
     <select id="charSel" hidden aria-label="Personaje"></select>
-    <a class="btn" id="barSteam" href="https://store.steampowered.com/account/remotestorageapp/?appid=1245620" target="_blank" rel="noopener" hidden title="Descargar la partida de Steam Cloud">Steam</a>
-    <label class="btn primary" for="file" id="barOpen" hidden>Abrir .sl2</label>
-    <button class="btn acct" id="acct" hidden title="Cuenta"></button>
+    <a class="btn" id="barSteam" href="https://store.steampowered.com/account/remotestorageapp/?appid=1245620" target="_blank" rel="noopener" hidden title="Descargar la partida de Steam Cloud" data-i18n-title="Descargar la partida de Steam Cloud">Steam</a>
+    <label class="btn primary" for="file" id="barOpen" hidden data-i18n="Abrir .sl2">Abrir .sl2</label>
+    <button class="btn acct" id="acct" hidden title="Cuenta" data-i18n-title="Cuenta"></button><button class="btn lang" data-lang-toggle title="English">EN</button>
   </div>
   <div class="chars" id="chars" hidden></div>
-  <div class="modes" id="modes" hidden><a class="mode" aria-current="true" href="./">Ficha</a><a class="mode" href="map.html">Mapa</a></div>
+  <div class="modes" id="modes" hidden><a class="mode" aria-current="true" href="./" data-i18n="Ficha">Ficha</a><a class="mode" href="map.html" data-i18n="Mapa">Mapa</a></div>
   <div class="tabs" role="tablist" id="tabs" hidden>
-    <button class="tab" role="tab" data-t="status" aria-selected="true">Estado</button>
-    <button class="tab" role="tab" data-t="equip" aria-selected="false">Equipo</button>
-    <button class="tab" role="tab" data-t="inv" aria-selected="false">Inventario</button>
-    <button class="tab" role="tab" data-t="forge" aria-selected="false">Forja</button>
-    <button class="tab" role="tab" data-t="progress" aria-selected="false">Progreso</button>
-    <button class="tab" role="tab" data-t="advice" aria-selected="false">Consejero</button>
+    <button class="tab" role="tab" data-t="status" aria-selected="true" data-i18n="Estado">Estado</button>
+    <button class="tab" role="tab" data-t="equip" aria-selected="false" data-i18n="Equipo">Equipo</button>
+    <button class="tab" role="tab" data-t="inv" aria-selected="false" data-i18n="Inventario">Inventario</button>
+    <button class="tab" role="tab" data-t="forge" aria-selected="false" data-i18n="Forja">Forja</button>
+    <button class="tab" role="tab" data-t="progress" aria-selected="false" data-i18n="Progreso">Progreso</button>
+    <button class="tab" role="tab" data-t="advice" aria-selected="false" data-i18n="Consejero">Consejero</button>
   </div>
 </div>
 
 <main>
   <section id="dropSec">
     <div class="drop frame" id="drop">
-      <h2 style="font-size:.85rem;color:var(--gold);letter-spacing:.14em;text-transform:uppercase">Lector de partida de Elden Ring</h2>
-      <p>Tu partida se lee entera en este navegador: no se sube a ningún sitio.</p>
+      <h2 style="font-size:.85rem;color:var(--gold);letter-spacing:.14em;text-transform:uppercase" data-i18n="Lector de partida de Elden Ring">Lector de partida de Elden Ring</h2>
+      <p data-i18n="Tu partida se lee entera en este navegador: no se sube a ningún sitio.">Tu partida se lee entera en este navegador: no se sube a ningún sitio.</p>
       <div class="steps">
-        <div class="step"><span class="n">1</span><div><b>Descarga el archivo de Steam Cloud</b><div class="help">Se abre la página de Steam con tus archivos de Elden Ring (inicia sesión en Steam si te lo pide). Toca <i>Descargar</i> en <code>ER0000.sl2</code>.</div><a class="btn" id="steamBtn" href="https://store.steampowered.com/account/remotestorageapp/?appid=1245620" target="_blank" rel="noopener">Abrir Steam Cloud</a></div></div>
-        <div class="step"><span class="n">2</span><div><b>Ábrelo aquí</b><div class="help">Elige el <code>ER0000.sl2</code> recién descargado (en el PC también vale el de <code>%AppData%\EldenRing\&lt;SteamID&gt;\</code>).</div><label class="btn primary" for="file">Elegir archivo</label></div></div>
+        <div class="step"><span class="n">1</span><div><b data-i18n="Descarga el archivo de Steam Cloud">Descarga el archivo de Steam Cloud</b><div class="help" data-i18n="onb1">Se abre la página de Steam con tus archivos de Elden Ring (inicia sesión en Steam si te lo pide). Toca <i>Descargar</i> en <code>ER0000.sl2</code>.</div><a class="btn" id="steamBtn" href="https://store.steampowered.com/account/remotestorageapp/?appid=1245620" target="_blank" rel="noopener" data-i18n="Abrir Steam Cloud">Abrir Steam Cloud</a></div></div>
+        <div class="step"><span class="n">2</span><div><b data-i18n="Ábrelo aquí">Ábrelo aquí</b><div class="help" data-i18n="onb2">Elige el <code>ER0000.sl2</code> recién descargado (en el PC también vale el de <code>%AppData%\EldenRing\&lt;SteamID&gt;\</code>).</div><label class="btn primary" for="file" data-i18n="Elegir archivo">Elegir archivo</label></div></div>
       </div>
       <input id="file" type="file" accept=".sl2,.bak,application/octet-stream">
       <p id="msg" class="help"></p>
@@ -271,74 +272,74 @@ details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font
     <!-- STATUS -->
     <section class="screen" id="s-status" aria-hidden="false">
       <div class="hero frame">
-        <div class="lv num"><small>Nivel</small><span id="cLevel"></span></div>
+        <div class="lv num"><small data-i18n="Nivel">Nivel</small><span id="cLevel"></span></div>
         <div><div class="name" id="cName"></div><div class="meta" id="cSub"></div></div>
-        <div class="runes"><small>Runas</small><span id="cRunes"></span></div>
+        <div class="runes"><small data-i18n="Runas">Runas</small><span id="cRunes"></span></div>
       </div>
       <div class="bars frame" id="gauges"></div>
       <div class="cols">
-        <div class="pane frame"><h3>Atributos <button class="btn mk" id="planBtn" style="margin-left:8px;vertical-align:middle">planificar</button></h3><div id="stats"></div><div id="planner" hidden></div></div>
-        <div class="pane frame"><h3>Personaje</h3><div id="kv"></div></div>
+        <div class="pane frame"><h3><span data-i18n="Atributos">Atributos</span> <button class="btn mk" id="planBtn" style="margin-left:8px;vertical-align:middle" data-i18n="planificar">planificar</button></h3><div id="stats"></div><div id="planner" hidden></div></div>
+        <div class="pane frame"><h3 data-i18n="Personaje">Personaje</h3><div id="kv"></div></div>
       </div>
       <div class="cols">
-        <div class="pane frame"><h3>Resistencias (acumulado actual)</h3><div id="resist"></div></div>
-        <div class="pane frame"><h3>Carga y frascos</h3><div id="misc"></div></div>
+        <div class="pane frame"><h3 data-i18n="Resistencias (acumulado actual)">Resistencias (acumulado actual)</h3><div id="resist"></div></div>
+        <div class="pane frame"><h3 data-i18n="Carga y frascos">Carga y frascos</h3><div id="misc"></div></div>
       </div>
-      <div class="pane frame" id="unusedPane" hidden><h3>Pendiente de aplicar</h3><p class="help">Objetos del inventario que aún no has gastado o entregado y que mejoran al personaje.</p><div id="unused"></div></div>
+      <div class="pane frame" id="unusedPane" hidden><h3 data-i18n="Pendiente de aplicar">Pendiente de aplicar</h3><p class="help" data-i18n="Objetos del inventario que aún no has gastado o entregado y que mejoran al personaje.">Objetos del inventario que aún no has gastado o entregado y que mejoran al personaje.</p><div id="unused"></div></div>
     </section>
 
     <!-- EQUIPMENT -->
     <section class="screen" id="s-equip" aria-hidden="true">
-      <div class="detail frame" id="eqDetail"><div class="d help">Toca un hueco para ver el objeto.</div></div>
-      <div class="eqsec"><h3>Armamento</h3><div class="eqgrid" id="eqArms"></div></div>
-      <div class="eqsec"><h3>Armadura y talismanes</h3><div class="eqgrid" id="eqArmor"></div></div>
-      <div class="eqsec"><h3>Acceso rápido y bolsa</h3><div class="eqgrid" id="eqQuick"></div></div>
-      <div class="eqsec"><h3>Hechizos memorizados</h3><div class="eqgrid" id="eqSpells"></div></div>
+      <div class="detail frame" id="eqDetail"><div class="d help" data-i18n="Toca un hueco para ver el objeto.">Toca un hueco para ver el objeto.</div></div>
+      <div class="eqsec"><h3 data-i18n="Armamento">Armamento</h3><div class="eqgrid" id="eqArms"></div></div>
+      <div class="eqsec"><h3 data-i18n="Armadura y talismanes">Armadura y talismanes</h3><div class="eqgrid" id="eqArmor"></div></div>
+      <div class="eqsec"><h3 data-i18n="Acceso rápido y bolsa">Acceso rápido y bolsa</h3><div class="eqgrid" id="eqQuick"></div></div>
+      <div class="eqsec"><h3 data-i18n="Hechizos memorizados">Hechizos memorizados</h3><div class="eqgrid" id="eqSpells"></div></div>
     </section>
 
     <!-- INVENTORY -->
     <section class="screen" id="s-inv" aria-hidden="true">
-      <div class="detail frame" id="invDetail"><div class="d help">Toca un objeto para ver el detalle.</div></div>
+      <div class="detail frame" id="invDetail"><div class="d help" data-i18n="Toca un objeto para ver el detalle.">Toca un objeto para ver el detalle.</div></div>
       <div class="invtop">
-        <input id="q" type="search" placeholder="Buscar objeto…" autocomplete="off">
+        <input id="q" type="search" placeholder="Buscar objeto…" data-i18n-ph="Buscar objeto…" autocomplete="off">
         <div id="mode" style="display:flex;gap:4px"></div>
-        <div class="icohdr"><label class="btn" for="icons" id="iconsBtn">Cargar iconos</label><input id="icons" type="file" multiple accept=".zip,image/*"></div>
+        <div class="icohdr"><label class="btn" for="icons" id="iconsBtn" data-i18n="Cargar iconos">Cargar iconos</label><input id="icons" type="file" multiple accept=".zip,image/*"></div>
       </div>
       <p class="help" id="iconsMsg" style="margin:0"></p>
       <div class="cats" id="useMode" hidden></div>
       <div class="cats" id="chips"></div>
       <div class="cnt" id="count"></div>
       <div class="grid" id="inv"></div>
-      <button class="btn more" id="more" hidden>Mostrar más</button>
+      <button class="btn more" id="more" hidden data-i18n="Mostrar más">Mostrar más</button>
     </section>
 
     <!-- FORGE -->
     <section class="screen" id="s-forge" aria-hidden="true">
-      <p class="help">Qué armas puedes subir de nivel con las piedras que llevas (inventario y cofre).</p>
-      <div class="pane frame"><h3>Piedras de forja · armas normales (hasta +25)</h3><div class="stones" id="stonesN"></div></div>
-      <div class="pane frame"><h3>Piedras sombrías · armas especiales (hasta +10)</h3><div class="stones" id="stonesS"></div></div>
+      <p class="help" data-i18n="Qué armas puedes subir de nivel con las piedras que llevas (inventario y cofre).">Qué armas puedes subir de nivel con las piedras que llevas (inventario y cofre).</p>
+      <div class="pane frame"><h3 data-i18n="Piedras de forja · armas normales (hasta +25)">Piedras de forja · armas normales (hasta +25)</h3><div class="stones" id="stonesN"></div></div>
+      <div class="pane frame"><h3 data-i18n="Piedras sombrías · armas especiales (hasta +10)">Piedras sombrías · armas especiales (hasta +10)</h3><div class="stones" id="stonesS"></div></div>
       <div class="plan frame">
-        <h3 style="font-size:.72rem;color:var(--gold);letter-spacing:.14em;text-transform:uppercase">Planificar una mejora</h3>
+        <h3 style="font-size:.72rem;color:var(--gold);letter-spacing:.14em;text-transform:uppercase" data-i18n="Planificar una mejora">Planificar una mejora</h3>
         <div class="sel">
           <select id="planWeapon" aria-label="Arma a mejorar"></select>
-          <label for="planTo" class="help" style="white-space:nowrap">hasta +</label>
+          <label for="planTo" class="help" style="white-space:nowrap" data-i18n="hasta +">hasta +</label>
           <input id="planTo" type="number" inputmode="numeric" min="1" max="25" aria-label="Nivel objetivo">
         </div>
         <div class="need" id="need"></div>
       </div>
-      <div class="pane frame"><h3>Armas a medias</h3><p class="help">Toca una para planificarla.</p><div class="list" id="upgradeable"></div></div>
-      <div class="pane frame"><h3>Cenizas de espíritu · gloveworts</h3><p class="help">Roderika (Mesa Redonda) sube cada ceniza hasta +10: un glovewort del número del nivel y uno "Great" para el +10. Las cenizas con nombre (Mimic Tear, Tiche, Oleg…) usan Ghost Glovewort; el resto, Grave Glovewort.</p><div class="stones" id="gloveN"></div><div class="stones" id="gloveS" style="margin-top:6px"></div></div>
-      <div class="pane frame"><h3>Tus cenizas de espíritu</h3><p class="help">Hasta dónde puedes subir cada una ahora con lo que llevas, y qué falta para el siguiente nivel.</p><div class="list" id="spirits"></div></div>
+      <div class="pane frame"><h3 data-i18n="Armas a medias">Armas a medias</h3><p class="help" data-i18n="Toca una para planificarla.">Toca una para planificarla.</p><div class="list" id="upgradeable"></div></div>
+      <div class="pane frame"><h3 data-i18n="Cenizas de espíritu · gloveworts">Cenizas de espíritu · gloveworts</h3><p class="help" data-i18n="Roderika (Mesa Redonda) sube cada ceniza hasta +10: un glovewort del número del nivel y uno &quot;Great&quot; para el +10. Las cenizas con nombre (Mimic Tear, Tiche, Oleg…) usan Ghost Glovewort; el resto, Grave Glovewort.">Roderika (Mesa Redonda) sube cada ceniza hasta +10: un glovewort del número del nivel y uno "Great" para el +10. Las cenizas con nombre (Mimic Tear, Tiche, Oleg…) usan Ghost Glovewort; el resto, Grave Glovewort.</p><div class="stones" id="gloveN"></div><div class="stones" id="gloveS" style="margin-top:6px"></div></div>
+      <div class="pane frame"><h3 data-i18n="Tus cenizas de espíritu">Tus cenizas de espíritu</h3><p class="help" data-i18n="Hasta dónde puedes subir cada una ahora con lo que llevas, y qué falta para el siguiente nivel.">Hasta dónde puedes subir cada una ahora con lo que llevas, y qué falta para el siguiente nivel.</p><div class="list" id="spirits"></div></div>
     </section>
 
     <!-- PROGRESS -->
     <section class="screen" id="s-progress" aria-hidden="true">
-      <p class="help">Gracias descubiertas y jefes vencidos, leídos de los event flags de la partida. <a href="map.html">Ver en el mapa</a>.</p>
+      <p class="help"><span data-i18n="Gracias descubiertas y jefes vencidos, leídos de los event flags de la partida.">Gracias descubiertas y jefes vencidos, leídos de los event flags de la partida.</span> <a href="map.html" data-i18n="Ver en el mapa">Ver en el mapa</a>.</p>
       <div id="progress"></div>
     </section>
 
     <section class="screen" id="s-advice" aria-hidden="true">
-      <p class="help">Informe para tu próxima sesión, generado por Claude a partir del resumen del personaje guardado en tu cuenta (atributos, armas, piedras, jefes y gracias). Orientativo: el juego es tuyo.</p>
+      <p class="help" data-i18n="Informe para tu próxima sesión, generado por Claude a partir del resumen del personaje guardado en tu cuenta (atributos, armas, piedras, jefes y gracias). Orientativo: el juego es tuyo.">Informe para tu próxima sesión, generado por Claude a partir del resumen del personaje guardado en tu cuenta (atributos, armas, piedras, jefes y gracias). Orientativo: el juego es tuyo.</p>
       <div id="advice"></div>
     </section>
 
@@ -348,6 +349,7 @@ details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="src/ersave.js"></script>
+<script src="src/i18n.js"></script>
 <script src="src/glossary.js"></script>
 <script src="src/marks.js"></script>
 <script src="src/cloud.js"></script>

@@ -53,6 +53,12 @@ function buildContext(row, S, FLAGS, PROG) {
   return lines.join("\n");
 }
 
+const SYSTEM_EN = `You are a veteran Elden Ring advisor (base game and Shadow of the Erdtree). You receive a character's real state read from their save (attributes, gear, inventory, stones, bosses and graces) and an indicative progression table. Write, in English and in markdown, a short, concrete report for the NEXT play session. Rules:
+- Base every piece of advice on the data you were given: quote levels, stones and bosses as they appear. Don't invent items the character doesn't have, and don't claim where they are unless it follows from the data.
+- Each weapon carries in braces its real requirements, its scaling (letters) and whether the character can use it now ("usable", "two-handed only" or "NOT usable, missing STR+N…"): don't recommend NOT usable weapons unless you propose raising exactly those attributes; if a weapon is "usable only thanks to" a talisman or helm, say so (it depends on keeping it equipped), and prefer weapons that scale with the character's high attributes; if an upgrade isn't possible with the current stones, say which stone is missing and where it's usually found or which bell bearing unlocks it.
+- No story spoilers; naming areas, bosses and items is fine.
+- Use exactly these sections (## headings): "Where you are", "What to level and why" (attributes and weapons, 3 weapons at most), "Next steps" (3–5, in order), "Challenges within reach" (bosses and optional areas reasonable for the level), "Things you may have missed" (pending items or graces in areas already explored), and close with a "Note" line reminding this is guidance only.
+- Be direct and concise: about 350–500 words. No introduction or sign-off.`;
 const SYSTEM = `Eres un consejero veterano de Elden Ring (juego base y Shadow of the Erdtree). Recibes el estado real de un personaje leído de su partida (atributos, equipo, inventario, piedras, jefes y gracias) y una tabla orientativa de progresión. Escribe en español, en markdown, un informe breve y concreto para la PRÓXIMA sesión de juego. Reglas:
 - Basa cada consejo en los datos recibidos: cita niveles, piedras y jefes tal como aparecen. No inventes objetos que el personaje no tiene ni afirmes dónde está si no se deduce de los datos.
 - Cada arma lleva entre llaves sus requisitos reales, su escalado (letras) y si el personaje puede usarla ahora ("usable", "solo a dos manos" o "NO usable, faltan FUE+N…"): no recomiendes armas NO usables salvo que propongas subir justo esos atributos; si una arma es "usable solo gracias a" un talismán o casco, dilo (depende de llevarlo equipado), y prioriza las que escalen con los atributos altos del personaje; si una mejora no es posible con las piedras actuales, di qué piedra falta y dónde suele conseguirse o qué bell bearing la desbloquea.
@@ -61,15 +67,15 @@ const SYSTEM = `Eres un consejero veterano de Elden Ring (juego base y Shadow of
 - Sé directo y conciso: unas 350-500 palabras. Sin introducción ni despedida.`;
 
 // Streams the model's answer (SSE) so neither leg of the connection sits idle; onBeat is called as deltas arrive.
-async function generate(context, row, S, onBeat) {
+async function generate(context, row, S, onBeat, lang) {
   const [FLAGS, PROG] = await Promise.all([asset(context, "/data/flags.json"), asset(context, "/data/progression.json")]);
-  const ctx = buildContext(row, S, FLAGS, PROG);
+  const ctx = buildContext(row, S, FLAGS, PROG) + (lang === "en" ? "\n\n(Notes in the data above are in Spanish; answer in English.)" : "");
   const model = context.env.ADVICE_MODEL || DEFAULT_MODEL;
   if (context.env.ADVICE_MOCK) { await new Promise(r => setTimeout(r, 1500)); return { text: "## Dónde estás\n(mock) " + ctx.slice(0, 200), model: "mock", usage: null, ctx }; }
   if (!context.env.ANTHROPIC_API_KEY) throw bad("advisor not configured (ANTHROPIC_API_KEY)", 503);
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST", headers: { "content-type": "application/json", "x-api-key": context.env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model, max_tokens: MAX_TOKENS, stream: true, system: SYSTEM, messages: [{ role: "user", content: ctx }] }),
+    body: JSON.stringify({ model, max_tokens: MAX_TOKENS, stream: true, system: lang === "en" ? SYSTEM_EN : SYSTEM, messages: [{ role: "user", content: ctx }] }),
   });
   if (!r.ok) { const data = await r.json().catch(() => ({})); throw bad("model error: " + (data.error && data.error.message || r.status), 502); }
   let text = "", usage = { input_tokens: null, output_tokens: null }, stop = null, buf = "";
@@ -96,8 +102,9 @@ async function usage(context, steamid) {
 
 export const onRequestGet = handler(async context => {
   const u = await requireUser(context); const ck = decode(context.params.char_key); const row = await own(context, u, ck);
+  const lang = new URL(context.request.url).searchParams.get("lang") === "en" ? "en" : "es";
   const a = await context.env.DB.prepare("SELECT text, model, hash, created_at FROM advice WHERE char_key = ?").bind(ck).first();
-  const hash = (await sha256(row.summary || "")).slice(0, 16);
+  const hash = (await sha256((row.summary || "") + "|" + lang)).slice(0, 16);
   const used = await usage(context, u.steamid);
   const stale = !a || a.hash !== hash;
   const cool = a ? Math.max(0, COOLDOWN_H * 3600 - (Date.now() - Date.parse(a.created_at + "Z")) / 1000) : 0;
@@ -108,7 +115,9 @@ export const onRequestPost = handler(async context => {
   const u = await requireUser(context); const ck = decode(context.params.char_key); const row = await own(context, u, ck);
   let S; try { S = JSON.parse(row.summary || "{}"); } catch (e) { S = {}; }
   if (!S.weapons) return bad("summary too old: open the save again while logged in", 409);
-  const hash = (await sha256(row.summary || "")).slice(0, 16);
+  let body = {}; try { body = await context.request.json(); } catch (e) {}
+  const lang = body.lang === "en" ? "en" : "es";
+  const hash = (await sha256((row.summary || "") + "|" + lang)).slice(0, 16);
   const a = await context.env.DB.prepare("SELECT text, model, hash, created_at FROM advice WHERE char_key = ?").bind(ck).first();
   if (a && a.hash === hash && !context.env.ADVICE_MOCK) return json({ advice: { text: a.text, model: a.model, created_at: a.created_at }, unchanged: true });
   if (a && (Date.now() - Date.parse(a.created_at + "Z")) < COOLDOWN_H * 3600e3 && u.role !== "admin") return bad(`wait ${COOLDOWN_H} h between reports`, 429);
@@ -120,7 +129,7 @@ export const onRequestPost = handler(async context => {
   const job = (async () => {
     let beat = Date.now(); const hb = setInterval(() => send({ beat: Math.round((Date.now() - beat) / 1000) }), 4000);
     try {
-      let last = 0; const g = await generate(context, row, S, n => { if (n - last > 400) { last = n; send({ progress: n }); } });
+      let last = 0; const g = await generate(context, row, S, n => { if (n - last > 400) { last = n; send({ progress: n }); } }, lang);
       await context.env.DB.batch([
         context.env.DB.prepare("INSERT INTO advice (char_key, hash, model, text, created_at) VALUES (?, ?, ?, ?, datetime('now')) ON CONFLICT(char_key) DO UPDATE SET hash = excluded.hash, model = excluded.model, text = excluded.text, created_at = datetime('now')").bind(ck, hash, g.model, g.text),
         context.env.DB.prepare("INSERT INTO advice_log (steamid, char_key, model, in_tokens, out_tokens) VALUES (?, ?, ?, ?, ?)").bind(u.steamid, ck, g.model, g.usage ? g.usage.input_tokens : null, g.usage ? g.usage.output_tokens : null),
