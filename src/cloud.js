@@ -57,7 +57,17 @@
     async pending() { const r = await api("/admin/markers"); return r.markers || []; },
     // Advisor (server-side report cached in the account)
     async advice(charKey) { return api("/advice/" + encodeURIComponent(charKey)); },
-    async adviceRefresh(charKey) { return api("/advice/" + encodeURIComponent(charKey), { method: "POST", body: {} }); },
+    // POST streams ndjson: {beat}/{progress} lines while the model works, then {advice} or {error}
+    async adviceRefresh(charKey, onProgress) {
+      const r = await fetch("/api/advice/" + encodeURIComponent(charKey), { method: "POST", credentials: "same-origin", headers: { "content-type": "application/json" }, body: "{}" });
+      if (r.status === 401) return { error: "login", status: 401 };
+      const ct = r.headers.get("content-type") || "";
+      if (!ct.includes("ndjson")) { let d = null; try { d = await r.json(); } catch (e) {} return r.ok ? d : Object.assign({ error: (d && d.error) || r.statusText, status: r.status }, d || {}); }
+      const reader = r.body.getReader(), dec = new TextDecoder(); let buf = "", last = null;
+      for (;;) { const { value, done } = await reader.read(); if (done) break; buf += dec.decode(value, { stream: true }); let i; while ((i = buf.indexOf("\n")) >= 0) { const line = buf.slice(0, i).trim(); buf = buf.slice(i + 1); if (!line) continue; try { const o = JSON.parse(line); if (o.advice || o.error) last = o; else if (onProgress) onProgress(o); } catch (e) {} } }
+      if (buf.trim()) { try { const o = JSON.parse(buf.trim()); if (o.advice || o.error) last = o; } catch (e) {} }
+      return last || { error: "la conexión se cortó antes de recibir el informe" };
+    },
     async review(id, action) { return api("/admin/markers", { method: "POST", body: { id, action } }); },
   };
   root.Cloud = Cloud;

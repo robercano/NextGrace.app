@@ -59,21 +59,33 @@ const SYSTEM = `Eres un consejero veterano de Elden Ring (juego base y Shadow of
 - Usa exactamente estas secciones (## títulos): "Dónde estás", "Qué subir y por qué" (atributos y armas, máximo 3 armas), "Siguientes pasos" (3-5, ordenados), "Retos a tu alcance" (jefes y zonas opcionales razonables para el nivel), "Cosas que se te pueden haber pasado" (objetos o gracias pendientes en zonas ya recorridas), y cierra con una línea "Aviso" recordando que es orientativo.
 - Sé directo y conciso: unas 350-500 palabras. Sin introducción ni despedida.`;
 
-async function generate(context, row, S) {
+// Streams the model's answer (SSE) so neither leg of the connection sits idle; onBeat is called as deltas arrive.
+async function generate(context, row, S, onBeat) {
   const [FLAGS, PROG] = await Promise.all([asset(context, "/data/flags.json"), asset(context, "/data/progression.json")]);
   const ctx = buildContext(row, S, FLAGS, PROG);
   const model = context.env.ADVICE_MODEL || DEFAULT_MODEL;
-  if (context.env.ADVICE_MOCK) return { text: "## Dónde estás\n(mock) " + ctx.slice(0, 200), model: "mock", usage: null, ctx };
+  if (context.env.ADVICE_MOCK) { await new Promise(r => setTimeout(r, 1500)); return { text: "## Dónde estás\n(mock) " + ctx.slice(0, 200), model: "mock", usage: null, ctx }; }
   if (!context.env.ANTHROPIC_API_KEY) throw bad("advisor not configured (ANTHROPIC_API_KEY)", 503);
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST", headers: { "content-type": "application/json", "x-api-key": context.env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model, max_tokens: MAX_TOKENS, system: SYSTEM, messages: [{ role: "user", content: ctx }] }),
+    body: JSON.stringify({ model, max_tokens: MAX_TOKENS, stream: true, system: SYSTEM, messages: [{ role: "user", content: ctx }] }),
   });
-  const data = await r.json().catch(() => ({}));
-  if (!r.ok) throw bad("model error: " + (data.error && data.error.message || r.status), 502);
-  const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("\n").trim();
-  if (!text) throw bad(`empty report (model ${model}, stop_reason ${data.stop_reason || "?"}, blocks ${JSON.stringify((data.content || []).map(b => b.type))}, raw ${JSON.stringify(data).slice(0, 300)})`, 502);
-  return { text, model, usage: data.usage || null };
+  if (!r.ok) { const data = await r.json().catch(() => ({})); throw bad("model error: " + (data.error && data.error.message || r.status), 502); }
+  let text = "", usage = { input_tokens: null, output_tokens: null }, stop = null, buf = "";
+  const reader = r.body.getReader(), dec = new TextDecoder();
+  const handle = line => {
+    if (!line.startsWith("data:")) return; let ev; try { ev = JSON.parse(line.slice(5).trim()); } catch (e) { return; }
+    if (ev.type === "content_block_delta" && ev.delta && ev.delta.type === "text_delta") text += ev.delta.text;
+    else if (ev.type === "message_start" && ev.message && ev.message.usage) usage.input_tokens = ev.message.usage.input_tokens;
+    else if (ev.type === "message_delta") { if (ev.usage) usage.output_tokens = ev.usage.output_tokens; if (ev.delta) stop = ev.delta.stop_reason; }
+    else if (ev.type === "error") throw bad("model error: " + (ev.error && ev.error.message || "stream error"), 502);
+    if (onBeat) onBeat(text.length);
+  };
+  for (;;) { const { value, done } = await reader.read(); if (done) break; buf += dec.decode(value, { stream: true }); let i; while ((i = buf.indexOf("\n")) >= 0) { handle(buf.slice(0, i).trim()); buf = buf.slice(i + 1); } }
+  if (buf.trim()) handle(buf.trim());
+  text = text.trim();
+  if (!text) throw bad(`empty report (model ${model}, stop_reason ${stop || "?"})`, 502);
+  return { text, model, usage };
 }
 
 async function usage(context, steamid) {
@@ -101,10 +113,23 @@ export const onRequestPost = handler(async context => {
   if (a && (Date.now() - Date.parse(a.created_at + "Z")) < COOLDOWN_H * 3600e3 && u.role !== "admin") return bad(`wait ${COOLDOWN_H} h between reports`, 429);
   const used = await usage(context, u.steamid);
   if (used >= DAILY_CAP && u.role !== "admin") return bad("daily cap reached", 429);
-  const g = await generate(context, row, S);
-  await context.env.DB.batch([
-    context.env.DB.prepare("INSERT INTO advice (char_key, hash, model, text, created_at) VALUES (?, ?, ?, ?, datetime('now')) ON CONFLICT(char_key) DO UPDATE SET hash = excluded.hash, model = excluded.model, text = excluded.text, created_at = datetime('now')").bind(ck, hash, g.model, g.text),
-    context.env.DB.prepare("INSERT INTO advice_log (steamid, char_key, model, in_tokens, out_tokens) VALUES (?, ?, ?, ?, ?)").bind(u.steamid, ck, g.model, g.usage ? g.usage.input_tokens : null, g.usage ? g.usage.output_tokens : null),
-  ]);
-  return json({ advice: { text: g.text, model: g.model, created_at: new Date().toISOString().slice(0, 19).replace("T", " ") }, usage: g.usage, ctx: context.env.ADVICE_MOCK ? g.ctx : undefined });
+  // Long job (30-120 s): answer as a newline-delimited stream with heartbeats so proxies and mobile browsers keep the connection; last line is the result.
+  const { readable, writable } = new TransformStream(); const w = writable.getWriter(), enc = new TextEncoder();
+  const send = obj => w.write(enc.encode(JSON.stringify(obj) + "\n")).catch(() => {});
+  const job = (async () => {
+    let beat = Date.now(); const hb = setInterval(() => send({ beat: Math.round((Date.now() - beat) / 1000) }), 4000);
+    try {
+      let last = 0; const g = await generate(context, row, S, n => { if (n - last > 400) { last = n; send({ progress: n }); } });
+      await context.env.DB.batch([
+        context.env.DB.prepare("INSERT INTO advice (char_key, hash, model, text, created_at) VALUES (?, ?, ?, ?, datetime('now')) ON CONFLICT(char_key) DO UPDATE SET hash = excluded.hash, model = excluded.model, text = excluded.text, created_at = datetime('now')").bind(ck, hash, g.model, g.text),
+        context.env.DB.prepare("INSERT INTO advice_log (steamid, char_key, model, in_tokens, out_tokens) VALUES (?, ?, ?, ?, ?)").bind(u.steamid, ck, g.model, g.usage ? g.usage.input_tokens : null, g.usage ? g.usage.output_tokens : null),
+      ]);
+      await send({ advice: { text: g.text, model: g.model, created_at: new Date().toISOString().slice(0, 19).replace("T", " ") }, usage: g.usage, ctx: context.env.ADVICE_MOCK ? g.ctx : undefined });
+    } catch (e) {
+      let msg = e && e.message || String(e); if (e instanceof Response) { try { msg = (await e.json()).error || msg; } catch (x) { msg = e.statusText || msg; } }
+      await send({ error: msg });
+    } finally { clearInterval(hb); try { await w.close(); } catch (e) {} }
+  })();
+  if (context.waitUntil) context.waitUntil(job);
+  return new Response(readable, { headers: { "content-type": "application/x-ndjson; charset=utf-8", "cache-control": "no-store", "x-accel-buffering": "no" } });
 });

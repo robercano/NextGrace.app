@@ -371,7 +371,7 @@ async function main(DB, FLAGS){
       // make sure the account has the current summary (also works from the copy this browser kept) before asking for the report
       let x = null;
       if (SAVE && SAVE.chars) { st.textContent = "Guardando el resumen del personaje en tu cuenta…"; const p = await Cloud.pushCharacters(SAVE.chars).catch(e => ({ error: String(e && e.message || e) })); if (p && p.error) x = { error: "no se pudo guardar el resumen (" + p.error + ")" }; else if (p && p.skipped && !p.count) x = { error: "este personaje pertenece a otra cuenta de Steam" }; }
-      if (!x) { st.textContent = "Pidiendo el informe a Claude (suele tardar entre 15 y 40 segundos)…"; try { x = await Cloud.adviceRefresh(Marks.charKey(c)); } catch (e) { x = { error: String(e && e.message || e) }; } }
+      if (!x) { st.textContent = "Pidiendo el informe a Claude (suele tardar entre 15 y 40 segundos)…"; const t0 = Date.now(); try { x = await Cloud.adviceRefresh(Marks.charKey(c), o => { const sec = Math.round((Date.now() - t0) / 1000); st.textContent = o.progress ? `Claude está escribiendo el informe… (${sec} s)` : `Claude está pensando… (${sec} s)`; }); } catch (e) { x = { error: String(e && e.message || e) }; } }
       ADV.busy = false;
       if (x && x.error) { ADV.err = ERR_ES[x.error] || x.error; } else ADV.err = null;
       renderAdvice(c);
