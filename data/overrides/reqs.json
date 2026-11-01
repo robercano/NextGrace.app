@@ -1,0 +1,5 @@
+{
+  "_doc": "Correcciones manuales de requisitos/escalado. Misma forma que data/reqs.json: {\"weapons\": {\"<nombre base>\": {\"req\": {...}, \"scale\": {...}, \"weight\": 1.5}}, \"spells\": {\"<nombre>\": {\"req\": {...}, \"fp\": 10, \"slots\": 1, \"kind\": \"sorcery\"}}}. Se mezclan campo a campo sobre lo descargado de la wiki y ganan siempre. Aplicar con: python tools/fetch_reqs.py --apply-only",
+  "weapons": {},
+  "spells": {}
+}

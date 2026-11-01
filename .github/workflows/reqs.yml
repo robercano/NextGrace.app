@@ -1,4 +1,4 @@
-# Requisitos y escalado de armas y hechizos desde eldenring.wiki.gg → data/reqs.json (texto; CC BY-NC-SA, con atribución)
+# Requisitos y escalado de armas y hechizos desde eldenring.wiki.gg → data/reqs.json (texto; CC BY-SA 4.0, con atribución)
 name: reqs
 on:
   workflow_dispatch:

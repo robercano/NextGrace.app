@@ -8,7 +8,12 @@ extrae los parámetros del infobox y escribe data/reqs.json:
     "spells":  { "<nombre>": { "req": {"int":0,"fai":21,"arc":0}, "fp": 13, "slots": 1, "kind": "sorcery" } },
     "source": "...", "fetched": "...", "missing": [...] }
 
-Uso: python tools/fetch_reqs.py [--probe N]   (--probe imprime los parámetros crudos de N páginas y sale)
+Cada ejecución conserva lo que ya había para las páginas que la wiki ya no devuelve (nunca borra) y aplica encima
+data/overrides/reqs.json (correcciones manuales, campo a campo).
+
+Uso: python tools/fetch_reqs.py [--probe N] [--apply-only]
+  --probe N      imprime los parámetros crudos de N páginas y sale
+  --apply-only   no descarga nada: solo vuelve a mezclar data/overrides/reqs.json sobre data/reqs.json
 """
 import argparse, json, os, re, sys, time, datetime
 
@@ -138,7 +143,14 @@ def base_weapon_name(n):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--probe", type=int, default=0)
+    ap.add_argument("--apply-only", action="store_true")
     args = ap.parse_args()
+    path = os.path.join(ROOT, "data", "reqs.json")
+    if args.apply_only:
+        out = json.load(open(path, encoding="utf-8"))
+        n = apply_overrides(out)
+        json.dump(out, open(path, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
+        print(f"{n} correcciones manuales aplicadas → {path}"); return
     db = json.load(open(os.path.join(ROOT, "data", "items.json"), encoding="utf-8"))["items"]
     weapons = sorted({base_weapon_name(re.sub(r"\s*\+\d+$", "", e["n"])) for e in db.values() if e.get("k") == "weapon" and e.get("c") != "arrows_and_bolts" and not e.get("f")})
     spells = sorted({e["n"] for e in db.values() if e.get("c") in ("sorceries", "incantations") and not e.get("f")})
@@ -158,30 +170,51 @@ def main():
                     print(f"     {k} = {v[:80]!r}")
         return
 
-    out = {"weapons": {}, "spells": {}, "source": WIKI + " (CC BY-NC-SA 3.0)", "fetched": datetime.datetime.utcnow().strftime("%Y-%m-%d"), "missing": []}
+    prev = json.load(open(path, encoding="utf-8")) if os.path.exists(path) else {"weapons": {}, "spells": {}}
+    out = {"weapons": {}, "spells": {}, "source": WIKI, "license": "CC BY-SA 4.0", "fetched": datetime.datetime.utcnow().strftime("%Y-%m-%d"), "missing": []}
     wt = wikitext(weapons)
     for t in weapons:
         txt = wt.get(t)
-        if not txt:
-            out["missing"].append(t); continue
-        rec = parse_weapon(txt)
+        rec = parse_weapon(txt) if txt else None
         if rec:
             out["weapons"][t] = rec
+        elif t in prev.get("weapons", {}):
+            out["weapons"][t] = prev["weapons"][t]; out["missing"].append(t + " (conservado de una ejecución anterior)")
         else:
-            out["missing"].append(t + " (sin infobox)")
+            out["missing"].append(t + ("" if not txt else " (sin infobox)"))
     wt = wikitext(spells)
     for t in spells:
         txt = wt.get(t)
-        if not txt:
-            out["missing"].append(t); continue
-        rec = parse_spell(txt)
+        rec = parse_spell(txt) if txt else None
         if rec:
             out["spells"][t] = rec
+        elif t in prev.get("spells", {}):
+            out["spells"][t] = prev["spells"][t]; out["missing"].append(t + " (conservado de una ejecución anterior)")
         else:
-            out["missing"].append(t + " (sin infobox)")
-    path = os.path.join(ROOT, "data", "reqs.json")
+            out["missing"].append(t + ("" if not txt else " (sin infobox)"))
+    n = apply_overrides(out)
     json.dump(out, open(path, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
-    print(f"armas {len(out['weapons'])}, hechizos {len(out['spells'])}, sin datos {len(out['missing'])} → {path}")
+    print(f"armas {len(out['weapons'])}, hechizos {len(out['spells'])}, sin datos {len(out['missing'])}, correcciones manuales {n} → {path}")
+
+
+def apply_overrides(out):
+    """Mezcla data/overrides/reqs.json campo a campo sobre out; devuelve cuántas entradas tocó."""
+    p = os.path.join(ROOT, "data", "overrides", "reqs.json")
+    if not os.path.exists(p):
+        return 0
+    ov = json.load(open(p, encoding="utf-8")); n = 0
+    for sec in ("weapons", "spells"):
+        for name, rec in (ov.get(sec) or {}).items():
+            if not isinstance(rec, dict):
+                continue
+            cur = out.setdefault(sec, {}).setdefault(name, {})
+            for k, v in rec.items():
+                if isinstance(v, dict) and isinstance(cur.get(k), dict):
+                    cur[k].update(v)
+                else:
+                    cur[k] = v
+            n += 1
+    return n
 
 
 # --- parsers (se ajustan según lo que muestre --probe) --------------------------------------------

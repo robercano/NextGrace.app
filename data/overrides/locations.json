@@ -1,0 +1,4 @@
+{
+  "_doc": "Correcciones manuales de texto de ubicación. Clave: id numérico del objeto (como en data/items.json), nombre exacto o nombre base (sin +N ni infusión). Valor: texto en inglés, corto (1-3 frases). Gana siempre sobre data/locations.json (wiki). Aplicar con: python tools/apply_locations.py",
+  "_ejemplo": "\"Golden Rune [1]\": \"Dropped by common enemies across the Lands Between; often found on corpses in Limgrave.\""
+}
