@@ -1,67 +1,69 @@
-2840 nombres (Counter({'goods': 1225, 'armor': 735, 'weapon': 584, 'aow': 116, 'talisman': 114, 'ammo': 66}))
-  50/2840
-  100/2840
-  150/2840
-  200/2840
-  250/2840
-  300/2840
-  350/2840
-  400/2840
-  450/2840
-  500/2840
-  550/2840
-  600/2840
-  650/2840
+2886 nombres (Counter({'goods': 1236, 'armor': 739, 'weapon': 572, 'talisman': 155, 'aow': 116, 'ammo': 68}))
+  50/2886
+  100/2886
+  150/2886
+  200/2886
+  250/2886
+  300/2886
+  350/2886
+  400/2886
+  450/2886
+  500/2886
+  550/2886
+  600/2886
   429: espero 60s
-  700/2840
-  750/2840
-  800/2840
-  850/2840
-  900/2840
-  950/2840
-  1000/2840
-  1050/2840
-  1100/2840
-  1150/2840
+  650/2886
+  700/2886
+  750/2886
+  800/2886
+  850/2886
+  900/2886
+  950/2886
+  1000/2886
+  1050/2886
+  1100/2886
+  1150/2886
+  1200/2886
   429: espero 60s
-  1200/2840
-  1250/2840
-  1300/2840
-  1350/2840
-  1400/2840
-  1450/2840
-  1500/2840
-  1550/2840
+  1250/2886
+  1300/2886
+  1350/2886
+  1400/2886
+  1450/2886
   429: espero 60s
-  1600/2840
-  1650/2840
-  1700/2840
-  1750/2840
-  1800/2840
-  1850/2840
-  1900/2840
-  1950/2840
-  2000/2840
-  2050/2840
-  2100/2840
+  1500/2886
+  1550/2886
+  1600/2886
+  1650/2886
+  1700/2886
+  1750/2886
+  1800/2886
+  1850/2886
+  1900/2886
+  1950/2886
+  2000/2886
   429: espero 60s
-  2150/2840
-  2200/2840
-  2250/2840
-  2300/2840
-  2350/2840
-  2400/2840
-  2450/2840
-  2500/2840
-  2550/2840
-  2600/2840
-  2650/2840
-  2700/2840
-  2750/2840
-  2800/2840
+  429: espero 0s
+  2050/2886
+  2100/2886
+  2150/2886
+  2200/2886
+  2250/2886
+  2300/2886
+  2350/2886
+  2400/2886
+  2450/2886
+  2500/2886
+  2550/2886
+  2600/2886
+  2650/2886
   429: espero 60s
-  2840/2840
-  variantes para 383 sin página: 287 títulos
+  2700/2886
+  2750/2886
+  2800/2886
+  2850/2886
+  2886/2886
+  variantes para 338 sin página: 287 títulos
   50/287
   100/287
   150/287
@@ -69,52 +71,21 @@
   250/287
   287/287
 
-resultado: {'nuevo': 2504, 'sin página': 234, 'página sin texto de ubicación': 102}; conservados de ejecuciones anteriores: 0; origen del texto: {'section': 2427, 'param': 77}
-con texto: 2504/2840; sin texto: 336 → data/locations.json
-sin texto por tipo: {'goods': 289, 'weapon': 19, 'armor': 22, 'talisman': 2, 'ammo': 4}
+resultado: {'igual': 2504, 'nuevo': 95, 'sin página': 189, 'página sin texto de ubicación': 98}; conservados de ejecuciones anteriores: 0; origen del texto: {'section': 2516, 'param': 83}
+con texto: 2599/2886; sin texto: 287 → data/locations.json
+sin texto por tipo: {'goods': 269, 'weapon': 2, 'armor': 11, 'talisman': 1, 'ammo': 4}
 
-encabezados más frecuentes (para ajustar LOC_SECTION): [('acquisition', 1518), ('description', 1506), ('see also', 779), ('notes', 697), ('[[file: er custom icon description.png|40px|link=item description]] description', 527), ('[[file:er main menu icon messages.png|40px|notes]] notes', 522), ('[[file:er custom icon acquisition.png|40px|link=acquisition]] acquisition', 521), ('trivia', 385), ('[[file:er custom icon description.png|50px|description]] description', 275), ('effect', 275), ('[[file:er custom icon acquisition.png|50px|acquisition]] acquisition', 271), ('[[file:er custom icon effect.png|50px|effect]] effect', 231), ('[[file:er main menu icon messages.png|50px|notes]] notes', 219), ('[[file: er custom icon game version.png|40px|link=patch notes]] patch notes', 183), ('gallery', 144), ('effects', 141), ('[[file:er main menu icon blacksmith.png|40px|link=upgrading]] upgrading', 136), ('strategies', 128), ('[[file:er main menu icon item crafting.png|50px|crafting]] crafting', 126), ('[[file:er custom icon acquisition.png|40px|acquisition]] acquisition', 111), ('[[file:er custom icon description.png|40px|description]] description', 109), ('required for', 77), ('[[file:er custom icon effect.png|40px|effect]] effect', 59), ('boosting', 49), ('animation', 49), ('[[file:er main menu icon blacksmith.png|40px|link=upgrading]] upgrade information', 39), ('references', 36), ('upgrading', 36), ('[[file:er custom icon effect.png|50px|effect]] effects', 31), ('use', 29), ('[[file:er custom icon description.png|40px]]description', 24), ('[[file:er custom icon acquisition.png|40px]]acquisition', 24), ('[[file:er main menu icon item crafting.png|40px|crafting]] crafting', 19), ('[[file:er custom icon effect.png|40px|effect]] effects', 19), ('overview', 17), ('sites of grace', 14), ('[[file:er main menu icon messages.png|40px]]notes', 13), ('landmarks', 13), ('[[file: er main menu icon skill instruction.png|40px|link=ashes of war]] ashes of war', 11), ('required items', 11)]
+encabezados más frecuentes (para ajustar LOC_SECTION): [('acquisition', 1565), ('description', 1553), ('see also', 846), ('notes', 717), ('[[file:er main menu icon messages.png|40px|notes]] notes', 537), ('[[file: er custom icon description.png|40px|link=item description]] description', 534), ('[[file:er custom icon acquisition.png|40px|link=acquisition]] acquisition', 528), ('trivia', 392), ('[[file:er custom icon description.png|50px|description]] description', 306), ('[[file:er custom icon acquisition.png|50px|acquisition]] acquisition', 297), ('effect', 282), ('[[file:er custom icon effect.png|50px|effect]] effect', 259), ('[[file:er main menu icon messages.png|50px|notes]] notes', 244), ('[[file: er custom icon game version.png|40px|link=patch notes]] patch notes', 190), ('gallery', 146), ('effects', 146), ('[[file:er main menu icon blacksmith.png|40px|link=upgrading]] upgrading', 137), ('[[file:er main menu icon item crafting.png|50px|crafting]] crafting', 135), ('strategies', 134), ('[[file:er custom icon acquisition.png|40px|acquisition]] acquisition', 120), ('[[file:er custom icon description.png|40px|description]] description', 119), ('required for', 78), ('[[file:er custom icon effect.png|40px|effect]] effect', 68), ('boosting', 52), ('animation', 50), ('[[file:er main menu icon blacksmith.png|40px|link=upgrading]] upgrade information', 40), ('upgrading', 36), ('references', 35), ('[[file:er custom icon effect.png|50px|effect]] effects', 34), ('use', 29), ('[[file:er custom icon description.png|40px]]description', 24), ('[[file:er custom icon acquisition.png|40px]]acquisition', 24), ('[[file:er main menu icon item crafting.png|40px|crafting]] crafting', 20), ('[[file:er custom icon effect.png|40px|effect]] effects', 19), ('overview', 16), ('sites of grace', 14), ('[[file:er main menu icon messages.png|40px]]notes', 13), ('landmarks', 13), ('[[file: er main menu icon skill instruction.png|40px|link=ashes of war]] ashes of war', 12), ('required items', 12)]
 
-SIN PÁGINA (234):
-Knight's Shortsword
-Bloody Longsword
-Bloody Bastard Sword
-Relic Sword
-Bloody Scimitar
-Bloody Twinblade
-Bloody Club
-Bloody Highland Axe
-Bloody Spear
-Bloody Lance
-Bloody Buckler
-Bloody Rickety Shield
-Bloody Red Thorn Roundshield
-Bloody Iron Roundshield
+SIN PÁGINA (189):
 Carian Knight's Bloody Shield
-Bloody Large Leather Shield
-Knight's Seal
-Greatbolt
-Monk Hood
-Monk Armor
-Monk Gauntlets
-Monk Greaves
-Prelate Helm
-Prelate Armor
-Prelate Gauntlets
-Prelate Greaves
-Prelate Armor (Altered)
 Ragged Hat (Altered)
 Ragged Armor (Altered)
 Brave's Battlewear
 Brave's Battlewear (Altered)
 Grass Hair Ornament
-Crown Helm
 Millicent's Tunic
-Knight Armor (Altered)
-Scorpion Charm
 Entwining Umbilical Cord
-Pot
-Order Pot
 Deathsbane White Jerky
 Drawstring Freezing Grease
 Golden Rune [1]
@@ -136,12 +107,6 @@ Hero's Rune [3]
 Hero's Rune [4]
 Hero's Rune [5]
 Holy Water Grease
-Spraymist
-Downpour
-Glintblade
-Fortification
-Mist
-Armament
 Letter from Volcano Manor
 Asimi, Silver Tear
 Burial Crow's Letter
@@ -155,7 +120,6 @@ Map: Liurnia, North
 Map: Liurnia, West
 Map: Mountaintops of the Giants, West
 Map: Mountaintops of the Giants, East
-Monks' Prayerbook
 Erdtree Prayerbook
 Erdtree Codex
 Golden Order Principles
@@ -179,7 +143,6 @@ Hermit Merchant's Bell Bearing [3]
 Glovewort Picker's Bell Bearing [2]
 Glovewort Picker's Bell Bearing [3]
 Grovel For Mercy
-Spur Me
 The Carian Oath
 Fetal Position
 Nomadic Warrior's Cookbook [1]
@@ -248,9 +211,6 @@ Missionary's Cookbook [7]
 Frenzied's Cookbook [1]
 Frenzied's Cookbook [2]
 Cerulean Crystal Tear (Variant)
-Blossom
-Monk Ashes
-Bloody Flesh
 Shadow Realm Rune [1]
 Shadow Realm Rune [2]
 Shadow Realm Rune [3]
@@ -258,7 +218,6 @@ Shadow Realm Rune [4]
 Shadow Realm Rune [5]
 Shadow Realm Rune [6]
 Shadow Realm Rune [7]
-Coil
 Impenetrable Thorns
 Map: Southern Shore
 Map: Abyss
@@ -289,7 +248,7 @@ Greater Potentate's Cookbook [2]
 Ancient Dragon Knight's Cookbook [1]
 Mad Craftsman's Cookbook [1]
 St. Trina Disciple's Cookbook [1]
-Knight's Cookbook [1]
+Fire Knight's Cookbook [1]
 Ancient Dragon Knight's Cookbook [2]
 Battlefield Priest's Cookbook [1]
 Igon's Cookbook [1]
@@ -300,7 +259,7 @@ Grave Keeper's Cookbook [2]
 Antiquity Scholar's Cookbook [2]
 Mad Craftsman's Cookbook [3]
 Battlefield Priest's Cookbook [3]
-Knight's Cookbook [2]
+Fire Knight's Cookbook [2]
 Antiquity Scholar's Cookbook [1]
 Battlefield Priest's Cookbook [4]
 Grave Keeper's Cookbook [1]
@@ -308,11 +267,9 @@ St. Trina Disciple's Cookbook [2]
 Tree Sentinel Spectral Steed Attire
 Silver of Caria Spectral Steed Attire
 Funereal Night Spectral Steed Attire
-Knight Hilde
-Knight Queelign
 
-PÁGINA SIN TEXTO DE UBICACIÓN (102):
-Crossbow (Crossbows)
+PÁGINA SIN TEXTO DE UBICACIÓN (98):
+Fire Arrow (Fire Arrow)
 St. Trina's Arrow (St. Trina's Arrow)
 Shattershard Arrow (Fletched) (Shattershard Arrow (Fletched))
 Sleepbone Arrow (Sleepbone Arrow)
@@ -329,8 +286,6 @@ Small Red Effigy (Small Red Effigy)
 Memory of Grace (Memory of Grace)
 Vision of Grace (Vision of Grace)
 Roped Freezing Pot (Roped Freezing Pot)
-Grease (Category:Grease)
-Strike (Strike)
 Gold Sewing Needle (Gold Sewing Needle)
 Meeting Place Map (Meeting Place Map)
 Map: Weeping Peninsula (Weeping Peninsula)
@@ -365,7 +320,6 @@ Somberstone Miner's Bell Bearing [4] (Somberstone Miner's Bell Bearing)
 Somberstone Miner's Bell Bearing [5] (Somberstone Miner's Bell Bearing)
 Ghost-Glovewort Picker's Bell Bearing [2] (Ghost-Glovewort Picker's Bell Bearing)
 Ghost-Glovewort Picker's Bell Bearing [3] (Ghost-Glovewort Picker's Bell Bearing)
-Tear (Tear (disambiguation))
 Somber Smithing Stone [2] (Somber Smithing Stones)
 Somber Smithing Stone [3] (Somber Smithing Stones)
 Somber Smithing Stone [4] (Somber Smithing Stones)
@@ -399,7 +353,6 @@ Eternal Sleep Grease (Eternal Sleep Grease)
 Drawstring Eternal Sleep Grease (Drawstring Eternal Sleep Grease)
 Minor Erdtree (Minor Erdtree)
 Land of Shadow (Realm of Shadow)
-Serpent (Serpents)
 Storehouse Cross Message (Storehouse Cross Message)
 Torn Diary Page (Torn Diary Page)
 Prayer Room Key (Prayer Room Key)
@@ -414,3 +367,6 @@ Black Knight Captain Huw (Black Knight Captain Huw)
 Horned Warrior Ashes (Horned Warrior Ashes)
 Ancient Dragon Florissax (Ancient Dragon Florissax)
 Jolán and Anna (Jolán and Anna)
+objetos: 4184; con texto manual 0, de la wiki 3765, sin texto 419; cambian 4072
+289 lugares; objetos con texto de ubicación 3765, con lugar 2254, con lugar concreto (no solo región) 1868
+data/items.json y data/places.json regenerados

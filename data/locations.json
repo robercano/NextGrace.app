@@ -655,6 +655,11 @@
    "page": "Arsenal Charm",
    "text": "Quest Item: Roundtable Hold. Received from Nepheli Loux in Roundtable Hold, after talking to her at Stormveil Castle and defeating Godrick the Grafted."
   },
+  "Arsenal Charm +1": {
+   "fetched": "2026-11-01",
+   "page": "Arsenal Charm +1",
+   "text": "Found in Altus Tunnel, looted from a corpse upon a wooden balcony overlooking a pit, where a monster fires rocks at you from above, with gravity magic. From the entrance to this area, drop to an overgrown root, and climb it to jump to an upper balcony, where the corpse lies."
+  },
   "Arteria Leaf": {
    "fetched": "2026-11-01",
    "page": "Arteria Leaf",
@@ -1920,6 +1925,11 @@
    "page": "Blessing's Boon",
    "text": "Purchase: Liurnia of the Lakes. Blessing's Boon is sold by Miriel, Pastor of Vows for runes 4,000 Runes. Should Miriel die before purchasing this Incantation from him, the player can still purchase it from the Twin Maiden Husks for the same price, after giving them Miriel's Bell Bearing."
   },
+  "Blood Grease": {
+   "fetched": "2026-11-01",
+   "page": "Blood Grease",
+   "text": "Craftable. Loot."
+  },
   "Blood-Tainted Excrement": {
    "fetched": "2026-11-01",
    "page": "Blood-Tainted Excrement",
@@ -2274,6 +2284,21 @@
    "fetched": "2026-11-01",
    "page": "Boltdrake Talisman",
    "text": "Loot: Stormveil Castle. Obtained from a corpse just before the bridge leading eastward, to the Divine Tower of Limgrave."
+  },
+  "Boltdrake Talisman +1": {
+   "fetched": "2026-11-01",
+   "page": "Boltdrake Talisman +1",
+   "text": "Loot: Altus Plateau. Acquired from a corpse within a wooden shed guarded by stray dogs in Old Altus Tunnel."
+  },
+  "Boltdrake Talisman +2": {
+   "fetched": "2026-11-01",
+   "page": "Boltdrake Talisman +2",
+   "text": "Loot: Crumbling Farum Azula. Obtained from a corpse near the Dragon Temple Rooftop Site of Grace. From the Rooftop Grace proceed southeast to the arena of an Ancient Dragon. Proceed east to the edge of the arena, where you can drop to a series of platforms, leading to an isolated building."
+  },
+  "Boltdrake Talisman +3": {
+   "fetched": "2026-11-01",
+   "page": "Boltdrake Talisman +3",
+   "text": "It can be found at Shadow Keep. From the Storehouse: First Floor site of grace, take the stairs up to the second floor and find a dead-end with several shade protectors. Jump over the railing to reach a room with the talisman, then use the lever to move the bookcase and re-emerge near the site of grace."
   },
   "Bondstone": {
    "fetched": "2026-11-01",
@@ -2680,6 +2705,21 @@
    "page": "Cerulean Amber Medallion",
    "text": "Drop: Lakeside Crystal Cave (Liurnia of the Lakes). Obtained by defeating the Bloodhound Knight in Lakeside Crystal Cave."
   },
+  "Cerulean Amber Medallion +1": {
+   "fetched": "2026-11-01",
+   "page": "Cerulean Amber Medallion +1",
+   "text": "Loot: Castle Sol (Mountaintops of the Giants). Obtained from a corpse hanging from a wooden platform attached to the southern wall of Castle Sol. From Church of the Eclipse, head left to the front of the church, left through a door, right, up a ladder, southwest to a tower, which can be circled around, via a wooden platform, and down a ladder, to the wall in question."
+  },
+  "Cerulean Amber Medallion +2": {
+   "fetched": "2026-11-01",
+   "page": "Cerulean Amber Medallion +2",
+   "text": "Loot: Lunar Estate Ruins (Liurnia of the Lakes). Obtained from a chest, in the cellar of Lunar Estate Ruins, in southern Liurnia of the Lakes. This area of Liurnia can only be accessed from underground, after progressing through Grand Cloister. The cellar is hidden beneath an illusory floor, and locked behind an imp statue that requires one Stonesword Key to open."
+  },
+  "Cerulean Amber Medallion +3": {
+   "fetched": "2026-11-01",
+   "page": "Cerulean Amber Medallion +3",
+   "text": "Drop: Scorpion River Catacombs (Rauh Base). Obtained as a reward after defeating the Death Knight in Scorpion River Catacombs."
+  },
   "Cerulean Crystal Tear": {
    "fetched": "2026-11-01",
    "page": "Cerulean Crystal Tear",
@@ -2694,6 +2734,11 @@
    "fetched": "2026-11-01",
    "page": "Cerulean Seed Talisman",
    "text": "Loot: Carian Study Hall (Liurnia of the Lakes). Obtained from a corpse in un-flipped version of the Carian Study Hall, located in the eastern region of Liurnia of the Lakes. The corpse can be found on the upper-most level of rafters in the tower, which you can climb to with ladders."
+  },
+  "Cerulean Seed Talisman +1": {
+   "fetched": "2026-11-01",
+   "page": "Cerulean Seed Talisman +1",
+   "text": "Quest Reward: Finger Ruins of Dheo (Scaduview). The Cerulean Seed Talisman +1 is received after using the Hole-Laden Necklace to ring the bell at the center of a large ring of stone fingers at the Finger Ruins of Dheo. The ring of fingers is shown on the Ruins Map (2nd) acquired from Count Ymir alongside the Hole-Laden Necklace."
   },
   "Cerulean Tear Scarab": {
    "fetched": "2026-11-01",
@@ -2799,6 +2844,16 @@
    "fetched": "2026-11-01",
    "page": "Clarifying Horn Charm",
    "text": "Obtained from a corpse, lying on the stairs in northern Siofra River, near the Below the Well Sites of Grace (this is the entrance area to the region if using the Deep Siofra Well in Caelid)."
+  },
+  "Clarifying Horn Charm +1": {
+   "fetched": "2026-11-01",
+   "page": "Clarifying Horn Charm +1",
+   "text": "Obtained from a corpse, in Siofra River, accessed from Nokron, Eternal City. From Mimic Tear, head northeast along the aqueduct, to the spot where it collapses to the left, onto the field below. Head down here, and northeast again, to drop down to the lower level of the aqueduct."
+  },
+  "Clarifying Horn Charm +2": {
+   "fetched": "2026-11-01",
+   "page": "Clarifying Horn Charm +2",
+   "text": "Clarifying Horn Charm +2 is found in the Lamenter's Gaol. Drop down into a rat-infested area and take the straight path forward. The talisman is located in the next area on a corpse along the right side."
   },
   "Clarifying White Cured Meat": {
    "fetched": "2026-11-01",
@@ -3120,6 +3175,21 @@
    "page": "Crimson Amber Medallion",
    "text": "Keepsake:. May be chosen as a Keepsake when creating a new character. Purchase: Weeping Peninsula (Limgrave). Purchased for 1,500 Runes from the Nomadic Merchant at the Castle Morne Rampart Site of Grace."
   },
+  "Crimson Amber Medallion +1": {
+   "fetched": "2026-11-01",
+   "page": "Crimson Amber Medallion +1",
+   "text": "Loot: Volcano Manor (Mt. Gelmir). Obtained from a corpse in Volcano Manor. From Prison Town Church, head out the eastern door, and right. Proceed along the main path through the town, past an Iron Virgin until reaching a brick courtyard, in front of a building whose door is locked by a semi-transparent fog wall."
+  },
+  "Crimson Amber Medallion +2": {
+   "fetched": "2026-11-01",
+   "page": "Crimson Amber Medallion +2",
+   "text": "Loot: Subterranean Shunning-Grounds (Leyndell, Ashen Capital). Pillaged from corpse which can found on a wooden beam that can only be reached after defeating Maliketh, the Black Blade. Once the ashen version of Leyndell is available, head south from the \"Leyndell, Capital of Ash\" site of grace until arriving at a small valley where the ash has not entirely covered up the the floor of what was once the main avenue."
+  },
+  "Crimson Amber Medallion +3": {
+   "fetched": "2026-11-01",
+   "page": "Crimson Amber Medallion +3",
+   "text": "Guaranteed Drop: Fog Rift Catacombs (Gravesite Plain). Acquired by defeating the Death Knight encountered at the end of the Fog Rift Catacombs."
+  },
   "Crimson Bubbletear": {
    "fetched": "2026-11-01",
    "page": "Crimson Bubbletear",
@@ -3139,6 +3209,11 @@
    "fetched": "2026-11-01",
    "page": "Crimson Seed Talisman",
    "text": "Loot: Sainted Hero's Grave (Altus Plateau). Obtained from a corpse that behind a semi-transparent fog wall, near the beginning of the dungeon, which can be unlocked by inserting one Stonesword Key into the adjacent imp statue."
+  },
+  "Crimson Seed Talisman +1": {
+   "fetched": "2026-11-01",
+   "page": "Crimson Seed Talisman +1",
+   "text": "Quest Reward: Finger Ruins of Rhia (Cerulean Coast). The Crimson Seed Talisman +1 is received after using the Hole-Laden Necklace to ring the bell at the center of a large ring of stone fingers at the Finger Ruins of Rhia. The ring of fingers is shown on the Ruins Map acquired from Count Ymir alongside the Hole-Laden Necklace."
   },
   "Crimson Tear Scarab": {
    "fetched": "2026-11-01",
@@ -3915,6 +3990,16 @@
    "page": "Dragoncrest Shield Talisman",
    "text": "Obtained from a corpse that lies on the ground, near Bestial Sanctum, in northern Greyoll's Dragonbarrow. From the front door of the sanctum, head southwest around the side of the sanctum, until reaching a cliff that overlooks a large tree root, close enough to drop to. Drop from here to the branch, to another branch, to a domed rooftop, and then to the first of 3 ring structures, jutting out from the cliffside."
   },
+  "Dragoncrest Shield Talisman +1": {
+   "fetched": "2026-11-01",
+   "page": "Dragoncrest Shield Talisman +1",
+   "text": "Obtained from the Sainted Hero's Grave in central Altus Plateau. In the room with the giant falling blade traps, jump on top of the first one to ride it upwards, and jump to the ledge on the left. Follow this path to reach a room that has a pair of semi-transparent fog walls, locked by an imp statue that requires one Stonesword Key to open. The corpse can be found past this wall."
+  },
+  "Dragoncrest Shield Talisman +2": {
+   "fetched": "2026-11-01",
+   "page": "Dragoncrest Shield Talisman +2",
+   "text": "Obtained from a corpse, in northern Crumbling Farum Azula. From Dragon Temple Altar, head north, down a drop off of a broken floor, down a staircase, through a window, down and across a floating chunk of floor, and right through a doorway to reach a long chain of floating debris. Halfway across this debris, after a somewhat large drop, turn around to see a hidden floating chunk of rubble, holding the corpse."
+  },
   "Dragonfire": {
    "fetched": "2026-11-01",
    "page": "Dragonfire",
@@ -4280,6 +4365,16 @@
    "page": "Erdtree's Favor",
    "text": "Obtained from an altar in Fringefolk Hero's Grave, in western Limgrave. This dungeon is accessed from Stranded Graveyard after inserting 2 Stonesword Keys into the nearby imp statue, to unlock the semi-transparent fog wall. Proceed down the ladder and across the poison pond, to reach a ramp, patrolled by an invincible chariot. Proceed down the ramp by hiding in alcoves on the side, to avoid the chariot."
   },
+  "Erdtree's Favor +1": {
+   "fetched": "2026-11-01",
+   "page": "Erdtree's Favor +1",
+   "text": "Obtained from a chest in Cathedral of the Forsaken, in the Leyndell, Royal Capital region. This chest is available after defeating Mohg, the Omen in this same room. The room can be reached from Forsaken Depths in Subterranean Shunning Grounds."
+  },
+  "Erdtree's Favor +2": {
+   "fetched": "2026-11-01",
+   "page": "Erdtree's Favor +2",
+   "text": "Loot: Leyndell, Ashen Capital. Obtained from a corpse in Leyndell, Ashen Capital, which can only be accessed late-game, after defeating Maliketh, the Black Blade. This area is only accessible when approaching from the Forbidden Lands."
+  },
   "Errant Sorcerer Boots": {
    "fetched": "2026-11-01",
    "page": "Errant Sorcerer Boots",
@@ -4615,6 +4710,151 @@
    "page": "Fingerslayer Blade",
    "text": "Nokron, Eternal City (Night's Sacred Ground). Area: inside the treasure chest at the end of the Silver Tear-infested path."
   },
+  "Fire Blossom": {
+   "fetched": "2026-11-01",
+   "page": "Fire Blossom",
+   "text": "Loot: Mountaintops of the Giants. Found blooming throughout the Mountaintops of the Giants. Guaranteed Drop: Liurnia of the Lakes/Caelid/Mt. Gelmir/Mountaintops of the Giants. 3 are always dropped by Flame Chariots the first time they are killed."
+  },
+  "Fire Coil": {
+   "fetched": "2026-11-01",
+   "page": "Fire Coil",
+   "text": "Crafted with Fire Knight's Cookbook (2)."
+  },
+  "Fire Grease": {
+   "fetched": "2026-11-01",
+   "page": "Fire Grease",
+   "text": "Craftable. Loot."
+  },
+  "Fire Knight Armor": {
+   "fetched": "2026-11-01",
+   "page": "Fire Knight Armor",
+   "text": "Random Drop: Shadow Keep & Specimen Storehouse. 3% chance of dropping from Fire Knights."
+  },
+  "Fire Knight Armor (Altered)": {
+   "fetched": "2026-11-01",
+   "page": "Fire Knight Armor (Altered)",
+   "text": "Random Drop & Alter Garments: Shadow Keep & Specimen Storehouse. Acquired from altering the Fire Knight Armor. Which has a 3% chance of dropping from Fire Knights."
+  },
+  "Fire Knight Gauntlets": {
+   "fetched": "2026-11-01",
+   "page": "Fire Knight Gauntlets",
+   "text": "Random Drop: Shadow Keep & Specimen Storehouse. 3% chance of dropping from Fire Knights."
+  },
+  "Fire Knight Greaves": {
+   "fetched": "2026-11-01",
+   "page": "Fire Knight Greaves",
+   "text": "Random Drop: Shadow Keep & Specimen Storehouse. 3% chance of dropping from Fire Knights."
+  },
+  "Fire Knight Helm": {
+   "fetched": "2026-11-01",
+   "page": "Fire Knight Helm",
+   "text": "Random Drop: Shadow Keep & Specimen Storehouse. 3% chance of dropping from Fire Knights."
+  },
+  "Fire Knight Hilde": {
+   "fetched": "2026-11-01",
+   "page": "Fire Knight Hilde",
+   "text": "Loot: Shadow Keep. Looted off a corpse located above the rafters in the Shadow Keep. The player will have to platform and ride on top of the lifts to reach the spirit ash."
+  },
+  "Fire Knight Queelign": {
+   "fetched": "2026-11-01",
+   "page": "Fire Knight Queelign",
+   "text": "Drop: Shadow Keep. Obtained after giving Fire Knight Queelign an Iris of Grace in the Prayer Room of Shadow Keep's Church District. Accessible after defeating his invasions in both Belurat, Tower Settlement and Church of the Crusade. WARNING: Mutually exclusive with Queelign's Greatsword, as it requires giving him an Iris of Occultation instead."
+  },
+  "Fire Knight's Greatsword": {
+   "fetched": "2026-11-01",
+   "page": "Fire Knight's Greatsword",
+   "text": "Drop: Shadow Keep, Church District / Specimen Storehouse (Shadow Keep). 4% drop chance from greatsword-wielding Fire Knights. One such knight can be found just before the elevator leading up to the Storehouse, First Floor Site of Grace. If the elevator is taken from the Grace the knight will start with its back turned, making it easier to defeat."
+  },
+  "Fire Knight's Seal": {
+   "fetched": "2026-11-01",
+   "page": "Fire Knight's Seal",
+   "text": "Loot: Shadow Keep, Church District (Shadow Keep). After draining the water from the district, this item can be found on the floor behind the decapitated statue of Marika inside the largest church in the district. It is guarded by Wego, Fire Knight Elder along with his putrid corpse summons."
+  },
+  "Fire Knight's Shortsword": {
+   "fetched": "2026-11-01",
+   "page": "Fire Knight's Shortsword",
+   "text": "Dropped by dual dagger-wielding Fire Knights with a 4% droprate."
+  },
+  "Fire Monk Armor": {
+   "fetched": "2026-11-01",
+   "page": "Fire Monk Armor",
+   "text": "Chance to drop from Fire Monk enemies."
+  },
+  "Fire Monk Ashes": {
+   "fetched": "2026-11-01",
+   "page": "Fire Monk Ashes",
+   "text": "Found in a chest in Giants' Mountaintop Catacombs, in the area below the first lift and past two Frostbite pillars."
+  },
+  "Fire Monk Gauntlets": {
+   "fetched": "2026-11-01",
+   "page": "Fire Monk Gauntlets",
+   "text": "3% chance to drop from Fire Monk enemies."
+  },
+  "Fire Monk Greaves": {
+   "fetched": "2026-11-01",
+   "page": "Fire Monk Greaves",
+   "text": "Chance to drop from Fire Monk enemies."
+  },
+  "Fire Monk Hood": {
+   "fetched": "2026-11-01",
+   "page": "Fire Monk Hood",
+   "text": "Chance to drop from Fire Monk enemies."
+  },
+  "Fire Monks' Prayerbook": {
+   "fetched": "2026-11-01",
+   "page": "Fire Monks' Prayerbook",
+   "text": "outpost in Liurnia of the Lakes."
+  },
+  "Fire Pot": {
+   "fetched": "2026-11-01",
+   "page": "Fire Pot",
+   "text": "Recipe is included with the Crafting Kit."
+  },
+  "Fire Prelate Armor": {
+   "fetched": "2026-11-01",
+   "page": "Fire Prelate Armor",
+   "text": "Dropped by Fire Prelates."
+  },
+  "Fire Prelate Armor (Altered)": {
+   "fetched": "2026-11-01",
+   "page": "Fire Prelate Armor (Altered)",
+   "text": "Dropped by the Fire Prelate in Fort Laiedd. Can be altered at a site of grace or by Boc the Seamster."
+  },
+  "Fire Prelate Gauntlets": {
+   "fetched": "2026-11-01",
+   "page": "Fire Prelate Gauntlets",
+   "text": "5% drop from Fire Prelates."
+  },
+  "Fire Prelate Greaves": {
+   "fetched": "2026-11-01",
+   "page": "Fire Prelate Greaves",
+   "text": "Dropped by Fire Prelates."
+  },
+  "Fire Prelate Helm": {
+   "fetched": "2026-11-01",
+   "page": "Fire Prelate Helm",
+   "text": "Chance to drop from Fire Prelates."
+  },
+  "Fire Scorpion Charm": {
+   "fetched": "2026-11-01",
+   "page": "Fire Scorpion Charm",
+   "text": "Loot: Fort Laiedd (Mt. Gelmir). Obtained from a wooden catwalk, hanging on the outside of a rampart, atop Fort Laiedd in the western Mt. Gelmir region."
+  },
+  "Fire Serpent": {
+   "fetched": "2026-11-01",
+   "page": "Fire Serpent",
+   "text": "Loot: Shadow Keep. From the Storehouse, Back Section Site of Grace, head west to find a ladder on a banister and head up it. Head right at the top of the ladder and take the stairs to another floor and continue forwards until you reach a small balcony with a body holding this Incantation."
+  },
+  "Fire Spritestone": {
+   "fetched": "2026-11-01",
+   "page": "Fire Spritestone",
+   "text": "Crafted with Antiquity Scholar's Cookbook (1)."
+  },
+  "Fire Spur Me": {
+   "fetched": "2026-11-01",
+   "page": "Fire Spur Me",
+   "text": "Loot: Liurnia of the Lakes. Obtained by interacting with the braziers found within either the Fire Monk campsite south of the Scenic Isle Site of Grace or the Fire Monk camp south-east of the Church of Vows."
+  },
   "Fire's Deadly Sin": {
    "fetched": "2026-11-01",
    "page": "Fire's Deadly Sin",
@@ -4709,6 +4949,21 @@
    "fetched": "2026-11-01",
    "page": "Flamedrake Talisman",
    "text": "Guaranteed drop: Groveside Cave (Limgrave). Obtained by defeating the Beastman of Farum Azula boss fight at the end of the cave."
+  },
+  "Flamedrake Talisman +1": {
+   "fetched": "2026-11-01",
+   "page": "Flamedrake Talisman +1",
+   "text": "Loot: Leyndell, Royal Capital. Obtained from a corpse that lies on the ground along the path eastward, out of the capital, towards the Grand Lift of Rold."
+  },
+  "Flamedrake Talisman +2": {
+   "fetched": "2026-11-01",
+   "page": "Flamedrake Talisman +2",
+   "text": "Guaranteed drop: Dragonbarrow Cave (Greyoll's Dragonbarrow). Obtained after defeating the Beastman of Farum Azula duo at the end of the cave."
+  },
+  "Flamedrake Talisman +3": {
+   "fetched": "2026-11-01",
+   "page": "Flamedrake Talisman +3",
+   "text": "Loot: Fort of Reprimand (Scadu Altus). Found inside of a chest within the fort. Entering through the front gate, go down the staircase in the back right corner. Continue through the doorway on the left side of the hallway and follow this path until you see two soldiers standing in front of a body. Climb over the cages to their left and it will lead you to the chest that contains the talisman."
   },
   "Flaming Bolt": {
    "fetched": "2026-11-01",
@@ -6060,6 +6315,16 @@
    "page": "Haligdrake Talisman",
    "text": "Obtained from a corpse in Stranded Graveyard, in western Limgrave. This corpse can be seen from the beginning of the game, hanging from a cliff behind where the player wakes up after dying at the Chapel of Anticipation, but cannot be accessed from inside the cave."
   },
+  "Haligdrake Talisman +1": {
+   "fetched": "2026-11-01",
+   "page": "Haligdrake Talisman +1",
+   "text": "Obtained from a corpse in Leyndell Catacombs, in central Leyndell, Royal Capital. From the site of grace, head up the stairs to the southeast, hang a right, and ride the elevator up to reach a room with three phantom enemies. Dispel the illusory walls next to the stairs, and another illusory wall underneath the stairs to find a Spiritcaller Snail guarding the corpse."
+  },
+  "Haligdrake Talisman +2": {
+   "fetched": "2026-11-01",
+   "page": "Haligdrake Talisman +2",
+   "text": "Obtained from a corpse in southwestern Mohgwyn Palace. The corpse lies in a graveyard next to the blood lake, below Mohgwyn Dynasty Mausoleum."
+  },
   "Haligtree Crest Greatshield": {
    "fetched": "2026-11-01",
    "page": "Haligtree Crest Greatshield",
@@ -6189,6 +6454,11 @@
    "fetched": "2026-11-01",
    "page": "Heater Shield",
    "text": "Equipment:. One is part of the starting equipment for the Vagabond Origin. Purchase: Roundtable Hold. One is sold for runes 1,500 Runes by the Twin Maiden Husks."
+  },
+  "Heavy Crossbow": {
+   "fetched": "2026-11-01",
+   "page": "Heavy Crossbow",
+   "text": "Loot: Limgrave / Liurnia of the Lakes / Caelid / Greyoll's Dragonbarrow / Deeproot Depths / Altus Plateau / Miquella's Haligtree / Gravesite Plain / Scadu Altus. 2% drop chance from crossbow-wielding Soldier enemies: Godrick Soldiers, Raya Lucaria Soldiers, Radahn Soldiers, Mausoleum Soldiers, Leyndell Soldiers, Haligtree Soldiers, and Messmer Soldiers."
   },
   "Hefty Beast Bone": {
    "fetched": "2026-11-01",
@@ -6599,6 +6869,16 @@
    "fetched": "2026-11-01",
    "page": "Immunizing Horn Charm",
    "text": "Loot: Ainsel River. Found on a corpse in an ant's nest in southwest Ainsel River, near Ainsel River Downstream."
+  },
+  "Immunizing Horn Charm +1": {
+   "fetched": "2026-11-01",
+   "page": "Immunizing Horn Charm +1",
+   "text": "Guaranteed Drop: Lake of Rot (Ainsel River). Obtained by killing an Ancestral Follower around the Lake of Rot, southeast of Lake of Rot Shoreside."
+  },
+  "Immunizing Horn Charm +2": {
+   "fetched": "2026-11-01",
+   "page": "Immunizing Horn Charm +2",
+   "text": "Guaranteed Drop: Belurat, Tower Settlement (Gravesite Plain). Received upon defeating the Ulcerated Tree Spirit in the sewer swamp of Belurat, Tower Settlement. The Well Depths Key is required to access this area."
   },
   "Immunizing White Cured Meat": {
    "fetched": "2026-11-01",
@@ -7240,6 +7520,51 @@
    "page": "Light of Miquella",
    "text": "Trade: Remembrance of a God and a Lord. Trade with Finger Reader Enia. Alternatively, use one of the belled Wandering Mausoleums to duplicate the remembrance (can only obtain one per playthrough using either method)."
   },
+  "Lightning Bolt": {
+   "fetched": "2026-11-01",
+   "page": "Lightning Bolt",
+   "text": "Random Drop:. Loot:. Purchase:. Altus Plateau."
+  },
+  "Lightning Fortification": {
+   "fetched": "2026-11-01",
+   "page": "Lightning Fortification",
+   "text": "Purchase: Roundtable Hold / Altus Plateau / Leyndell, Royal Capital / Mountaintops of the Giants. Sold for runes 7,500 Runes by Brother Corhyn after he moves to Altus Plateau. Should Corhyn die before purchasing this Incantation from him, the player can still purchase it from the Twin Maiden Husks for the same price, after giving them Corhyn's Bell Bearing."
+  },
+  "Lightning Grease": {
+   "fetched": "2026-11-01",
+   "page": "Lightning Grease",
+   "text": "Craftable. Loot."
+  },
+  "Lightning Greatbolt": {
+   "fetched": "2026-11-01",
+   "page": "Lightning Greatbolt",
+   "text": "Loot:. Altus Plateau. x3 Found by some destroyed trebuchets north of the Rampartside Path Site of Grace. Found on a corpse in the middle of the Stormcaller Church."
+  },
+  "Lightning Perfume Bottle": {
+   "fetched": "2026-11-01",
+   "page": "Lightning Perfume Bottle",
+   "text": "Loot: Gravesite Plain. Found in a small pond surrounded by Lightning Sheep southeast of the Ellac River Downstream site of grace / northeast of the Cerulean Coast site of grace."
+  },
+  "Lightning Pot": {
+   "fetched": "2026-11-01",
+   "page": "Lightning Pot",
+   "text": "Craftable after purchasing the Ancient Dragon Apostle's Cookbook [2] from Nomadic Merchant (Forest-Spanning Greatbridge) for 4,500 runes."
+  },
+  "Lightning Scorpion Charm": {
+   "fetched": "2026-11-01",
+   "page": "Lightning Scorpion Charm",
+   "text": "Obtained from a corpse in Wyndham Catacombs in eastern Mt. Gelmir. Midway through the dungeon is a semi-transparent fog wall, which can be unlocked by inserting one Stonesword Key into the adjacent imp statue. The corpse is inside, behind a coffin."
+  },
+  "Lightning Spear": {
+   "fetched": "2026-11-01",
+   "page": "Lightning Spear",
+   "text": "Purchase: Roundtable Hold / Liurnia of the Lakes / Altus Plateau / Leyndell, Royal Capital / Mountaintops of the Giants. Sold for 6,000 Runes by Brother Corhyn or Miriel, Pastor of Vows after giving either of them the Dragon Cult Prayerbook."
+  },
+  "Lightning Strike": {
+   "fetched": "2026-11-01",
+   "page": "Lightning Strike",
+   "text": "Guaranteed Drop: Weeping Peninsula. Lightning Strike is received upon defeating the Scarab at the bottom of the ravine splitting the Weeping Peninsula region in half. The stone platforms on either side of this can be used to descend safely. Note that it's surrounded by large bats and that lightning strikes constantly hit around this area."
+  },
   "Lightning-Shrouding Cracked Tear": {
    "fetched": "2026-11-01",
    "page": "Lightning-Shrouding Cracked Tear",
@@ -7479,6 +7804,36 @@
    "fetched": "2026-11-01",
    "page": "Madding Hand",
    "text": "Guaranteed Drop: Abyssal Woods. Obtained from the killing the Madding Hand (NPC) in the Abyssal Woods, located south of the Woodland Trail Site of Grace."
+  },
+  "Magic Downpour": {
+   "fetched": "2026-11-01",
+   "page": "Magic Downpour",
+   "text": "Guaranteed Drop: Liurnia of the Lakes. Acquired from defeating Preceptor Miriam in the normal version of Carian Study Hall."
+  },
+  "Magic Fortification": {
+   "fetched": "2026-11-01",
+   "page": "Magic Fortification",
+   "text": "Purchase: Roundtable Hold / Altus Plateau / Leyndell, Royal Capital / Mountaintops of the Giants. Sold for runes 3,500 Runes by Brother Corhyn. Should Corhyn die before purchasing this Incantation from him, the player can still purchase it from the Twin Maiden Husks for the same price, after giving them Corhyn's Bell Bearing."
+  },
+  "Magic Glintblade": {
+   "fetched": "2026-11-01",
+   "page": "Magic Glintblade",
+   "text": "Equipped:. A starting spell for the Prisoner origin. Purchase: Liurnia of the Lakes / Roundtable Hold. Sold for 3,000 Runes by Miriel, Pastor of Vows."
+  },
+  "Magic Grease": {
+   "fetched": "2026-11-01",
+   "page": "Magic Grease",
+   "text": "Craftable. Loot."
+  },
+  "Magic Pot": {
+   "fetched": "2026-11-01",
+   "page": "Magic Pot",
+   "text": "Craftable after obtaining the Glintstone Craftsman's Cookbook [4] from a chest northwest of Academy Gate Town site of grace. It is guarded by several Second-Generation Albinaurics. Glintstone Fireflies are readily available to be gathered among blue crystals, such as those near the Folly on the Lake and Lenne's Rise."
+  },
+  "Magic Scorpion Charm": {
+   "fetched": "2026-11-01",
+   "page": "Magic Scorpion Charm",
+   "text": "Quest Reward: Seluvis's Rise. Obtained from Preceptor Seluvis in northwestern Liurnia of the Lakes, after giving him the Amber Starlight as part of his questline. WARNING: This must be done before giving Ranni the Witch the Fingerslayer Blade as that ends Seluvis's questline prematurely."
   },
   "Magic-Shrouding Cracked Tear": {
    "fetched": "2026-11-01",
@@ -8215,6 +8570,16 @@
    "page": "Mottled Necklace",
    "text": "Obtained from a corpse in Siofra River, which lies at the end of a broken bridge, leading to Nokron, Eternal City. This area can only be reached from a waygate at one of The Four Belfries, next to a message that reads \"Night Sky Unceasing\"."
   },
+  "Mottled Necklace +1": {
+   "fetched": "2026-11-01",
+   "page": "Mottled Necklace +1",
+   "text": "Obtained from a corpse in Nokron, Eternal City, atop the pillars above Hallowhorn Grounds. Climb around the terrain on the left side of the ruins to reach the top of the pillars."
+  },
+  "Mottled Necklace +2": {
+   "fetched": "2026-11-01",
+   "page": "Mottled Necklace +2",
+   "text": "Loot: Ancient Ruins of Rauh (Land of the Tower). After unlocking the spiritspring, use it to reach a previously inaccessible area. The talisman is inside a chest at the top of a staircase."
+  },
   "Multilayered Ring of Light": {
    "fetched": "2026-11-01",
    "page": "Multilayered Ring of Light",
@@ -8880,6 +9245,21 @@
    "page": "Pearldrake Talisman",
    "text": "Obtained from a corpse on the north end of the western isolated platform in Crumbling Farum Azula. This area is only accessible via the waygate at the first of The Four Belfrys in western Liurnia of the Lakes, next to a message that reads \"Crumbling Lands\". After traveling through the waygate, drop down several platforms to reach a pair of Beastmen and drop from the northern edge of this platform to find the corpse."
   },
+  "Pearldrake Talisman +1": {
+   "fetched": "2026-11-01",
+   "page": "Pearldrake Talisman +1",
+   "text": "Obtained from a chest in the cellar of Wyndham Ruins in central Mt. Gelmir. The cellar is locked behind a semi-transparent fog wall, which can be unlocked by inserting one Stonesword Key into the adjacent imp statue."
+  },
+  "Pearldrake Talisman +2": {
+   "fetched": "2026-11-01",
+   "page": "Pearldrake Talisman +2",
+   "text": "Obtained from a corpse in central Miquella's Haligtree. From Haligtree Town, head northwest to a ladder, climb it, and jump backwards across a gap, to a platform leading to the corpse, which lies at the base of a statue, guarded by a Misbegotten Warrior."
+  },
+  "Pearldrake Talisman +3": {
+   "fetched": "2026-11-01",
+   "page": "Pearldrake Talisman +3",
+   "text": "It can be found within Shadow Keep, Specimen Storehouse. You must progress until the seventh floor to pull the lever that moves the statues. Once you do this, return to the third floor and find the head of the statue to pull this item from its beard."
+  },
   "Pearlescent Scale": {
    "fetched": "2026-11-01",
    "page": "Pearlescent Scale",
@@ -9039,6 +9419,31 @@
    "fetched": "2026-11-01",
    "page": "Point Upwards",
    "text": "Available from the start of the game."
+  },
+  "Poison Armament": {
+   "fetched": "2026-11-01",
+   "page": "Poison Armament",
+   "text": "Guaranteed drop: Caelid. Dropped by an invisible Scarab roaming around south of Sellia Crystal Tunnel, along the Swamp of Aeonia. The Scarab is west of the Sellia Under-Stair Site of Grace."
+  },
+  "Poison Grease": {
+   "fetched": "2026-11-01",
+   "page": "Poison Grease",
+   "text": "Craftable. Loot."
+  },
+  "Poison Mist": {
+   "fetched": "2026-11-01",
+   "page": "Poison Mist",
+   "text": "Guaranteed drop: Weeping Peninsula. Dropped by a Scarab found north of the small, poisonous body of water east of the final stretch of road to Castle Morne. More specifically, it's south of the Castle Morne Rampart Site of Grace and northeast of the Castle Morne Lift Site of Grace, and east of the Map Weeping Peninsula."
+  },
+  "Poison Pot": {
+   "fetched": "2026-11-01",
+   "page": "Poison Pot",
+   "text": "Loot: Smoldering Church (Caelid). Craftable after obtaining the Nomadic Warrior's Cookbook [14] from a corpse in the Smoldering Church, guarded by Anastasia, Tarnished-Eater."
+  },
+  "Poison Spraymist": {
+   "fetched": "2026-11-01",
+   "page": "Poison Spraymist",
+   "text": "Crafted with Perfumer's Cookbook [2]."
   },
   "Poisonbloom": {
    "fetched": "2026-11-01",
@@ -10405,6 +10810,36 @@
    "page": "Sacramental Bud",
    "text": "Sacramental Buds are found growing around the Church of the Plague and Writheblood Ruins. Buds may only be harvested once per playthrough. Also dropped by Rotten Strays."
   },
+  "Sacred Bloody Flesh": {
+   "fetched": "2026-11-01",
+   "page": "Sacred Bloody Flesh",
+   "text": "Drop: Rivermouth Cave (Gravesite Plain) / Stone Coffin Fissure. 2% drop chance from Bloodfiends. Loot: Rivermouth Cave (Gravesite Plain) / Ancient Ruins of Rauh. Four can be found throughout Rivermouth Cave."
+  },
+  "Sacred Crown Helm": {
+   "fetched": "2026-11-01",
+   "page": "Sacred Crown Helm",
+   "text": "Chance to drop from Haligtree Foot Soldier enemies."
+  },
+  "Sacred Order Pot": {
+   "fetched": "2026-11-01",
+   "page": "Sacred Order Pot",
+   "text": "Crafted with the Missionary's Cookbook [5]."
+  },
+  "Sacred Relic Sword": {
+   "fetched": "2026-11-01",
+   "page": "Sacred Relic Sword",
+   "text": "Trade: Roundtable Hold. Trade the Elden Remembrance, gained by defeating the Elden Beast, with Finger Reader Enia. Alternatively, use one of the Wandering Mausoleums to duplicate one (can only obtain one per playthrough using either method)."
+  },
+  "Sacred Scorpion Charm": {
+   "fetched": "2026-11-01",
+   "page": "Sacred Scorpion Charm",
+   "text": "Obtained by defeating Anastasia, Tarnished-Eater, who invades the player near the Smoldering Church in northwestern Caelid."
+  },
+  "Sacred Tear": {
+   "fetched": "2026-11-01",
+   "page": "Sacred Tear",
+   "text": "Limgrave. Third Church of Marika. Callu Baptismal Church. Fourth Church of Marika."
+  },
   "Sacrificial Axe": {
    "fetched": "2026-11-01",
    "page": "Sacrificial Axe",
@@ -11155,6 +11590,21 @@
    "page": "Spelldrake Talisman",
    "text": "Guaranteed drop: Earthbore Cave (Weeping Peninsula). Obtained by defeating the Runebear boss fight at the end of the cave."
   },
+  "Spelldrake Talisman +1": {
+   "fetched": "2026-11-01",
+   "page": "Spelldrake Talisman +1",
+   "text": "Loot: Sellia, Town of Sorcery (Caelid). Obtained from a chest in Sellia, Town of Sorcery. The chest can be found in a small alcove in the northwest section of town, which is locked behind a magical seal. This seal can be dispelled by lighting the flame in the southwest candle tower, within the town."
+  },
+  "Spelldrake Talisman +2": {
+   "fetched": "2026-11-01",
+   "page": "Spelldrake Talisman +2",
+   "text": "Loot: Hidden Path to the Haligtree. Obtained from a corpse in the Hidden Path to the Haligtree. From the large circular platform in the large central room, drop straight down from the broken railing to land on an invisible platform. Walk directly north, and then turn directly west, when aligned with an enemy that can be seen in the distance, standing on the invisible platform."
+  },
+  "Spelldrake Talisman +3": {
+   "fetched": "2026-11-01",
+   "page": "Spelldrake Talisman +3",
+   "text": "Loot Castle Ensis (Gravesite Plain). It can be looted from a corpse near the Castle Front site of Grace. From the Castle Front site of Grace, If you go directly north you can drop off of the cliffside and then follow the path east which will lead you to the storeroom where the talisman is located."
+  },
   "Spellmachinist's Bell Bearing": {
    "fetched": "2026-11-01",
    "page": "Spellmachinist's Bell Bearing",
@@ -11309,6 +11759,16 @@
    "fetched": "2026-11-01",
    "page": "Stalwart Horn Charm",
    "text": "Obtained from a corpse in eastern Liurnia of the Lakes. From Mausoleum Compound, head north up an incline, then left, and proceed southwest to a large tall rock formation. Walk counterclockwise around this formation to find a hole in the formation, forming an archway over a small ledge. Drop down from this ledge and head left to find the corpse, dangling over the edge of a cliff."
+  },
+  "Stalwart Horn Charm +1": {
+   "fetched": "2026-11-01",
+   "page": "Stalwart Horn Charm +1",
+   "text": "Obtained from a corpse in southwestern Consecrated Snowfield, in western Mountaintops of the Giants. The corpse can be found laying over a log, between the two large dead trees east of the Yelough Anix Ruins, guarded by two Ancestral Followers."
+  },
+  "Stalwart Horn Charm +2": {
+   "fetched": "2026-11-01",
+   "page": "Stalwart Horn Charm +2",
+   "text": "Stalwart Horn Charm +2 is found at the Bonny Gaol. Jump down into a hole and then climb a ladder to the east after passing rats. The talisman is located in a room with jar innards."
   },
   "Stanching Boluses": {
    "fetched": "2026-11-01",
@@ -12115,6 +12575,21 @@
    "page": "Viridian Amber Medallion",
    "text": "Guaranteed Drop: Tombsward Cave (Weeping Peninsula). Obtained by defeating Miranda the Blighted Bloom in the Tombsward Cave."
   },
+  "Viridian Amber Medallion +1": {
+   "fetched": "2026-11-01",
+   "page": "Viridian Amber Medallion +1",
+   "text": "Guaranteed Drop: Capital Outskirts (Altus Plateau). Obtained by defeating Margit the Fell Omen in northwestern Altus Plateau, south of the Outer Wall Battleground grace. He will break disguise as a Commoner when you approach him. The decoy will still be there even if Morgott, the Omen King has been slain."
+  },
+  "Viridian Amber Medallion +2": {
+   "fetched": "2026-11-01",
+   "page": "Viridian Amber Medallion +2",
+   "text": "Loot: Miquella's Haligtree. Obtained from a chest in Miquella's Haligtree. From Haligtree Town Plaza head southeast, drop down to the rooftops guarded by Spiritcalling Snails, and continue southeast to perform a running jump across to another rooftop, which is slightly lower in height. Turn immediately around and perform a running jump to reach the inside of the previous building."
+  },
+  "Viridian Amber Medallion +3": {
+   "fetched": "2026-11-01",
+   "page": "Viridian Amber Medallion +3",
+   "text": "It can be found in Darklight Catacombs, right after the first canon imp. Jump over on the ledge to the right and then drop down to that small archway under it."
+  },
   "Viridian Hidden Tear": {
    "fetched": "2026-11-01",
    "page": "Viridian Hidden Tear",
@@ -12533,7 +13008,6 @@
   "Ancient Dragon Knight's Cookbook [2]",
   "Antiquity Scholar's Cookbook [1]",
   "Antiquity Scholar's Cookbook [2]",
-  "Armament",
   "Armorer's Cookbook (5)",
   "Armorer's Cookbook [1]",
   "Armorer's Cookbook [2]",
@@ -12552,35 +13026,16 @@
   "Beast Claw",
   "Black Knight Captain Huw",
   "Black Knight Commander Andreas",
-  "Bloody Bastard Sword",
-  "Bloody Buckler",
-  "Bloody Club",
-  "Bloody Flesh",
-  "Bloody Highland Axe",
-  "Bloody Iron Roundshield",
-  "Bloody Lance",
-  "Bloody Large Leather Shield",
-  "Bloody Longsword",
-  "Bloody Red Thorn Roundshield",
-  "Bloody Rickety Shield",
-  "Bloody Scimitar",
-  "Bloody Spear",
-  "Bloody Twinblade",
-  "Blossom",
   "Blue Cipher Ring",
   "Brave's Battlewear",
   "Brave's Battlewear (Altered)",
   "Burial Crow's Letter",
   "Carian Knight's Bloody Shield",
   "Cerulean Crystal Tear (Variant)",
-  "Coil",
   "Corhyn's Bell Bearing",
-  "Crossbow",
-  "Crown Helm",
   "Crucible Hammer-Helm",
   "D's Bell Bearing",
   "Deathsbane White Jerky",
-  "Downpour",
   "Dragon Cult Prayerbook",
   "Drawstring Eternal Sleep Grease",
   "Drawstring Freezing Grease",
@@ -12595,6 +13050,9 @@
   "Fevor's Cookbook [3]",
   "Finger-Weaver's Cookbook [1]",
   "Finger-Weaver's Cookbook [2]",
+  "Fire Arrow",
+  "Fire Knight's Cookbook [1]",
+  "Fire Knight's Cookbook [2]",
   "Forager Brood Cookbook [1]",
   "Forager Brood Cookbook [2]",
   "Forager Brood Cookbook [3]",
@@ -12602,7 +13060,6 @@
   "Forager Brood Cookbook [5]",
   "Forager Brood Cookbook [6]",
   "Forager Brood Cookbook [7]",
-  "Fortification",
   "Frenzied's Cookbook [1]",
   "Frenzied's Cookbook [2]",
   "Fugitive Warrior's Recipe [5]",
@@ -12618,7 +13075,6 @@
   "Ghost Glovewort [9]",
   "Ghost-Glovewort Picker's Bell Bearing [2]",
   "Ghost-Glovewort Picker's Bell Bearing [3]",
-  "Glintblade",
   "Glintstone Craftsman's Cookbook [1]",
   "Glintstone Craftsman's Cookbook [2]",
   "Glintstone Craftsman's Cookbook [3]",
@@ -12661,10 +13117,8 @@
   "Grave Keeper's Cookbook [1]",
   "Grave Keeper's Cookbook [2]",
   "Gravebird Ashes",
-  "Grease",
   "Great Ghost Glovewort",
   "Great Grave Glovewort",
-  "Greatbolt",
   "Greater Potentate's Cookbook [10]",
   "Greater Potentate's Cookbook [11]",
   "Greater Potentate's Cookbook [12]",
@@ -12699,13 +13153,6 @@
   "Isolated Merchant's Bell Bearing [2]",
   "Isolated Merchant's Bell Bearing [3]",
   "Jolán and Anna",
-  "Knight Armor (Altered)",
-  "Knight Hilde",
-  "Knight Queelign",
-  "Knight's Cookbook [1]",
-  "Knight's Cookbook [2]",
-  "Knight's Seal",
-  "Knight's Shortsword",
   "Land of Shadow",
   "Letter from Volcano Manor",
   "Mad Craftsman's Cookbook [1]",
@@ -12747,13 +13194,6 @@
   "Missionary's Cookbook [5]",
   "Missionary's Cookbook [6]",
   "Missionary's Cookbook [7]",
-  "Mist",
-  "Monk Armor",
-  "Monk Ashes",
-  "Monk Gauntlets",
-  "Monk Greaves",
-  "Monk Hood",
-  "Monks' Prayerbook",
   "Mushroom-Seller's Bell Bearing [1]",
   "Mushroom-Seller's Bell Bearing [2]",
   "Nomadic Merchant's Bell Bearing [10]",
@@ -12792,7 +13232,6 @@
   "Nomadic Warrior's Cookbook [8]",
   "Nomadic Warrior's Cookbook [9]",
   "Nox Greaves",
-  "Order Pot",
   "Perfumer's Cookbook (1)",
   "Perfumer's Cookbook (13)",
   "Perfumer's Cookbook (2)",
@@ -12801,23 +13240,14 @@
   "Perfumer's Cookbook [3]",
   "Perfumer's Cookbook [4]",
   "Pidia's Bell Bearing",
-  "Pot",
   "Prayer Room Key",
-  "Prelate Armor",
-  "Prelate Armor (Altered)",
-  "Prelate Gauntlets",
-  "Prelate Greaves",
-  "Prelate Helm",
   "Ragged Armor",
   "Ragged Armor (Altered)",
   "Ragged Hat (Altered)",
-  "Relic Sword",
   "Rogier's Bell Bearing",
   "Roped Freezing Pot",
-  "Scorpion Charm",
   "Sellen's Bell Bearing",
   "Seluvis's Bell Bearing",
-  "Serpent",
   "Shadow Realm Rune [1]",
   "Shadow Realm Rune [2]",
   "Shadow Realm Rune [3]",
@@ -12844,15 +13274,11 @@
   "Somberstone Miner's Bell Bearing [3]",
   "Somberstone Miner's Bell Bearing [4]",
   "Somberstone Miner's Bell Bearing [5]",
-  "Spraymist",
-  "Spur Me",
   "St. Trina Disciple's Cookbook [1]",
   "St. Trina Disciple's Cookbook [2]",
   "St. Trina Disciple's Cookbook [3]",
   "St. Trina's Arrow",
   "Storehouse Cross Message",
-  "Strike",
-  "Tear",
   "The Carian Oath",
   "Thops's Bell Bearing",
   "Torn Diary Page",
