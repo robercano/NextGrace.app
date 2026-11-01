@@ -1,85 +1,41 @@
-/* app.js — Tarnished Ledger UI. Expects window.ERSave (src/ersave.js) and the items DB passed to main(). */
+/*
+ * app.js — Tarnished Ledger UI (the character sheet: index.html). Plain script, no bundler.
+ *
+ * main(DB, FLAGS, REQS) is called from index.html once data/items.json, data/flags.json and data/reqs.json are loaded.
+ * Globals it relies on (loaded before it): ERSave (src/ersave.js, save parser), Rules (src/rules.js, game rules),
+ * Icons (src/icons.js), T/I18N (src/i18n.js), GLOSSARY (src/glossary.js), Marks (src/marks.js), Cloud (src/cloud.js).
+ *
+ * Sections, in order (search for "// ----"):
+ *   state & helpers · icons · catalogue (what "No tengo" compares against) · tabs · glossary tips · requirement tags
+ *   Status tab: renderChar → renderUnused, renderPlanner, renderEquip, renderProgress, renderForge, renderInv
+ *   Equipment tab (renderEquip) · Smithing tab (renderForge, planUpdate, renderSpirits) · Progress tab (renderProgress, renderDiary)
+ *   Inventory tab (renderInv, chips) · loading a save (prep, showSave, pick, loadFile) · Advisor tab · account sheet · start-up
+ *
+ * Conventions: every user-visible string is Spanish wrapped in T() (English in src/i18n.js); HTML is built with template
+ * strings and esc() for any value that comes from the save; CUR is the character on screen, SAVE the parsed file.
+ */
 async function main(DB, FLAGS, REQS){
+  // ---- state & helpers ---------------------------------------------------------
   const $ = s => document.querySelector(s);
   I18N.apply();
   const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   let SAVE = null, CUR = null, FILENAME = "";
   const WIKI = "https://eldenring.wiki.gg/wiki/";
-  function wikiName(i) {
-    let n = i.name || "";
-    if (i.kind === "weapon" && i.infusion && i.infusion !== "Standard" && n.startsWith(i.infusion + " ")) n = n.slice(i.infusion.length + 1);
-    if (i.kind !== "talisman") n = n.replace(/\s*\+\d+$/, "");
-    return n;
-  }
+  const R = Rules.create(DB, REQS); // game rules (requirements, loads, costs…): see src/rules.js
+  const { wikiName, baseKey, weightOf, canUse, statBonuses, effStats, stoneCounts, costRange, levelCost, spiritInfo, gloveName, RUNE_VALUE, real } = R;
+  const SOFT = R.SOFT_CAPS;
   const link = (i, text) => `<a class="wl" href="${WIKI}${encodeURIComponent(wikiName(i).replace(/ /g, "_"))}" target="_blank" rel="noopener">${text}</a>`;
 
-  // ---- icon pack (user supplied, stored in IndexedDB) --------------------
-  const ICONS = new Map(); // key -> object URL
-  const slug = n => n.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
-  const iconKey = i => i.kind === "weapon" ? String(i.id - (i.id % 10000)) : String(i.id);
-  // some icons were saved with the wiki group as a prefix ("item_armorer_s_cookbook", "material_smithing_stone_1"): alias them without it
-  const ICON_PREFIX = /^(item|material|weapon|armor|spell|talisman|goods|key|gesture|info|tool|ash|spirit)_/;
-  // last resort for families that share one picture in the game (bell bearings, cookbooks, letters…): reuse a sibling's icon
-  const GENERIC = [["bell", /bell bearing/i, /bell_bearing/], ["cook", /cookbook|recipe \[/i, /cookbook/], ["letter", /letter|^note:/i, /_letter$|^note_/], ["tear", /crystal tear/i, /crystal_tear/], ["grease", /grease$/i, /_grease$/], ["jerky", /jerky$/i, /jerky/], ["attire", /spectral steed attire/i, /spectral_steed_attire/]];
-  function iconAliases() {
-    for (const [k, v] of [...ICONS]) { if (ICON_PREFIX.test(k)) { const bare = k.replace(ICON_PREFIX, ""); if (!ICONS.has(bare)) ICONS.set(bare, v); } }
-    for (const [key, , filePat] of GENERIC) { if (ICONS.has("__" + key)) continue; const hit = [...ICONS.keys()].find(k => filePat.test(k)); if (hit) ICONS.set("__" + key, ICONS.get(hit)); }
-  }
-  function iconCandidates(i) {
-    const c = [iconKey(i), slug(i.name)];
-    const nb = i.name.replace(/\s*\[\d+\]\s*$/, ""); if (nb !== i.name) c.push(slug(nb)); // "Armorer's Cookbook [1]" → shared cookbook icon
-    if (i.kind === "weapon" && i.infusion && i.infusion !== "Standard" && i.name.startsWith(i.infusion + " ")) c.push(slug(i.name.slice(i.infusion.length + 1)));
-    const plain = i.name.replace(/\s*\+\d+$/, ""); if (plain !== i.name) c.push(slug(plain));
-    if (i.name.includes(": ")) c.push(slug(i.name.split(": ").slice(1).join(": ")));
-    const bare = i.name.replace(/\s*\+\s*\d+\s*$/, "").replace(/\b(Heavy|Keen|Quality|Fire|Flame Art|Lightning|Sacred|Magic|Cold|Poison|Blood|Occult|Bloody)\s+/g, "").trim(); if (bare !== i.name) c.push(slug(bare));
-    for (const [key, namePat] of GENERIC) if (namePat.test(i.name)) { c.push("__" + key); break; }
-    return c;
-  }
-  function ic(i) {
-    if (!ICONS.size) return "";
-    let u = null; for (const k of iconCandidates(i)) if ((u = ICONS.get(k))) break;
-    return u ? `<img class="ico" src="${u}" alt="" loading="lazy">` : "";
-  }
-  function idb() { return new Promise((res, rej) => { const r = indexedDB.open("tl", 1); r.onupgradeneeded = () => r.result.createObjectStore("icons"); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
-  async function iconsLoad() {
-    try { const r = await fetch("icons/index.json", { cache: "no-cache" }); if (r.ok) { for (const n of await r.json()) ICONS.set(n.replace(/\.[a-z0-9]+$/i, ""), "icons/" + n); iconAliases(); if (ICONS.size) { $("#iconsMsg").textContent = T("{0} iconos del sitio.", ICONS.size); $("#iconsBtn").textContent = T("Añadir iconos"); } } } catch (e) {}
-    try { const db = await idb(); const tx = db.transaction("icons"); const st = tx.objectStore("icons");
-      await new Promise((res, rej) => { const cur = st.openCursor(); cur.onsuccess = () => { const c = cur.result; if (!c) return res(); ICONS.set(c.key, URL.createObjectURL(c.value)); c.continue(); }; cur.onerror = () => rej(cur.error); });
-      if (ICONS.size) $("#iconsMsg").textContent = T("{0} iconos disponibles.", ICONS.size);
-    } catch (e) {}
-  }
-  async function iconsImport(files) {
-    const entries = [];
-    for (const f of files) {
-      if (/\.zip$/i.test(f.name)) {
-        if (typeof JSZip === "undefined") { $("#iconsMsg").textContent = T("No se pudo cargar el lector de zip; sube las imágenes sueltas."); return; }
-        const z = await JSZip.loadAsync(f);
-        for (const [p, e] of Object.entries(z.files)) if (!e.dir && /\.(png|webp|jpe?g|gif|svg)$/i.test(p)) entries.push([p.split("/").pop(), await e.async("blob")]);
-      } else entries.push([f.name, f]);
-    }
-    let db; try { db = await idb(); } catch (e) { $("#iconsMsg").textContent = T("Este navegador no permite guardar los iconos."); return; }
-    const tx = db.transaction("icons", "readwrite"); const st = tx.objectStore("icons");
-    for (const [name, blob] of entries) { const key = name.replace(/\.[a-z0-9]+$/i, ""); st.put(blob, key); const old = ICONS.get(key); if (old) URL.revokeObjectURL(old); ICONS.set(key, URL.createObjectURL(blob)); }
-    await new Promise(res => { tx.oncomplete = res; tx.onerror = res; });
-    $("#iconsMsg").textContent = T("{0} iconos guardados en este navegador.", ICONS.size);
-    if (CUR) renderChar(CUR);
-  }
-  $("#icons").addEventListener("change", e => { if (e.target.files.length) iconsImport(Array.from(e.target.files)).catch(err => { $("#iconsMsg").textContent = T("Error al importar: {0}", err.message); }); });
+  // ---- icons (src/icons.js) -----------------------------------------------------
+  const ic = i => Icons.img(i), iconUrl = i => Icons.find(i);
+  $("#icons").addEventListener("change", e => {
+    if (!e.target.files.length) return;
+    Icons.import(Array.from(e.target.files)).then(n => { $("#iconsMsg").textContent = T("{0} iconos guardados en este navegador.", n); if (CUR) renderChar(CUR); })
+      .catch(err => { $("#iconsMsg").textContent = err.code === "zip" ? T("No se pudo cargar el lector de zip; sube las imágenes sueltas.") : err.code === "idb" ? T("Este navegador no permite guardar los iconos.") : T("Error al importar: {0}", err.message); });
+  });
 
-  // ---- upgrade economics -------------------------------------------------
-  const STONE = {};  // name -> item id
-  for (const [id, e] of Object.entries(DB.items)) {
-    if (/^(Somber )?Smithing Stone \[\d\]$/.test(e.n) || e.n === "Ancient Dragon Smithing Stone" || e.n === "Somber Ancient Dragon Smithing Stone") STONE[e.n] = +id;
-  }
-  function costStep(level, somber) { // cost to go from level-1 to level
-    if (somber) return level >= 10 ? { "Somber Ancient Dragon Smithing Stone": 1 } : { ["Somber Smithing Stone [" + level + "]"]: 1 };
-    if (level >= 25) return { "Ancient Dragon Smithing Stone": 1 };
-    const tier = Math.floor((level - 1) / 3) + 1, n = [2, 4, 6][(level - 1) % 3];
-    return { ["Smithing Stone [" + tier + "]"]: n };
-  }
-  function costRange(from, to, somber) { const t = {}; for (let l = from + 1; l <= to; l++) for (const [k, v] of Object.entries(costStep(l, somber))) t[k] = (t[k] || 0) + v; return t; }
 
-  // ---- rendering ---------------------------------------------------------
+  // ---- catalogue & names ------------------------------------------------------
   // weapon / item classes as the Spanish version of the game names them
   const SUB_ES = { Arrows: "Flechas", Bolts: "Virotes", Greatarrows: "Flechas grandes", Greatbolts: "Virotes grandes", "Flask Enhancers": "Mejoras de frasco", "Ghost Glovewort": "Glovewort fantasma", "Grave Glovewort": "Glovewort sepulcral", "Shadow Realm Blessings": "Bendiciones del Reino de las Sombras", "Smithing Stones": "Piedras de forja", Somberstones: "Piedras sombrías", "World Maps": "Mapas",
     Axes: "Hachas", "Backhand Blades": "Hojas de revés", "Beast Claws": "Garras de bestia", Claws: "Garras", "Colossal Swords": "Espadas colosales", "Colossal Weapons": "Armas colosales", "Curved Greatswords": "Espadones curvos", "Curved Swords": "Espadas curvas", Daggers: "Dagas", Fists: "Puños", Flails: "Manguales", "Great Hammers": "Martillos grandes", "Great Katanas": "Katanas grandes", "Great Spears": "Lanzas grandes", Greataxes: "Hachas grandes", Greatswords: "Espadones", Halberds: "Alabardas", Hammers: "Martillos", "Hand-to-Hand": "Cuerpo a cuerpo", "Heavy Thrusting Swords": "Estoques pesados", Katanas: "Katanas", "Light Greatswords": "Espadones ligeros", "Perfume Bottles": "Frascos de perfume", Reapers: "Guadañas", Spears: "Lanzas", "Straight Swords": "Espadas rectas", "Throwing Blades": "Hojas arrojadizas", "Thrusting Swords": "Estoques", Twinblades: "Hojas dobles", Whips: "Látigos",
@@ -92,7 +48,6 @@ async function main(DB, FLAGS, REQS){
   let group = "Armas", limit = 250, mode = "have", useFilter = "all";
   // Catálogo de coleccionables para "No tengo"
   const CATALOG_CATS = new Set(["melee_armaments", "ranged_and_catalysts", "shields", "head", "chest", "arms", "legs", "talismans", "ashes_of_war", "ashes", "sorceries", "incantations", "key_items"]);
-  const baseKey = i => { let n = i.name || ""; if (i.kind === "weapon" && i.infusion && i.infusion !== "Standard" && n.startsWith(i.infusion + " ")) n = n.slice(i.infusion.length + 1); if (i.kind !== "talisman") n = n.replace(/\s*\+\d+$/, ""); return n.toLowerCase(); };
   const CATALOG = [];
   for (const [id, e] of Object.entries(DB.items)) {
     if (e.f || !CATALOG_CATS.has(e.c)) continue;
@@ -105,8 +60,6 @@ async function main(DB, FLAGS, REQS){
     if (!c.missing) { const have = new Set(c.all.map(baseKey)); c.missing = CATALOG.filter(i => !have.has(baseKey(i))); }
     return c.missing;
   }
-
-  function stoneCounts(c) { const m = {}; for (const it of c.all) if (STONE[it.name] !== undefined) m[it.name] = (m[it.name] || 0) + it.qty; return m; }
 
   // ---- tabs ----------------------------------------------------------------
   let TAB = "status";
@@ -131,50 +84,8 @@ async function main(DB, FLAGS, REQS){
     tip = document.createElement("div"); tip.className = "tip"; tip.innerHTML = `${row.dataset.extra ? `<div style="color:#e08a3c;margin-bottom:4px">${esc(row.dataset.extra)}</div>` : ""}${esc(I18N.lang === "en" && g.en ? g.en : g.es)} ${wlink(g.w, T("Ver en la wiki ↗"))}`; row.appendChild(tip); row.classList.add("open");
   });
 
-  // weights come from 32-bit floats in the game data; upgraded weapons carry their level in the id, so look up the base entry; ammo weighs nothing
-  function weightOf(it) { if (!it) return 0; if (it.cat === "arrows_and_bolts") return 0;
-    const e = DB.items[it.id] || (it.kind === "weapon" ? DB.items[it.id - (it.id % 10000)] : null); let w = e && e.w ? e.w : 0;
-    if (!w && it.kind === "weapon" && REQS) { const r = REQS.weapons[wikiName(it)]; if (r && r.weight) w = r.weight; }
-    return Math.round(w * 10) / 10; }
-
-  // ---- requirements (data/reqs.json, from the wiki) --------------------------
-  const RQ = REQS || { weapons: {}, spells: {} };
+  // ---- requirement tags (data from src/rules.js canUse) ------------------------
   const STAT_SHORT0 = { str: "FUE", dex: "DES", int: "INT", fai: "FE", arc: "ARC" }; const STAT_SHORT = new Proxy(STAT_SHORT0, { get: (o, k) => o[k] ? T(o[k]) : o[k] });
-  const STAT_KEY = { str: "strength", dex: "dexterity", int: "intelligence", fai: "faith", arc: "arcane" };
-  const INF_WORDS = /\b(Heavy|Keen|Quality|Fire|Flame Art|Lightning|Sacred|Magic|Cold|Poison|Blood|Occult|Bloody)\s+/g;
-  function reqOf(it) { if (!it) return null;
-    if (it.kind === "weapon") { const n = wikiName(it); return RQ.weapons[n] || RQ.weapons[n.replace(INF_WORDS, "").trim()] || null; }
-    if (it.cat === "sorceries" || it.cat === "incantations") return RQ.spells[it.name] || null; return null; }
-  // Equipment that raises attributes (counts for requirements). Values from the wiki; armor list is the well-known set, not exhaustive.
-  const STAT_BOOST = {
-    "Radagon's Scarseal": { vigor: 3, endurance: 3, strength: 3, dexterity: 3 }, "Radagon's Soreseal": { vigor: 5, endurance: 5, strength: 5, dexterity: 5 },
-    "Marika's Scarseal": { mind: 3, intelligence: 3, faith: 3, arcane: 3 }, "Marika's Soreseal": { mind: 5, intelligence: 5, faith: 5, arcane: 5 },
-    "Starscourge Heirloom": { strength: 5 }, "Prosthesis-Wearer Heirloom": { dexterity: 5 }, "Stargazer Heirloom": { intelligence: 5 }, "Two Fingers Heirloom": { faith: 5 },
-    "Albinauric Mask": { arcane: 4 }, "Marais Mask": { arcane: 1 }, "Imp Head (Cat)": { arcane: 1 }, "Queen's Crescent Crown": { intelligence: 3 }, "Twinsage Glintstone Crown": { intelligence: 6 },
-    "Olivinus Glintstone Crown": { intelligence: 2 }, "Lazuli Glintstone Crown": { intelligence: 2 }, "Karolos Glintstone Crown": { intelligence: 3 }, "Hierodas Glintstone Crown": { intelligence: 2, faith: 2 }, "Haima Glintstone Crown": { strength: 2, intelligence: 2 }, "Haligtree Knight Helm": { faith: 1 },
-  };
-  // {stat: [{src, v}]} from equipped talismans, armor and an active Godrick's Great Rune
-  function statBonuses(c) {
-    const out = {}; const E = c.enriched && c.enriched.equipped; if (!E) return out;
-    const add = (src, b) => { for (const k in b) (out[k] = out[k] || []).push({ src, v: b[k] }); };
-    for (const it of [E.head, E.chest, E.arms, E.legs].concat(E.talismans || [])) if (it && STAT_BOOST[it.name]) add(it.name, STAT_BOOST[it.name]);
-    if (c.greatRuneActive && E.greatRune && /Godrick/.test(E.greatRune.name)) add("Godrick's Great Rune", { vigor: 5, mind: 5, endurance: 5, strength: 5, dexterity: 5, intelligence: 5, faith: 5, arcane: 5 });
-    return out;
-  }
-  const effStats = c => { const B = statBonuses(c), S = Object.assign({}, c.stats); for (const k in B) S[k] = (S[k] | 0) + B[k].reduce((a, x) => a + x.v, 0); return S; };
-  // {ok, boosted, twoHand, missing:[{k, need, have}], req, scale, via}; two-handing counts strength ×1.5 (weapons only)
-  function canUse(c, it) {
-    const rq = reqOf(it); if (!rq || !c) return null;
-    const check = S => { const miss = [], miss2h = [];
-      for (const k of Object.keys(rq.req)) { const need = rq.req[k] | 0; if (!need) continue; const have = S[STAT_KEY[k]] | 0;
-        if (have < need) { miss.push({ k, need, have }); if (!(it.kind === "weapon" && k === "str" && Math.floor(have * 1.5) >= need)) miss2h.push({ k, need, have }); } }
-      return { ok: !miss.length, twoHand: !!miss.length && !miss2h.length, missing: miss2h.length ? miss2h : miss }; };
-    const base = check(c.stats);
-    if (base.ok) return Object.assign(base, { boosted: false, req: rq.req, scale: rq.scale || null, info: rq });
-    const B = statBonuses(c); const eff = Object.keys(B).length ? check(effStats(c)) : null;
-    if (eff && (eff.ok || eff.twoHand)) { const via = [...new Set(Object.keys(B).filter(k => base.missing.some(m => STAT_KEY[m.k] === k)).flatMap(k => B[k].map(x => x.src)))]; return Object.assign(eff, { boosted: true, via, req: rq.req, scale: rq.scale || null, info: rq }); }
-    return Object.assign(base, { boosted: false, req: rq.req, scale: rq.scale || null, info: rq });
-  }
   self.TL_USE = (c, it) => canUse(c, it); // used by cloud.js when building the account summary
   const useCls = u => !u ? "" : u.boosted ? " boost" : u.ok ? "" : u.twoHand ? " use2h" : " nope";
   const useTag = u => !u ? "" : u.boosted ? `<span class="tag boost">${T("con {0}", esc(u.via.join(" + ")))}${u.twoHand ? T(", a dos manos") : ""}</span>` : u.ok ? "" : u.twoHand ? `<span class="tag use2h">${T("a dos manos")}</span>` : `<span class="tag nope">${T("faltan {0}", u.missing.map(m => `${STAT_SHORT[m.k]} ${m.need - m.have}`).join(", "))}</span>`;
@@ -201,13 +112,8 @@ async function main(DB, FLAGS, REQS){
     const B = c.buildups;
     $("#resist").innerHTML = kvr(T("Veneno"), B.poison, null, "poison") + kvr(T("Putrefacción"), B.rot, null, "rot") + kvr(T("Hemorragia"), B.bleed, null, "bleed") + kvr(T("Congelación"), B.frost, null, "frost") + kvr(T("Sueño"), B.sleep, null, "sleep") + kvr(T("Locura"), B.madness, null, "madness") + kvr(T("Muerte"), B.deathblight, null, "deathblight");
     const E = c.enriched.equipped;
-    const worn = [E.head, E.chest, E.arms, E.legs].concat(E.rh, E.lh, E.talismans, E.arrows, E.bolts).filter(x => x && real(x));
-    const load = worn.reduce((a, it) => a + weightOf(it), 0);
-    // max equip load by (effective) endurance: 45 at ≤8, 72 at 25, 120 at 60, 160 at 99 (wiki table; linear between anchors)
-    const endEff = effStats(c).endurance | 0, lerp = (x, x0, y0, x1, y1) => y0 + (y1 - y0) * (x - x0) / (x1 - x0);
-    const maxLoad = endEff <= 8 ? 45 : endEff <= 25 ? lerp(endEff, 8, 45, 25, 72) : endEff <= 60 ? lerp(endEff, 25, 72, 60, 120) : lerp(Math.min(endEff, 99), 60, 120, 99, 160);
-    const ratio = load / maxLoad, rollK = ratio < .3 ? "light" : ratio < .7 ? "medium" : ratio <= 1 ? "heavy" : "over";
-    const ROLL = { light: [T("Carga ligera"), "#7fc8ff"], medium: [T("Carga media"), "var(--fg)"], heavy: [T("Carga pesada"), "#e0b23c"], over: [T("Sobrecargado"), "var(--bad)"] };
+    const { load, max: maxLoad, ratio, roll: rollK } = R.equipLoad(c);
+    const ROLL = { light: [T("Carga ligera"), "#7fc8ff"], medium: [T("Carga media"), "var(--fg)"], heavy: [T("Carga pesada"), "#e0b23c"], over: [T("Sobrecargado"), "var(--bad)"] }; // the game's colours
     $("#misc").innerHTML = kvr(T("Carga de equipo"), `${load.toFixed(1)} / ${maxLoad.toFixed(1)}`, `<span style="color:${ROLL[rollK][1]};font-weight:600">${ROLL[rollK][0]}</span> · ${Math.round(ratio * 100)} % ${T("(aprox.)")}`, "load") + kvr(T("Frasco carmesí"), c.crimsonFlasks, null, "crimson") + kvr(T("Frasco cerúleo"), c.ceruleanFlasks, null, "cerulean") + kvr(T("Hechizos memorizados"), c.enriched.spells.length, null, "spells");
 
     renderUnused(c);
@@ -219,10 +125,6 @@ async function main(DB, FLAGS, REQS){
   }
 
   // ---- level planner ---------------------------------------------------------
-  // runes needed to go from level x to x+1: fixed table up to 11; from 12, with y = x+1: 0.02y³ + 3.06y² + 105.6y − 895 (checked against the wiki: 12→1038, 44→11876, 100→61591)
-  const LOW = [673, 689, 706, 723, 740, 757, 775, 793, 811, 829, 847];
-  const levelCost = x => { if (x < 12) return LOW[x - 1]; const y = x + 1; return Math.floor(0.02 * y ** 3 + 3.06 * y ** 2 + 105.6 * y - 895); };
-  const SOFT = { vigor: [40, 60], mind: [40, 60], endurance: [50, 60], strength: [55, 80], dexterity: [55, 80], intelligence: [60, 80], faith: [60, 80], arcane: [60, 80] };
   const STAT_ES0 = { vigor: "Vigor", mind: "Mente", endurance: "Resistencia", strength: "Fuerza", dexterity: "Destreza", intelligence: "Inteligencia", faith: "Fe", arcane: "Arcano" };
   const STAT_ES = new Proxy(STAT_ES0, { get: (o, k) => typeof k === "string" && o[k] ? T(o[k]) : o[k], ownKeys: o => Reflect.ownKeys(o), getOwnPropertyDescriptor: (o, k) => Reflect.getOwnPropertyDescriptor(o, k) });
   const PLAN = { open: false, add: {} };
@@ -254,9 +156,6 @@ async function main(DB, FLAGS, REQS){
   });
 
   // ---- spirit ashes (Roderika) -------------------------------------------------
-  const GHOST_NAMED = new Set(["Mimic Tear Ashes"]);
-  function spiritInfo(name) { const m = name.match(/^(.*?)\s*\+\s*(\d+)\s*$/); const base = (m ? m[1] : name).trim(); return { base, level: m ? +m[2] : 0, ghost: GHOST_NAMED.has(base) || !/ Ashes$/.test(base) }; }
-  const gloveName = (ghost, lvl) => lvl >= 10 ? (ghost ? "Great Ghost Glovewort" : "Great Grave Glovewort") : `${ghost ? "Ghost" : "Grave"} Glovewort [${lvl}]`;
   function renderSpirits(c) {
     const el = $("#spirits"); if (!el) return;
     const have = {}; for (const it of c.all) if (/^(Great )?(Grave|Ghost) Glovewort/.test(it.name)) have[it.name] = (have[it.name] || 0) + (it.qty || 1);
@@ -275,7 +174,6 @@ async function main(DB, FLAGS, REQS){
   }
 
   // ---- unused upgrades / deliverables ---------------------------------------
-  const RUNE_VALUE = { "Golden Rune [1]": 200, "Golden Rune [2]": 400, "Golden Rune [3]": 800, "Golden Rune [4]": 1200, "Golden Rune [5]": 1600, "Golden Rune [6]": 2000, "Golden Rune [7]": 2500, "Golden Rune [8]": 3000, "Golden Rune [9]": 3800, "Golden Rune [10]": 5000, "Golden Rune [11]": 6250, "Golden Rune [12]": 7500, "Golden Rune [13]": 10000, "Numen's Rune": 12000, "Hero's Rune [1]": 15000, "Hero's Rune [2]": 20000, "Hero's Rune [3]": 25000, "Hero's Rune [4]": 30000, "Hero's Rune [5]": 35000, "Lord's Rune": 50000 };
   function renderUnused(c) {
     const pane = $("#unusedPane"), el = $("#unused"); if (!pane) return;
     const qty = name => c.all.filter(i => i.name === name).reduce((a, i) => a + (i.qty || 1), 0);
@@ -302,7 +200,7 @@ async function main(DB, FLAGS, REQS){
 
   // ---- equipment screen -----------------------------------------------------
   const EQSEL = { k: null };
-  function slot(it, lbl, extra) { const has = it && real(it); const img = has ? ICONS.size && iconCandidates(it).map(k => ICONS.get(k)).find(Boolean) : null; const u = has ? canUse(CUR, it) : null;
+  function slot(it, lbl, extra) { const has = it && real(it); const img = has ? iconUrl(it) : null; const u = has ? canUse(CUR, it) : null;
     return `<div class="slot${has ? "" : " empty"}${useCls(u)}" data-item="${has ? esc(JSON.stringify({ n: it.display, w: wikiName(it), d: [subEs(it.sub), it.infusion && it.infusion !== "Standard" ? it.infusion : null, it.aow ? T("Ceniza: {0}", it.aow) : null, weightOf(it) ? T("Peso {0}", weightOf(it)) : null, useMeta(u)].filter(Boolean).join(" · "), r: reqLine(u), i: img || "" })) : ""}" role="button" tabindex="0">${img ? `<img src="${img}" alt="">` : has ? `<span style="font-size:.6rem;text-align:center;padding:4px;color:var(--fg-2)">${esc(it.display)}</span>` : ""}${has && it.kind === "weapon" && it.level ? `<span class="lvl">+${it.level}</span>` : ""}<span class="lbl">${lbl}</span></div>`; }
   function renderEquip(c) {
     const E = c.enriched.equipped;
@@ -446,7 +344,7 @@ async function main(DB, FLAGS, REQS){
     items = items.slice().sort((a, b) => oi(a.cat) - oi(b.cat) || a.name.localeCompare(b.name));
     if (mode === "missing") { const tot = CATALOG.filter(i => !cats || cats.includes(i.cat)).length; $("#count").textContent = T("{0} por conseguir de {1}", items.length, tot) + (q ? T(" (filtrado)") : ""); }
     else $("#count").textContent = T("{0} objetos", items.length);
-    const cell = i => { const img = ICONS.size ? iconCandidates(i).map(k => ICONS.get(k)).find(Boolean) : null; const e = DB.items[i.id] || (i.kind === "weapon" ? DB.items[i.id - (i.id % 10000)] : null) || { loc: i.loc }; const u = canUse(c, i);
+    const cell = i => { const img = iconUrl(i); const e = DB.items[i.id] || (i.kind === "weapon" ? DB.items[i.id - (i.id % 10000)] : null) || { loc: i.loc }; const u = canUse(c, i);
       const meta = [CAT_ES[i.cat] || i.cat, subEs(i.sub), i.infusion && i.infusion !== "Standard" ? i.infusion : null, i.aow ? T("Ceniza: {0}", i.aow) : null, i.qty > 1 ? "×" + i.qty : null, i.stored ? T("en el cofre") : null, i.kind === "weapon" && i.maxLevel ? `+${i.level}/${i.maxLevel}` : null, useMeta(u)].filter(Boolean).join(" · ");
       return `<div class="cell${i.missing ? " miss" : ""}${i.stored ? " stored" : ""}${useCls(u)}" data-item="${esc(JSON.stringify({ n: i.display, w: wikiName(i), d: meta, r: reqLine(u), l: e && e.loc ? e.loc.replace(/\s*\[\s*Map Link\s*\]\s*;?/g, "").replace(/\s+([.,;])/g, "$1").replace(/\s{2,}/g, " ") : "", i: img || "" }))}" role="button" tabindex="0" title="${esc(i.display)}">${img ? `<img src="${img}" alt="" loading="lazy">` : `<span class="nm">${esc(i.display)}</span>`}${i.qty > 1 ? `<span class="q">${i.qty}</span>` : ""}${i.kind === "weapon" && i.level ? `<span class="lv">+${i.level}</span>` : ""}</div>`; };
     $("#inv").innerHTML = items.slice(0, limit).map(cell).join("");
@@ -455,7 +353,7 @@ async function main(DB, FLAGS, REQS){
   }
 
   function modeChips() { $("#mode").innerHTML = [["have", "Tengo"], ["missing", "No tengo"]].map(([m, l]) => `<button class="cat" aria-pressed="${m === mode}" data-m="${m}">${T(l)}</button>`).join("");
-    const u = $("#useMode"); if (u) { u.hidden = !Object.keys(RQ.weapons).length; u.innerHTML = [["all", "Todo"], ["ok", "Puedo usar"], ["boost", "Solo con bonus"], ["no", "No cumplo"]].map(([m, l]) => `<button class="cat" aria-pressed="${m === useFilter}" data-u="${m}" title="${m === "ok" ? T("Con tus atributos base (a una o dos manos)") : m === "boost" ? T("Solo gracias a talismanes, cascos o runa mayor") : m === "no" ? T("Ni con el equipo actual") : ""}">${T(l)}</button>`).join(""); } }
+    const u = $("#useMode"); if (u) { u.hidden = !Object.keys(R.RQ.weapons).length; u.innerHTML = [["all", "Todo"], ["ok", "Puedo usar"], ["boost", "Solo con bonus"], ["no", "No cumplo"]].map(([m, l]) => `<button class="cat" aria-pressed="${m === useFilter}" data-u="${m}" title="${m === "ok" ? T("Con tus atributos base (a una o dos manos)") : m === "boost" ? T("Solo gracias a talismanes, cascos o runa mayor") : m === "no" ? T("Ni con el equipo actual") : ""}">${T(l)}</button>`).join(""); } }
   $("#useMode").addEventListener("click", e => { const b = e.target.closest(".cat"); if (!b) return; useFilter = b.dataset.u; limit = 250; modeChips(); renderInv(); });
   $("#mode").addEventListener("click", e => { const b = e.target.closest(".cat"); if (!b) return; mode = b.dataset.m; limit = 250; modeChips(); renderInv(); });
   modeChips();
@@ -466,9 +364,7 @@ async function main(DB, FLAGS, REQS){
   $("#more").addEventListener("click", () => { limit += 250; renderInv(); });
   chips();
 
-  // ---- loading -----------------------------------------------------------
-  const PLACEHOLDER = new Set([110000, 0x10002710, 0x10002774, 0x100027D8, 0x1000283C]); // Unarmed, Head, Body, Arms, Legs
-  const real = i => !PLACEHOLDER.has(i.id);
+  // ---- loading a save -----------------------------------------------------------
   function prep(save) {
     for (const c of save.chars) {
       if (c.error) continue;
@@ -668,7 +564,7 @@ async function main(DB, FLAGS, REQS){
   Cloud.init().then(() => { renderAcct(); if (CUR) { cloudSync(CUR); renderDiary(CUR); autoAdvice(CUR); } if (CUR && TAB === "advice") renderAdvice(CUR); if (location.hash === "#status" && Cloud.user() && history.replaceState) { /* back from Steam login */ note(T("Sesión iniciada con Steam.")); } });
 
   // last file, if this browser kept it
-  iconsLoad().then(() => { if (CUR) renderChar(CUR); });
+  Icons.load({ onSite: n => { $("#iconsMsg").textContent = T("{0} iconos del sitio.", n); $("#iconsBtn").textContent = T("Añadir iconos"); }, onPack: n => { $("#iconsMsg").textContent = T("{0} iconos disponibles.", n); } }).then(() => { if (CUR) renderChar(CUR); });
   try {
     const last = JSON.parse(localStorage.getItem("tl.last") || "null");
     if (last && last.chars && last.chars.length) {
