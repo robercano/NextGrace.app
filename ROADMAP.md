@@ -32,7 +32,7 @@ Usuario: Rob (SteamID REPLACE_WITH_YOUR_STEAMID64, moderador). Dos personajes: G
 - Moderación: propuestas pendientes hasta que un moderador aprueba; los moderadores publican directo (con casilla para enviar como pendiente y probar).
 - Consejero: no es un MCP que consulte Claude, sino un informe que genera el Worker con la API y cachea en D1 (1 h entre informes, 5/día; moderadores sin límite). Modelo por defecto `claude-sonnet-5-5` (`ADVICE_MODEL`). `ADVICE_MOCK=1` en local devuelve el contexto sin gastar.
 - Consejero, cuándo se genera: automáticamente al subir un save cuyo resumen cambió (el navegador lo lanza tras guardar el resumen, solo para el personaje en pantalla; si cambias de personaje mientras tanto se encola). La caché va por hash de resumen + idioma + `PROMPT_VERSION` (súbela al cambiar el prompt o el contexto y el siguiente save regenera solo). Con el mismo save el botón pasa a "Otra opinión" (pide confirmación y manda `force: true`). Un solo trabajo por personaje a la vez (`advice_jobs`, creada al vuelo; otra pestaña ve "generando…" y sondea cada 5 s).
-- Iconos: extraídos de la wiki (no de los ficheros del juego). Faltan ~171 (nombres con corchetes, notas, gloveworts).
+- Iconos: hoy extraídos de la wiki (faltan 13 sin página). Para la web pública se sustituyen por los extraídos de la copia del juego de Rob (ver «Beta pública»).
 
 ## Hecho (cronológico)
 
@@ -58,11 +58,36 @@ Usuario: Rob (SteamID REPLACE_WITH_YOUR_STEAMID64, moderador). Dos personajes: G
 - [ ] Confirmar la tabla de ids de runa mayor (valores distintos de 0, 3 y 10).
 - [ ] Mapa: más coordenadas (solo 17 de 35 jefes principales tienen pin; vía marcadores de la comunidad); iconos por objeto en marcadores comunitarios; filtro de tipo de jefe visible en la UI (hoy solo por hash).
 - [ ] Iconos que faltan (alias de nombres).
-- [ ] Gestión de cuenta: borrar cuenta/personajes; que un usuario pueda retirar un marcador aprobado suyo.
-- [ ] Iconos desde la copia del juego de Rob (decisión: no reutilizar assets de la wiki en la web pública): `tools/extract_icons_game.py` + `tools/EXTRACT.md` (UXM → WitchyBND → texconv → Smithbox CSV → script). Primera ejecución pendiente con Rob; el parser de .layout puede necesitar ajuste. Después: servir los iconos fuera del repo público (p. ej. R2 detrás del Worker) y retirar los de la wiki.
-- [ ] Público: sacar el arte del repo y del historial, licencia (GPL-3.0 por SaveForge), atribuciones (wiki CC BY-NC-SA), quitar Cloudflare Access, OAuth propio si se expone un MCP.
+- [ ] Gestión de cuenta: que un usuario pueda retirar un marcador aprobado suyo (el borrado de cuenta está en «Beta pública»).
+- [ ] Público (ver «Beta pública» abajo): quitar Cloudflare Access; OAuth propio si se expone un MCP.
 - [ ] MCP remoto (`/mcp/<token>`) con las mismas herramientas, para usar desde la app de Claude o Claude Code.
 - [ ] Opcional PC: vigilar el .sl2 con File System Access API para actualizar sin abrir el archivo a mano.
+
+## Beta pública: revisión legal y plan (1 nov 2026)
+
+Inventario de lo que hay en el repo y qué decidió Rob sobre cada punto. No es asesoramiento legal.
+
+| Material | Origen y situación | Decisión |
+|---|---|---|
+| `icons/*.webp` (2858) y `icons/map/*.webp` (fondos 4K) | Arte de FromSoftware/Bandai Namco, bajado de la wiki. Riesgo real: aviso de retirada (DMCA), no demanda. | Extraer de la copia del juego de Rob (`tools/extract_icons_game.py`, `tools/EXTRACT.md`), guardarlos en un **repo privado aparte** y servirlos desde el servidor (bucket R2 detrás del Worker, workflow del repo privado que sube al bucket). Riesgo asumido por Rob. Aviso "no afiliado" + contacto de retirada. Nunca en el repo público ni en su historial; la web funciona sin iconos (muestra el nombre). |
+| `items.json → loc` (3629 textos de ubicación) y `places.json` (derivado) | Prosa de **Fextralife** copiada por SaveForge (`item_text_generated.go`, delatada por "[Map Link]"). Fextralife no licencia su contenido. | Sustituir por la sección Location/Where to find de eldenring.wiki.gg (API MediaWiki, lotes de 50), aceptando huecos. Workflow `locations` repetible (rellena huecos en ejecuciones posteriores, nunca borra) + `data/overrides/locations.json` manual que gana siempre. `reqs` pasa al mismo esquema. Log en `tools/locations_log.txt`. |
+| `reqs.json`, `map.json`, textos de ubicación nuevos | eldenring.wiki.gg: **CC BY-SA 4.0** (comprobado en el pie de la wiki; el README decía BY-NC-SA, es un error). Las cifras son hechos del juego. | Atribución en la página de créditos con enlace a la licencia; esos ficheros de datos quedan bajo CC BY-SA 4.0. No afecta al código ni a los informes. |
+| `src/ersave.js`, `flags.json`, `items.json` (ids/nombres) | Escritos/extraídos con SaveForge (GPL-3.0), ER-Save-Editor y EldenRing-Save-Manager como referencia. Leaflet BSD-2. Cinzel y EB Garamond (Google Fonts, libres). | Proyecto bajo **GPL-3.0** (`LICENSE`), créditos a los tres proyectos con sus licencias, aviso de Leaflet y fuentes. Lectura del formato del save por ingeniería inversa: riesgo asumido; disclaimer de **solo lectura** (nunca se modifica el save, no se toca el juego ni ningún anti-cheat) en la pantalla de inicio y en la página legal. Sin logo ni tipografías de Elden Ring. |
+| Datos de usuarios: SteamID, nombre y avatar, resúmenes de personaje, marcadores, logs de Cloudflare | Rob pasa a ser responsable del tratamiento (RGPD). El resumen del personaje se envía a Anthropic para el informe (nunca el save ni la identidad de Steam). | Página de privacidad (qué, para qué, cuánto tiempo, encargados: Cloudflare y Anthropic, cómo borrar), **borrado de cuenta y datos desde la web**, "Powered by Steam" si el callback usa la Web API, condiciones mínimas para marcadores de la comunidad + contacto de retirada. **Nada de analítica** → sin banner de cookies (sesión y localStorage son estrictamente necesarios). Contacto a decidir por Rob (correo propio o del proyecto). |
+| `progression.json`, glosario, informes del consejero, nombre "Tarnished Ledger" | Propios / permitidos por los términos de la API. | Sin cambios. |
+
+### Tareas (un commit por cada una, para probar una a una)
+
+1. [ ] `tools/fetch_locations.py` + workflow `locations` (manual y mensual): textos de ubicación desde wiki.gg a `items.json`, log de huecos, fecha de recarga en el fichero. No borra lo existente si la wiki no tiene texto.
+2. [ ] `data/overrides/locations.json` (y `reqs`): correcciones manuales que ganan sobre la wiki; `reqs` usa el mismo mecanismo de recarga.
+3. [ ] Ejecutar `locations` en Actions, revisar el log con Rob, regenerar `places.json` y retirar los textos de Fextralife.
+4. [ ] `LICENSE` GPL-3.0 y página de créditos/legal (`about.html`): atribuciones (wiki.gg CC BY-SA 4.0, SaveForge, ER-Save-Editor, EldenRing-Save-Manager, Leaflet, fuentes), aviso "no afiliado", arte propiedad de sus dueños con contacto de retirada, disclaimer de solo lectura. Enlace desde el pie de la ficha y del mapa. Corregir README (CC BY-SA).
+5. [ ] Disclaimer de solo lectura en la pantalla de inicio.
+6. [ ] Página de privacidad (ES/EN) y condiciones mínimas de los marcadores de la comunidad.
+7. [ ] Borrado de cuenta y datos desde la hoja de cuenta (`DELETE /api/me`: users, sessions, characters, marks, advice, advice_log, history; los marcadores aprobados quedan anonimizados o se borran, a decidir).
+8. [ ] "Powered by Steam" si el callback usa la Web API (revisar `functions/api/auth/`).
+9. [ ] Iconos propios: primera ejecución de `extract_icons_game.py` con los ficheros de Rob (ajustar el parser de `.layout` si hace falta) → repo privado de assets → bucket R2 → el Worker sirve `/icons/` desde R2 → retirar `icons/` del repo.
+10. [ ] Abrir el repo: purgar el arte del historial (`git filter-repo`), comprobar que los workflows siguen negándose con arte, quitar Cloudflare Access.
 
 ## Cómo trabajar
 
