@@ -26,7 +26,7 @@ import wikilib as W
 PLACEHOLDERS = {"Unarmed", "Head", "Body", "Arms", "Legs"}
 LOC_PARAMS = ["location", "locations", "where_to_find", "where to find", "acquisition", "acquired", "obtained", "obtain",
               "how_to_get", "found", "availability", "sold_by", "sold by", "dropped_by", "drop", "drops", "source"]
-LOC_SECTION = re.compile(r"^(location|locations|where to (find|get|obtain|buy)|how to (get|obtain|acquire|find)|acquisition|acquiring|obtaining|obtained|availability|sources?)\b", re.I)
+LOC_SECTION = re.compile(r"^(location|locations|where to (find|get|obtain|buy)|how to (get|obtain|acquire|find)|acquis?i?tion|acquiring|obtaining|obtained|availability|sources?)\b", re.I)
 MAX_CHARS = 420
 MAX_ITEMS = 4
 
@@ -90,12 +90,21 @@ def squeeze(lines):
 
 def extract(txt):
     """(texto, de dónde salió) o (None, None)."""
-    # 1) sección dedicada
-    for level, title, body in W.sections(txt):
-        if title and LOC_SECTION.match(title):
+    # 1) sección dedicada (el encabezado puede llevar un icono delante: [[File:...]] Acquisition), con sus subsecciones
+    secs = W.sections(txt)
+    for i, (level, title, body) in enumerate(secs):
+        clean = W.strip_markup(title) if title else ""
+        if clean and LOC_SECTION.match(clean):
             lines = clean_lines(body)
+            for lvl2, t2, b2 in secs[i + 1:]:
+                if lvl2 <= level:
+                    break
+                sub = clean_lines(b2); st = W.strip_markup(t2)
+                if sub and st and not sub[0].lower().startswith(st.lower()):
+                    sub[0] = st + ": " + sub[0]
+                lines += sub
             if lines:
-                return squeeze(lines), "section:" + title
+                return squeeze(lines), "section:" + clean
     # 2) parámetro del infobox
     for name, p in W.templates(txt):
         for k in LOC_PARAMS:

@@ -154,6 +154,7 @@ def strip_markup(s):
             break
         s = s2
     s = re.sub(r"\[\[(?:File|Image|Category):[^\]]*\]\]", "", s, flags=re.I)
+    s = re.sub(r"\[\[[a-z]{2,3}(?:-[a-z]+)?:[^\]]*\]\]", "", s)  # enlaces de idioma [[ru:...]]
     s = re.sub(r"\[\[[^\]|]*\|([^\]]*)\]\]", r"\1", s)
     s = re.sub(r"\[\[([^\]]*)\]\]", r"\1", s)
     s = re.sub(r"\[https?://\S+\s+([^\]]*)\]", r"\1", s)
