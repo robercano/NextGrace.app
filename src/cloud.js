@@ -17,6 +17,8 @@
     isAdmin() { return !!(me && me.role === "admin"); },
     login() { location.href = "/api/auth/steam"; },
     async logout() { await api("/auth/logout", { method: "POST" }); me = null; },
+    // Deletes the account server-side (see privacy.html) and forgets the session locally.
+    async deleteAccount() { const r = await api("/me", { method: "DELETE" }); if (r && !r.error) me = null; return r; },
 
     // Character summaries (no save file is uploaded): what the account needs for sync and the map.
     summarize(c) {

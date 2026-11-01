@@ -645,7 +645,15 @@ async function main(DB, FLAGS, REQS){
     const s = sheet(`<h3>${T("Cuenta")}</h3><div class="row"><div class="n">${u.avatar ? `<img src="${esc(u.avatar)}" alt="" style="width:28px;height:28px;vertical-align:middle;margin-right:8px">` : ""}<b>${esc(u.name || "")}</b> <span class="help">· ${u.role === "admin" ? T("moderador") : T("jugador")}</span></div><button class="btn" id="doLogout">${T("Salir")}</button></div>
       <div class="row"><div class="n">${T("Marcas de este personaje")}${CUR ? ` (${Marks.all(Marks.charKey(CUR)).length})` : ""}</div><button class="btn" id="doSync" ${CUR ? "" : "disabled"}>${T("Sincronizar ahora")}</button></div>
       <div class="row"><div class="n">${T("Resumen de personajes de la partida abierta")}</div><button class="btn" id="doPush" ${SAVE ? "" : "disabled"}>${T("Guardar en la cuenta")}</button></div>
-      ${Cloud.isAdmin() ? `<h3 style="margin-top:14px">${T("Moderación")}</h3><div id="modq" class="help">${T("Cargando propuestas…")}</div>` : ""}`);
+      ${Cloud.isAdmin() ? `<h3 style="margin-top:14px">${T("Moderación")}</h3><div id="modq" class="help">${T("Cargando propuestas…")}</div>` : ""}
+      <h3 style="margin-top:14px">${T("Privacidad")}</h3>
+      <div class="row"><div class="n help">${T("Borra tu usuario, personajes, marcas e informes del servidor. Tus marcadores ya publicados en el mapa de la comunidad se conservan de forma anónima.")} <a href="privacy.html">${T("Política de privacidad")}</a></div><button class="btn" id="doDelete">${T("Borrar cuenta")}</button></div>`);
+    $("#doDelete").onclick = async () => {
+      if (!confirm(T("¿Borrar tu cuenta y todos sus datos del servidor? Esta acción no se puede deshacer. Lo guardado en este navegador (partida abierta, marcas) no se toca."))) return;
+      const r = await Cloud.deleteAccount();
+      if (r && r.error) { note(T("Error: {0}", r.error), true); return; }
+      synced = new Set(); renderAcct(); s.hidden = true; note(T("Cuenta borrada."), true); if (TAB === "advice" && CUR) renderAdvice(CUR);
+    };
     $("#doLogout").onclick = async () => { await Cloud.logout(); synced = new Set(); renderAcct(); s.hidden = true; };
     $("#doSync").onclick = async () => { if (!CUR) return; synced.delete(Marks.charKey(CUR)); const r = await Cloud.syncMarks(Marks.charKey(CUR)); synced.add(Marks.charKey(CUR)); renderProgress(CUR); note(r && r.error ? T("Error: {0}", r.error) : T("Marcas sincronizadas.")); s.hidden = true; };
     $("#doPush").onclick = async () => { if (!SAVE) return; const r = await Cloud.pushCharacters(SAVE.chars); note(r && r.error ? T("Error: {0}", r.error) : T("Resumen guardado.")); s.hidden = true; };
