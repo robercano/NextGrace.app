@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0a0a">
+<title>Tarnished Ledger · Créditos y licencias</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+:root{--bg:#0b0a0a;--panel:#16151480;--line:#3a352c;--line-2:#5a5240;--fg:#dcd3bf;--fg-2:#b7ad97;--muted:#7d7563;--gold:#c9a44a;--gold-2:#e2c272;--display:"Cinzel",Georgia,serif;--body:"EB Garamond",Georgia,serif;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg) radial-gradient(ellipse at 50% 0%,#1c1813 0%,#0b0a0a 60%);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.4;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+main{max-width:720px;margin:0 auto;padding:14px 16px 40px}
+header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+header h1{font-family:var(--display);font-size:1rem;letter-spacing:.08em;color:var(--gold-2);margin:0}
+.btn{background:transparent;border:1px solid var(--line-2);color:var(--fg);padding:5px 12px;font-family:var(--display);font-size:.78rem;letter-spacing:.06em;text-decoration:none;white-space:nowrap;cursor:pointer}
+.btn.lang{margin-left:auto;padding:5px 8px;font-size:.7rem;letter-spacing:.1em}
+section{border:1px solid var(--line);background:var(--panel);padding:10px 14px 12px;margin-bottom:12px}
+h2{font-family:var(--display);font-size:.72rem;color:var(--gold);letter-spacing:.14em;text-transform:uppercase;padding:2px 0 6px;border-bottom:1px solid var(--line);margin:0 0 8px;font-weight:600}
+p,li{margin:0 0 8px}
+ul{padding-left:20px;margin:0}
+a{color:var(--gold-2)}
+.muted{color:var(--muted);font-size:.9rem}
+code{font-size:.9em;color:var(--fg-2)}
+</style>
+</head>
+<body>
+<main>
+<header><a class="btn" href="./" data-i18n="← Ficha">← Ficha</a><h1 data-i18n="Créditos y licencias">Créditos y licencias</h1><button class="btn lang" data-lang-toggle>EN</button></header>
+
+<section>
+<h2 data-i18n="Qué es">Qué es</h2>
+<p data-i18n="ab.what1">Tarnished Ledger es un proyecto de fans para leer tu partida de Elden Ring (PC, archivo <code>ER0000.sl2</code>) y preparar la siguiente sesión: ficha del personaje, inventario, forja, progreso, mapa y un consejero.</p>
+<p data-i18n="ab.what2"><b>Solo lectura.</b> La web lee el archivo de guardado y nunca lo modifica. No toca el juego, sus archivos ni ningún sistema anti-trampas, y no se conecta al juego de ninguna forma. El archivo se analiza íntegramente en tu navegador y no se sube a ningún sitio; si inicias sesión con Steam, solo se guarda un resumen por personaje (nivel, atributos, equipo, progreso). Más detalle en la <a href="privacy.html">política de privacidad</a>.</p>
+</section>
+
+<section>
+<h2 data-i18n="Sin afiliación">Sin afiliación</h2>
+<p data-i18n="ab.aff1">Este sitio no está afiliado a FromSoftware ni a Bandai Namco Entertainment, ni cuenta con su respaldo. ELDEN RING y los nombres, imágenes y demás elementos del juego son propiedad de sus respectivos titulares y se usan aquí únicamente con fines informativos para quien ya posee el juego.</p>
+<p data-i18n="ab.aff2">Si eres titular de derechos sobre algún contenido de este sitio y quieres que se retire, escribe a la dirección de contacto del final y se retirará.</p>
+</section>
+
+<section>
+<h2 data-i18n="Datos del juego">Datos del juego</h2>
+<ul>
+<li data-i18n="ab.data1"><a href="https://eldenring.wiki.gg" target="_blank" rel="noopener">Elden Ring Wiki (eldenring.wiki.gg)</a>, bajo licencia <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>: requisitos y escalado de armas y hechizos, pesos, textos de dónde se consigue cada objeto y los marcadores del mapa interactivo. Los ficheros de datos derivados (<code>data/reqs.json</code>, <code>data/locations.json</code>, <code>data/map.json</code>, <code>data/places.json</code>) se publican con esa misma licencia.</li>
+<li data-i18n="ab.data2">Nombres de objetos, identificadores y banderas de evento: extraídos con <a href="https://github.com/oisis/EldenRing-SaveForge" target="_blank" rel="noopener">EldenRing-SaveForge</a> (GPL-3.0). El formato del archivo de guardado se estudió también con <a href="https://github.com/ClayAmore/ER-Save-Editor" target="_blank" rel="noopener">ER-Save-Editor</a> y <a href="https://github.com/Ariescyn/EldenRing-Save-Manager" target="_blank" rel="noopener">EldenRing-Save-Manager</a> como referencia.</li>
+<li data-i18n="ab.data3">La tabla de progresión orientativa, el glosario y los textos de la interfaz son propios.</li>
+</ul>
+</section>
+
+<section>
+<h2 data-i18n="Código y componentes">Código y componentes</h2>
+<ul>
+<li data-i18n="ab.code1">El código de Tarnished Ledger se publica bajo <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener">GPL-3.0</a>: <a href="https://github.com/robercano/TarnishedViewer" target="_blank" rel="noopener">github.com/robercano/TarnishedViewer</a>.</li>
+<li data-i18n="ab.code2"><a href="https://leafletjs.com" target="_blank" rel="noopener">Leaflet</a> (BSD-2-Clause) para el mapa; <a href="https://stuk.github.io/jszip/" target="_blank" rel="noopener">JSZip</a> (MIT) para exportar; tipografías <a href="https://fonts.google.com/specimen/Cinzel" target="_blank" rel="noopener">Cinzel</a> y <a href="https://fonts.google.com/specimen/EB+Garamond" target="_blank" rel="noopener">EB Garamond</a> (SIL Open Font License).</li>
+<li data-i18n="ab.code3">Alojado en Cloudflare Workers. Inicio de sesión mediante Steam (OpenID); Steam es una marca de Valve Corporation. El informe del consejero se genera con Claude, de Anthropic, y es orientativo.</li>
+</ul>
+</section>
+
+<section>
+<h2 data-i18n="Contacto">Contacto</h2>
+<p id="contact" class="muted" data-i18n="ab.contact">Dirección de contacto pendiente de publicar.</p>
+</section>
+<p class="muted"><a href="privacy.html" data-i18n="Política de privacidad">Política de privacidad</a></p>
+</main>
+<script src="src/i18n.js"></script>
+<script>
+  // Pon aquí el correo de contacto (p. ej. "tarnished@example.com"); si está vacío se muestra el texto "pendiente".
+  const CONTACT = "";
+  I18N.apply();
+  if (CONTACT) { const c = document.getElementById("contact"); c.className = ""; c.innerHTML = `<a href="mailto:${CONTACT}">${CONTACT}</a>`; }
+</script>
+</body>
+</html>

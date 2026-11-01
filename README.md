@@ -84,7 +84,7 @@ Ver [ROADMAP.md](ROADMAP.md): estado del proyecto, decisiones, formato del save 
 
 ## Mapa
 
-`map.html` usa los marcadores del mapa interactivo de [eldenring.wiki.gg](https://eldenring.wiki.gg) (`tools/fetch_map.py` → `data/map.json`, licencia CC BY-NC-SA) y sitúa cada objeto que te falta en el lugar que nombra su texto de ubicación (`tools/build_places.py` → `data/places.json`). Los marcadores que añadas se guardan en tu navegador y, si has entrado con Steam, se envían al mapa de la comunidad (visibles para todos cuando un moderador los aprueba). "Copiar JSON" sigue sirviendo para volcarlos en `data/user_markers.json`. Los fondos (`icons/map/*.webp`) son arte del juego: solo en repo privado.
+`map.html` usa los marcadores del mapa interactivo de [eldenring.wiki.gg](https://eldenring.wiki.gg) (`tools/fetch_map.py` → `data/map.json`, licencia CC BY-SA 4.0) y sitúa cada objeto que te falta en el lugar que nombra su texto de ubicación (`tools/build_places.py` → `data/places.json`). Los marcadores que añadas se guardan en tu navegador y, si has entrado con Steam, se envían al mapa de la comunidad (visibles para todos cuando un moderador los aprueba). "Copiar JSON" sigue sirviendo para volcarlos en `data/user_markers.json`. Los fondos (`icons/map/*.webp`) son arte del juego: solo en repo privado.
 
 ## Créditos
 
@@ -95,3 +95,7 @@ Formato del save reconstruido a partir de [ClayAmore/ER-Save-Editor](https://git
 ## Idioma
 
 La interfaz está en español y en inglés. El botón ES/EN de la cabecera cambia el idioma (también `?lang=en` en la URL); la elección se guarda en el navegador. Los nombres de objetos, jefes y lugares se mantienen en inglés, como en la wiki. Para añadir textos nuevos: escribirlos en español dentro de `T()` (o con `data-i18n` en el HTML) y añadir la traducción a la tabla `EN` de `src/i18n.js`.
+
+## Licencia y créditos
+
+Código bajo GPL-3.0 (`LICENSE`). Datos derivados de [eldenring.wiki.gg](https://eldenring.wiki.gg) (`data/reqs.json`, `data/locations.json`, `data/map.json`, `data/places.json`) bajo CC BY-SA 4.0. Nombres, ids y banderas de evento extraídos con EldenRing-SaveForge (GPL-3.0). La página `about.html` recoge todas las atribuciones, el aviso de no afiliación y el de solo lectura; `CONTACT` en ese fichero es el correo para retiradas. Proyecto de fans sin relación con FromSoftware ni Bandai Namco.
