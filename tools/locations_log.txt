@@ -1,157 +1,416 @@
 2840 nombres (Counter({'goods': 1225, 'armor': 735, 'weapon': 584, 'aow': 116, 'talisman': 114, 'ammo': 66}))
-  18/18
-==============================================================================
-Dagger  [weapon]
-  página: Dagger
-  encabezados: ['[[File: ER Custom Icon Description.png|40px|link=Item Description]] Description', '[[File:ER Custom Icon Acquisition.png|40px|link=Acquisition]] Acquisition', '[[File:ER Main Menu Icon Messages.png|40px|Notes]] Notes', '[[File: ER Main Menu Icon Skill Instruction.png|40px|link=Ashes of War]] Ashes of War', '[[File:ER Main Menu Icon Blacksmith.png|40px|link=Upgrading]] Upgrade Information']
-  {{for}} params: 2
-  {{Infobox Weapon}} params: 36
-  {{PAGENAME}} params: 0
-  {{ER}} params: 0
-  extraído (None): None
-==============================================================================
-Black Knife  [weapon]
-  página: Black Knife
-  encabezados: ['[[File: ER Custom Icon Description.png|40px|link=Item Description]] Description', '[[File:ER Custom Icon Acquisition.png|40px|link=Acquisition]] Acquisition', '[[File:ER Main Menu Icon Messages.png|40px|Notes]] Notes', '[[File:ER Main Menu Icon Blacksmith.png|40px|link=Upgrading]] Upgrade Information', 'Trivia']
-  {{Infobox Weapon}} params: 36
-  {{ER}} params: 0
-  {{Description}} params: 2
-  {{Navbox Melee Armaments}} params: 0
-  extraído (None): None
-==============================================================================
-Parrying Dagger  [weapon]
-  página: Parrying Dagger
-  encabezados: ['[[File: ER Custom Icon Description.png|40px|link=Item Description]] Description', '[[File:ER Custom Icon Acquisition.png|40px|link=Acquisition]] Acquisition', '[[File:ER Main Menu Icon Messages.png|40px|Notes]] Notes', '[[File: ER Main Menu Icon Skill Instruction.png|40px|link=Ashes of War]] Ashes of War', '[[File:ER Main Menu Icon Blacksmith.png|40px|link=Upgrading]] Upgrade Information']
-  {{Infobox_Weapon}} params: 31
-  {{ER}} params: 0
-  {{Description}} params: 2
-  {{clear}} params: 0
-  extraído (None): None
-==============================================================================
-Iron Helmet  [armor]
-  página: Iron Helmet
-  encabezados: ['Description', 'Acquisition']
-  {{Infobox_Armor}} params: 19
-  {{ER}} params: 0
-  {{Description}} params: 2
-  extraído (section:Acquisition): 'Sold by Nomadic Merchant at Castle Morne Rampart in the Weeping Peninsula. ru:Железный шлем.'
-==============================================================================
-Scale Armor  [armor]
-  página: Scale Armor
-  encabezados: ['Description', 'Acquisition']
-  {{DisambigMsg}} params: 3
-  {{Infobox_Armor}} params: 19
-  {{ER}} params: 0
-  {{Description}} params: 2
-  extraído (section:Acquisition): 'Nomadic Merchant at Castle Morne Rampart in the Weeping Peninsula region. ru:Чешуйчатый доспех 2.'
-==============================================================================
-Iron Gauntlets  [armor]
-  página: Iron Gauntlets
-  encabezados: ['Description', 'Acquisition']
-  {{Infobox_Armor}} params: 19
-  {{ER}} params: 0
-  {{Description}} params: 2
-  extraído (section:Acquisition): 'Nomadic Merchant at Castle Morne Rampart in the Weeping Peninsula region. ru:Железные перчатки.'
-==============================================================================
-Crimson Amber Medallion  [talisman]
-  página: Crimson Amber Medallion
-  encabezados: ['[[File:ER Custom Icon Description.png|50px|Description]] Description', '[[File:ER Custom Icon Acquisition.png|50px|Acquisition]] Acquisition', '[[File:ER Custom Icon Effect.png|50px|Effect]] Effect', '[[File:ER Main Menu Icon Messages.png|50px|Notes]] Notes', 'See also', 'Gallery']
-  {{Infobox_Item}} params: 9 → {'obtained': '[[Keepsakes]]<br/>Purchase'}
-  {{PAGENAME}} params: 0
-  {{ER}} params: 0
-  {{Description}} params: 2
-  extraído (param:obtained): 'Keepsakes. Purchase.'
-==============================================================================
-Cerulean Amber Medallion  [talisman]
-  página: Cerulean Amber Medallion
-  encabezados: ['[[File:ER Custom Icon Description.png|50px|Description]] Description', '[[File:ER Custom Icon Acquisition.png|50px|Acquisition]] Acquisition', '[[File:ER Custom Icon Effect.png|50px|Effect]] Effect', '[[File:ER Main Menu Icon Messages.png|50px|Notes]] Notes', 'See also']
-  {{Infobox_Item}} params: 8 → {'obtained': '[[Lakeside Crystal Cave]]'}
-  {{PAGENAME}} params: 0
-  {{ER}} params: 0
-  {{Description}} params: 2
-  extraído (param:obtained): 'Lakeside Crystal Cave.'
-==============================================================================
-Viridian Amber Medallion  [talisman]
-  página: Viridian Amber Medallion
-  encabezados: ['[[File:ER Custom Icon Description.png|40px|Description]] Description', '[[File:ER Custom Icon Acquisition.png|40px|Acquisition]] Acquisition', '[[File:ER Custom Icon Effect.png|40px|Effect]] Effect', '[[File:ER Main Menu Icon Messages.png|40px|Notes]] Notes', 'See also']
-  {{Infobox Item}} params: 8 → {'obtained': '[[Miranda the Blighted Bloom]]'}
-  {{PAGENAME}} params: 0
-  {{ER}} params: 0
-  {{Description}} params: 2
-  extraído (param:obtained): 'Miranda the Blighted Bloom.'
-==============================================================================
-Tarnished's Furled Finger  [goods]
-  página: Tarnished's Furled Finger
-  encabezados: ['Description', 'Acquistion', 'Gallery', 'See also']
-  {{Infobox_Item}} params: 6
-  {{ER}} params: 0
-  {{Description}} params: 11 → {'en_source': '[[1.07]]', 'jp_source': '[[1.07]]', 'fr_source': '[[1.07]]', 'fr_translate1_source': 'Meadhainnigh'}
-  extraído (None): None
-==============================================================================
-Duelist's Furled Finger  [goods]
-  página: Duelist's Furled Finger
-  encabezados: ['Description', 'Gallery']
-  {{Infobox Item}} params: 10 → {'obtained': ''}
-  {{ER}} params: 0
-  extraído (None): None
-==============================================================================
-Bloody Finger  [goods]
-  página: Bloody Finger
-  encabezados: ['Description', 'Acquisition', 'Effect', 'Gallery']
-  {{Infobox Item}} params: 34 → {'obtained': "Obtained after giving [[White Mask Varré|Varré]] the [[Lord of Blood's Favor (Soaked)|Blood-Soaked F"}
-  {{PAGENAME}} params: 0
-  {{ER}} params: 0
-  {{Description}} params: 6
-  extraído (section:Acquisition): "Obtained after giving Varré the Blood-Soaked Favor and joining Mohg's Bloody Fingers."
-==============================================================================
-Ash of War: Lion's Claw  [aow]
-  página: Ash of War: Lion's Claw
-  encabezados: ['Description', 'Effect', 'Acquisition']
-  {{Infobox Item}} params: 13 → {'obtained': ''}
-  {{ER}} params: 0
-  {{Description}} params: 13
-  {{SOTE}} params: 0
-  extraído (section:Acquisition): "Guaranteed Drop: Caelid. Drops from the Elder Lion found in Fort Gael. Note that since it can't move from the dirt floor of the Fort, it's possible to kill it safely by using ranged attacks. Once this item has been obtained, it can be duplicated by trading in Lost Ashes of War to Smithing Master Hewg."
-==============================================================================
-Ash of War: Impaling Thrust  [aow]
-  página: Ash of War: Impaling Thrust
-  encabezados: ['Description', 'Effect', 'Acquisition', 'See also']
-  {{Infobox Item}} params: 11 → {'obtained': 'Purchase'}
-  {{ER}} params: 0
-  {{Description}} params: 13
-  {{SOTE}} params: 0
-  extraído (section:Acquisition): "Purchase: Stormhill / Volcano Manor. 1x Sold for 1,000 Runes from Bernahl at either the Warmaster's Shack in Stormhill or the Drawing Room of Volcano Manor. Should Bernahl be killed before purchasing it from him, this item can still be bought from the Twin Maiden Husks for the same price after giving them Bernahl's Bell Bearing."
-==============================================================================
-Ash of War: Piercing Fang  [aow]
-  página: Ash of War: Piercing Fang
-  encabezados: ['Description', 'Effect', 'Acquisition', 'See also']
-  {{Infobox_Item}} params: 8
-  {{ER}} params: 0
-  {{Description}} params: 13
-  {{SOTE}} params: 0
-  extraído (section:Acquisition): 'Guaranteed Drop/Quest Item: Limgrave / Liurnia of the Lakes / Altus Plateau. Found pre-equipped on the Nagakiba, which can be looted off the body of Bloody Finger Hunter Yura, either at the end of his questline or by killing him before that. Once this item has been obtained, it can be duplicated by trading in Lost Ashes of War to Smithing Master Hewg.'
-==============================================================================
-Arrow  [ammo]
-  página: Arrow
-  encabezados: ['Description', 'Acquisition']
-  {{Infobox Item}} params: 15 → {'obtained': 'Purchase'}
-  {{ER}} params: 0
-  extraído (section:Acquisition): 'Nomadic Merchant southeast of Coastal Cave, beneath the collapsed structure. Nomadic Merchant at Castle Morne Rampart in the Weeping Peninsula region. Nomadic Merchant east of Saintsbridge. Abandoned Merchant in the Siofra River region.'
-==============================================================================
-Serpent Arrow  [ammo]
-  página: Serpent Arrow
-  encabezados: ['Description', 'Acquisition', 'Trivia']
-  {{stub}} params: 0
-  {{Infobox Item}} params: 33 → {'obtained': 'Purchase<br>Loot'}
-  {{PAGENAME}} params: 0
-  {{ER}} params: 0
-  extraído (section:Acquisition): "the Dragonbarrow's Isolated Merchant sells endless Serpent Arrows for 120 runes each. Serpent Arrows are also dropped by Serpent Snails & Skeletal Snails."
-==============================================================================
-Bone Arrow (Fletched)  [ammo]
-  página: Bone Arrow (Fletched)
-  encabezados: ['[[File:ER Custom Icon Description.png|50px|Description]] Description', '[[File:ER Custom Icon Acquisition.png|50px|Acquisition]] Acquisition', '[[File:ER Main Menu Icon Item Crafting.png|50px|Crafting]] Crafting', 'See Also']
-  {{Infobox Item}} params: 16 → {'obtained': 'Craftable'}
-  {{ER}} params: 0
-  {{Description}} params: 6
-  {{#lst:Cookbook}} params: 1
-  extraído (param:obtained): 'Craftable.'
+  50/2840
+  100/2840
+  150/2840
+  200/2840
+  250/2840
+  300/2840
+  350/2840
+  400/2840
+  450/2840
+  500/2840
+  550/2840
+  600/2840
+  650/2840
+  429: espero 60s
+  700/2840
+  750/2840
+  800/2840
+  850/2840
+  900/2840
+  950/2840
+  1000/2840
+  1050/2840
+  1100/2840
+  1150/2840
+  429: espero 60s
+  1200/2840
+  1250/2840
+  1300/2840
+  1350/2840
+  1400/2840
+  1450/2840
+  1500/2840
+  1550/2840
+  429: espero 60s
+  1600/2840
+  1650/2840
+  1700/2840
+  1750/2840
+  1800/2840
+  1850/2840
+  1900/2840
+  1950/2840
+  2000/2840
+  2050/2840
+  2100/2840
+  429: espero 60s
+  2150/2840
+  2200/2840
+  2250/2840
+  2300/2840
+  2350/2840
+  2400/2840
+  2450/2840
+  2500/2840
+  2550/2840
+  2600/2840
+  2650/2840
+  2700/2840
+  2750/2840
+  2800/2840
+  429: espero 60s
+  2840/2840
+  variantes para 383 sin página: 287 títulos
+  50/287
+  100/287
+  150/287
+  200/287
+  250/287
+  287/287
+
+resultado: {'nuevo': 2504, 'sin página': 234, 'página sin texto de ubicación': 102}; conservados de ejecuciones anteriores: 0; origen del texto: {'section': 2427, 'param': 77}
+con texto: 2504/2840; sin texto: 336 → data/locations.json
+sin texto por tipo: {'goods': 289, 'weapon': 19, 'armor': 22, 'talisman': 2, 'ammo': 4}
+
+encabezados más frecuentes (para ajustar LOC_SECTION): [('acquisition', 1518), ('description', 1506), ('see also', 779), ('notes', 697), ('[[file: er custom icon description.png|40px|link=item description]] description', 527), ('[[file:er main menu icon messages.png|40px|notes]] notes', 522), ('[[file:er custom icon acquisition.png|40px|link=acquisition]] acquisition', 521), ('trivia', 385), ('[[file:er custom icon description.png|50px|description]] description', 275), ('effect', 275), ('[[file:er custom icon acquisition.png|50px|acquisition]] acquisition', 271), ('[[file:er custom icon effect.png|50px|effect]] effect', 231), ('[[file:er main menu icon messages.png|50px|notes]] notes', 219), ('[[file: er custom icon game version.png|40px|link=patch notes]] patch notes', 183), ('gallery', 144), ('effects', 141), ('[[file:er main menu icon blacksmith.png|40px|link=upgrading]] upgrading', 136), ('strategies', 128), ('[[file:er main menu icon item crafting.png|50px|crafting]] crafting', 126), ('[[file:er custom icon acquisition.png|40px|acquisition]] acquisition', 111), ('[[file:er custom icon description.png|40px|description]] description', 109), ('required for', 77), ('[[file:er custom icon effect.png|40px|effect]] effect', 59), ('boosting', 49), ('animation', 49), ('[[file:er main menu icon blacksmith.png|40px|link=upgrading]] upgrade information', 39), ('references', 36), ('upgrading', 36), ('[[file:er custom icon effect.png|50px|effect]] effects', 31), ('use', 29), ('[[file:er custom icon description.png|40px]]description', 24), ('[[file:er custom icon acquisition.png|40px]]acquisition', 24), ('[[file:er main menu icon item crafting.png|40px|crafting]] crafting', 19), ('[[file:er custom icon effect.png|40px|effect]] effects', 19), ('overview', 17), ('sites of grace', 14), ('[[file:er main menu icon messages.png|40px]]notes', 13), ('landmarks', 13), ('[[file: er main menu icon skill instruction.png|40px|link=ashes of war]] ashes of war', 11), ('required items', 11)]
+
+SIN PÁGINA (234):
+Knight's Shortsword
+Bloody Longsword
+Bloody Bastard Sword
+Relic Sword
+Bloody Scimitar
+Bloody Twinblade
+Bloody Club
+Bloody Highland Axe
+Bloody Spear
+Bloody Lance
+Bloody Buckler
+Bloody Rickety Shield
+Bloody Red Thorn Roundshield
+Bloody Iron Roundshield
+Carian Knight's Bloody Shield
+Bloody Large Leather Shield
+Knight's Seal
+Greatbolt
+Monk Hood
+Monk Armor
+Monk Gauntlets
+Monk Greaves
+Prelate Helm
+Prelate Armor
+Prelate Gauntlets
+Prelate Greaves
+Prelate Armor (Altered)
+Ragged Hat (Altered)
+Ragged Armor (Altered)
+Brave's Battlewear
+Brave's Battlewear (Altered)
+Grass Hair Ornament
+Crown Helm
+Millicent's Tunic
+Knight Armor (Altered)
+Scorpion Charm
+Entwining Umbilical Cord
+Pot
+Order Pot
+Deathsbane White Jerky
+Drawstring Freezing Grease
+Golden Rune [1]
+Golden Rune [2]
+Golden Rune [3]
+Golden Rune [4]
+Golden Rune [5]
+Golden Rune [6]
+Golden Rune [7]
+Golden Rune [8]
+Golden Rune [9]
+Golden Rune [10]
+Golden Rune [11]
+Golden Rune [12]
+Golden Rune [13]
+Hero's Rune [1]
+Hero's Rune [2]
+Hero's Rune [3]
+Hero's Rune [4]
+Hero's Rune [5]
+Holy Water Grease
+Spraymist
+Downpour
+Glintblade
+Fortification
+Mist
+Armament
+Letter from Volcano Manor
+Asimi, Silver Tear
+Burial Crow's Letter
+Iji's Confession
+Asimi's Husk
+Asimi, Silver Chrysalid
+Map: Limgrave, West
+Map: Limgrave, East
+Map: Liurnia, East
+Map: Liurnia, North
+Map: Liurnia, West
+Map: Mountaintops of the Giants, West
+Map: Mountaintops of the Giants, East
+Monks' Prayerbook
+Erdtree Prayerbook
+Erdtree Codex
+Golden Order Principles
+Nomadic Merchant's Bell Bearing [1]
+Nomadic Merchant's Bell Bearing [2]
+Nomadic Merchant's Bell Bearing [3]
+Nomadic Merchant's Bell Bearing [4]
+Nomadic Merchant's Bell Bearing [5]
+Isolated Merchant's Bell Bearing [1]
+Isolated Merchant's Bell Bearing [2]
+Nomadic Merchant's Bell Bearing [6]
+Hermit Merchant's Bell Bearing [1]
+Nomadic Merchant's Bell Bearing [7]
+Nomadic Merchant's Bell Bearing [8]
+Nomadic Merchant's Bell Bearing [9]
+Nomadic Merchant's Bell Bearing [10]
+Nomadic Merchant's Bell Bearing [11]
+Isolated Merchant's Bell Bearing [3]
+Hermit Merchant's Bell Bearing [2]
+Hermit Merchant's Bell Bearing [3]
+Glovewort Picker's Bell Bearing [2]
+Glovewort Picker's Bell Bearing [3]
+Grovel For Mercy
+Spur Me
+The Carian Oath
+Fetal Position
+Nomadic Warrior's Cookbook [1]
+Nomadic Warrior's Cookbook [3]
+Nomadic Warrior's Cookbook [6]
+Nomadic Warrior's Cookbook [10]
+Fugitive Warrior's Recipe [5]
+Nomadic Warrior's Cookbook [7]
+Nomadic Warrior's Cookbook [12]
+Nomadic Warrior's Cookbook [19]
+Nomadic Warrior's Cookbook [13]
+Nomadic Warrior's Cookbook [23]
+Nomadic Warrior's Cookbook [17]
+Nomadic Warrior's Cookbook [2]
+Nomadic Warrior's Cookbook [21]
+Missionary's Cookbook [6]
+Armorer's Cookbook [1]
+Armorer's Cookbook [2]
+Nomadic Warrior's Cookbook [11]
+Nomadic Warrior's Cookbook [20]
+Armorer's Cookbook (5)
+Armorer's Cookbook [7]
+Armorer's Cookbook [4]
+Nomadic Warrior's Cookbook [18]
+Armorer's Cookbook [3]
+Nomadic Warrior's Cookbook [16]
+Armorer's Cookbook [6]
+Armorer's Cookbook [5]
+Glintstone Craftsman's Cookbook [4]
+Glintstone Craftsman's Cookbook [1]
+Glintstone Craftsman's Cookbook [5]
+Nomadic Warrior's Cookbook [9]
+Glintstone Craftsman's Cookbook [8]
+Glintstone Craftsman's Cookbook [2]
+Glintstone Craftsman's Cookbook [6]
+Glintstone Craftsman's Cookbook [7]
+Glintstone Craftsman's Cookbook [3]
+Missionary's Cookbook [2]
+Missionary's Cookbook [1]
+Missionary's Cookbook (3)
+Missionary's Cookbook [5]
+Missionary's Cookbook [4]
+Missionary's Cookbook [3]
+Nomadic Warrior's Cookbook [4]
+Perfumer's Cookbook (1)
+Perfumer's Cookbook (2)
+Nomadic Warrior's Cookbook [5]
+Perfumer's Cookbook [1]
+Perfumer's Cookbook [2]
+Perfumer's Cookbook [3]
+Nomadic Warrior's Cookbook [14]
+Nomadic Warrior's Cookbook [8]
+Nomadic Warrior's Cookbook [22]
+Nomadic Warrior's Cookbook [15]
+Nomadic Warrior's Cookbook [24]
+Perfumer's Cookbook [4]
+Perfumer's Cookbook (13)
+Ancient Dragon Apostle's Cookbook [1]
+Ancient Dragon Apostle's Cookbook [2]
+Ancient Dragon Apostle's Cookbook [4]
+Ancient Dragon Apostle's Cookbook [3]
+Fevor's Cookbook [1]
+Fevor's Cookbook [3]
+Fevor's Cookbook [2]
+Missionary's Cookbook [7]
+Frenzied's Cookbook [1]
+Frenzied's Cookbook [2]
+Cerulean Crystal Tear (Variant)
+Blossom
+Monk Ashes
+Bloody Flesh
+Shadow Realm Rune [1]
+Shadow Realm Rune [2]
+Shadow Realm Rune [3]
+Shadow Realm Rune [4]
+Shadow Realm Rune [5]
+Shadow Realm Rune [6]
+Shadow Realm Rune [7]
+Coil
+Impenetrable Thorns
+Map: Southern Shore
+Map: Abyss
+Mushroom-Seller's Bell Bearing [1]
+Mushroom-Seller's Bell Bearing [2]
+Forager Brood Cookbook [6]
+Forager Brood Cookbook [1]
+Forager Brood Cookbook [2]
+Forager Brood Cookbook [3]
+Forager Brood Cookbook [4]
+Forager Brood Cookbook [5]
+Igon's Cookbook [2]
+Greater Potentate's Cookbook [1]
+Greater Potentate's Cookbook [4]
+Greater Potentate's Cookbook [5]
+Greater Potentate's Cookbook [12]
+Greater Potentate's Cookbook [7]
+Greater Potentate's Cookbook [9]
+Greater Potentate's Cookbook [10]
+Greater Potentate's Cookbook [11]
+Mad Craftsman's Cookbook [2]
+Greater Potentate's Cookbook [8]
+Greater Potentate's Cookbook [3]
+Greater Potentate's Cookbook [13]
+Greater Potentate's Cookbook [14]
+Greater Potentate's Cookbook [6]
+Greater Potentate's Cookbook [2]
+Ancient Dragon Knight's Cookbook [1]
+Mad Craftsman's Cookbook [1]
+St. Trina Disciple's Cookbook [1]
+Knight's Cookbook [1]
+Ancient Dragon Knight's Cookbook [2]
+Battlefield Priest's Cookbook [1]
+Igon's Cookbook [1]
+Battlefield Priest's Cookbook [2]
+Forager Brood Cookbook [7]
+St. Trina Disciple's Cookbook [3]
+Grave Keeper's Cookbook [2]
+Antiquity Scholar's Cookbook [2]
+Mad Craftsman's Cookbook [3]
+Battlefield Priest's Cookbook [3]
+Knight's Cookbook [2]
+Antiquity Scholar's Cookbook [1]
+Battlefield Priest's Cookbook [4]
+Grave Keeper's Cookbook [1]
+St. Trina Disciple's Cookbook [2]
+Tree Sentinel Spectral Steed Attire
+Silver of Caria Spectral Steed Attire
+Funereal Night Spectral Steed Attire
+Knight Hilde
+Knight Queelign
+
+PÁGINA SIN TEXTO DE UBICACIÓN (102):
+Crossbow (Crossbows)
+St. Trina's Arrow (St. Trina's Arrow)
+Shattershard Arrow (Fletched) (Shattershard Arrow (Fletched))
+Sleepbone Arrow (Sleepbone Arrow)
+Beast Claw (Beast Claw (disambiguation))
+Nox Greaves (Nox Greaves)
+Ragged Armor (Ragged Armor)
+Veteran's Helm (Veteran's Helm)
+Gold Waistwrap (Gold Waistwrap)
+Crucible Hammer-Helm (Crucible Hammer-Helm)
+Duelist's Furled Finger (Duelist's Furled Finger)
+White Cipher Ring (White Cipher Ring)
+Blue Cipher Ring (Blue Cipher Ring)
+Small Red Effigy (Small Red Effigy)
+Memory of Grace (Memory of Grace)
+Vision of Grace (Vision of Grace)
+Roped Freezing Pot (Roped Freezing Pot)
+Grease (Category:Grease)
+Strike (Strike)
+Gold Sewing Needle (Gold Sewing Needle)
+Meeting Place Map (Meeting Place Map)
+Map: Weeping Peninsula (Weeping Peninsula)
+Map: Altus Plateau (Altus Plateau)
+Map: Leyndell, Royal Capital (Leyndell, Royal Capital)
+Map: Mt. Gelmir (Mt. Gelmir)
+Map: Caelid (Caelid)
+Map: Dragonbarrow (Greyoll's Dragonbarrow)
+Map: Ainsel River (Ainsel River)
+Map: Lake of Rot (Lake of Rot)
+Map: Mohgwyn Palace (Mohgwyn Palace)
+Map: Deeproot Depths (Deeproot Depths)
+Map: Consecrated Snowfield (Consecrated Snowfield)
+Dragon Cult Prayerbook (Dragon Cult Prayerbook)
+Pidia's Bell Bearing (Pidia's Bell Bearing)
+Seluvis's Bell Bearing (Seluvis's Bell Bearing)
+Sellen's Bell Bearing (Sellen's Bell Bearing)
+D's Bell Bearing (D's Bell Bearing)
+Miriel's Bell Bearing (Miriel's Bell Bearing)
+Gostoc's Bell Bearing (Gostoc's Bell Bearing)
+Thops's Bell Bearing (Thops's Bell Bearing)
+Iji's Bell Bearing (Iji's Bell Bearing)
+Rogier's Bell Bearing (Rogier's Bell Bearing)
+Corhyn's Bell Bearing (Corhyn's Bell Bearing)
+Gowry's Bell Bearing (Gowry's Bell Bearing)
+Smithing-Stone Miner's Bell Bearing [2] (Smithing-Stone Miner's Bell Bearing)
+Smithing-Stone Miner's Bell Bearing [3] (Smithing-Stone Miner's Bell Bearing)
+Smithing-Stone Miner's Bell Bearing [4] (Smithing-Stone Miner's Bell Bearing)
+Somberstone Miner's Bell Bearing [2] (Somberstone Miner's Bell Bearing)
+Somberstone Miner's Bell Bearing [3] (Somberstone Miner's Bell Bearing)
+Somberstone Miner's Bell Bearing [4] (Somberstone Miner's Bell Bearing)
+Somberstone Miner's Bell Bearing [5] (Somberstone Miner's Bell Bearing)
+Ghost-Glovewort Picker's Bell Bearing [2] (Ghost-Glovewort Picker's Bell Bearing)
+Ghost-Glovewort Picker's Bell Bearing [3] (Ghost-Glovewort Picker's Bell Bearing)
+Tear (Tear (disambiguation))
+Somber Smithing Stone [2] (Somber Smithing Stones)
+Somber Smithing Stone [3] (Somber Smithing Stones)
+Somber Smithing Stone [4] (Somber Smithing Stones)
+Somber Smithing Stone [5] (Somber Smithing Stones)
+Somber Smithing Stone [6] (Somber Smithing Stones)
+Somber Smithing Stone [7] (Somber Smithing Stones)
+Somber Smithing Stone [8] (Somber Smithing Stones)
+Somber Smithing Stone [9] (Somber Smithing Stones)
+Grave Glovewort [1] (Grave Glovewort)
+Grave Glovewort [2] (Grave Glovewort)
+Grave Glovewort [3] (Grave Glovewort)
+Grave Glovewort [4] (Grave Glovewort)
+Grave Glovewort [5] (Grave Glovewort)
+Grave Glovewort [6] (Grave Glovewort)
+Grave Glovewort [7] (Grave Glovewort)
+Grave Glovewort [8] (Grave Glovewort)
+Grave Glovewort [9] (Grave Glovewort)
+Great Grave Glovewort (Great Grave Glovewort)
+Ghost Glovewort [1] (Ghost Glovewort)
+Ghost Glovewort [2] (Ghost Glovewort)
+Ghost Glovewort [3] (Ghost Glovewort)
+Ghost Glovewort [4] (Ghost Glovewort)
+Ghost Glovewort [5] (Ghost Glovewort)
+Ghost Glovewort [6] (Ghost Glovewort)
+Ghost Glovewort [7] (Ghost Glovewort)
+Ghost Glovewort [8] (Ghost Glovewort)
+Ghost Glovewort [9] (Ghost Glovewort)
+Great Ghost Glovewort (Great Ghost Glovewort)
+Golden Horn Tender (Golden Horn Tender)
+Eternal Sleep Grease (Eternal Sleep Grease)
+Drawstring Eternal Sleep Grease (Drawstring Eternal Sleep Grease)
+Minor Erdtree (Minor Erdtree)
+Land of Shadow (Realm of Shadow)
+Serpent (Serpents)
+Storehouse Cross Message (Storehouse Cross Message)
+Torn Diary Page (Torn Diary Page)
+Prayer Room Key (Prayer Room Key)
+Map: Gravesite Plain (Gravesite Plain)
+Map: Scadu Altus (Scadu Altus)
+Map: Rauh Ruins (Ancient Ruins of Rauh)
+Finger-Weaver's Cookbook [2] (Finger-Weaver's Cookbook (2))
+Finger-Weaver's Cookbook [1] (Finger-Weaver's Cookbook (1))
+Gravebird Ashes (Gravebird Ashes)
+Black Knight Commander Andreas (Black Knight Commander Andreas)
+Black Knight Captain Huw (Black Knight Captain Huw)
+Horned Warrior Ashes (Horned Warrior Ashes)
+Ancient Dragon Florissax (Ancient Dragon Florissax)
+Jolán and Anna (Jolán and Anna)
