@@ -66,11 +66,10 @@ code{font-size:.9em;color:var(--fg-2)}
 <p class="muted"><a href="privacy.html" data-i18n="Política de privacidad">Política de privacidad</a></p>
 </main>
 <script src="src/i18n.js"></script>
+<script src="src/site.js"></script>
 <script>
-  // Pon aquí el correo de contacto (p. ej. "tarnished@example.com"); si está vacío se muestra el texto "pendiente".
-  const CONTACT = "";
   I18N.apply();
-  if (CONTACT) { const c = document.getElementById("contact"); c.className = ""; c.innerHTML = `<a href="mailto:${CONTACT}">${CONTACT}</a>`; }
+  if (SITE.contact) { const c = document.getElementById("contact"); c.className = ""; c.innerHTML = `<a href="mailto:${SITE.contact}">${SITE.contact}</a>`; }
 </script>
 </body>
 </html>

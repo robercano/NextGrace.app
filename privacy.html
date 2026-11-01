@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b0a0a">
+<title>Tarnished Ledger · Privacidad</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+:root{--bg:#0b0a0a;--panel:#16151480;--line:#3a352c;--line-2:#5a5240;--fg:#dcd3bf;--fg-2:#b7ad97;--muted:#7d7563;--gold:#c9a44a;--gold-2:#e2c272;--display:"Cinzel",Georgia,serif;--body:"EB Garamond",Georgia,serif;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg) radial-gradient(ellipse at 50% 0%,#1c1813 0%,#0b0a0a 60%);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.4;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+main{max-width:720px;margin:0 auto;padding:14px 16px 40px}
+header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+header h1{font-family:var(--display);font-size:1rem;letter-spacing:.08em;color:var(--gold-2);margin:0}
+.btn{background:transparent;border:1px solid var(--line-2);color:var(--fg);padding:5px 12px;font-family:var(--display);font-size:.78rem;letter-spacing:.06em;text-decoration:none;white-space:nowrap;cursor:pointer}
+.btn.lang{margin-left:auto;padding:5px 8px;font-size:.7rem;letter-spacing:.1em}
+section{border:1px solid var(--line);background:var(--panel);padding:10px 14px 12px;margin-bottom:12px}
+h2{font-family:var(--display);font-size:.72rem;color:var(--gold);letter-spacing:.14em;text-transform:uppercase;padding:2px 0 6px;border-bottom:1px solid var(--line);margin:0 0 8px;font-weight:600}
+p,li{margin:0 0 8px}
+ul{padding-left:20px;margin:0}
+a{color:var(--gold-2)}
+.muted{color:var(--muted);font-size:.9rem}
+code{font-size:.9em;color:var(--fg-2)}
+</style>
+</head>
+<body>
+<main>
+<header><a class="btn" href="./" data-i18n="← Ficha">← Ficha</a><h1 data-i18n="Política de privacidad">Política de privacidad</h1><button class="btn lang" data-lang-toggle>EN</button></header>
+
+<section>
+<h2 data-i18n="Resumen">Resumen</h2>
+<ul>
+<li data-i18n="pv.s1">Tu archivo de guardado se lee en tu navegador y <b>nunca se sube</b>. Sin cuenta, el servidor no guarda nada tuyo.</li>
+<li data-i18n="pv.s2">Si inicias sesión con Steam, guardamos tu identificador público de Steam, tu nombre y avatar públicos, un resumen por personaje y lo que tú añadas (marcas, marcadores, informes del consejero).</li>
+<li data-i18n="pv.s3">Sin analítica, sin publicidad, sin cookies de terceros. Puedes borrar tu cuenta y todos sus datos desde la hoja de cuenta.</li>
+</ul>
+</section>
+
+<section>
+<h2 data-i18n="Responsable">Responsable</h2>
+<p data-i18n="pv.r1">El responsable del tratamiento es la persona que mantiene este sitio, a título particular y sin ánimo de lucro. Contacto para cualquier cuestión sobre tus datos:</p>
+<p id="contact" class="muted" data-i18n="ab.contact">Dirección de contacto pendiente de publicar.</p>
+</section>
+
+<section>
+<h2 data-i18n="Qué datos tratamos y para qué">Qué datos tratamos y para qué</h2>
+<ul>
+<li data-i18n="pv.d1"><b>Sin cuenta.</b> El archivo <code>ER0000.sl2</code> se analiza íntegramente en tu navegador. Un resumen de la última partida abierta, tus marcas y preferencias (idioma, pestaña) se guardan en el almacenamiento local de tu navegador, solo en tu dispositivo; puedes borrarlos limpiando los datos del sitio. Nada de esto llega al servidor.</li>
+<li data-i18n="pv.d2"><b>Con cuenta (Steam).</b> Al iniciar sesión, Steam nos comunica tu SteamID (identificador público de 17 cifras); con él consultamos tu nombre y avatar públicos de Steam. No recibimos tu correo, contraseña ni nada privado de Steam. Guardamos: SteamID, nombre y avatar, fecha del último acceso; un <b>resumen por personaje</b> (nombre del personaje, nivel, clase, tiempo de juego, atributos, equipo, armas y su nivel, piedras, hechizos, talismanes, cenizas, objetos clave y progreso de jefes y gracias) para sincronizarlo entre dispositivos y generar el informe; un historial de esos resúmenes para el diario de sesión; tus <b>marcas</b> de progreso; los <b>marcadores</b> que propongas al mapa de la comunidad; los <b>informes</b> del consejero y un registro de su uso (fecha y tokens consumidos) para aplicar los límites diarios. Finalidad: prestarte el servicio que has pedido al crear la cuenta (art. 6.1.b RGPD); los límites de uso y la seguridad se basan en nuestro interés legítimo (art. 6.1.f).</li>
+<li data-i18n="pv.d3"><b>Consejero.</b> Para generar el informe enviamos el resumen del personaje (sin tu SteamID ni tu nombre de Steam) a la API de Claude, de Anthropic, que actúa como encargado del tratamiento. Según sus condiciones comerciales, Anthropic no usa los datos enviados a la API para entrenar sus modelos.</li>
+<li data-i18n="pv.d4"><b>Alojamiento.</b> El sitio se sirve desde Cloudflare (Workers y D1), que actúa como encargado del tratamiento y registra datos técnicos de cada petición (dirección IP, navegador) durante un tiempo limitado para operar y proteger el servicio. Las tipografías se cargan desde Google Fonts, por lo que tu navegador hace una petición a Google al abrir la página.</li>
+<li data-i18n="pv.d5"><b>Cookies.</b> Solo una cookie de sesión (<code>tl_session</code>, 30 días) cuando inicias sesión, estrictamente necesaria para mantenerte identificado. No hay cookies de analítica ni de terceros, por lo que no se muestra ningún aviso de cookies.</li>
+</ul>
+</section>
+
+<section>
+<h2 data-i18n="Conservación y borrado">Conservación y borrado</h2>
+<p data-i18n="pv.k1">Los datos de la cuenta se conservan mientras la cuenta exista. Las sesiones caducan a los 30 días. Desde la hoja de cuenta puedes <b>borrar tu cuenta</b>: se eliminan tu usuario, sesiones, personajes y su historial, marcas, informes y registro de uso. Los marcadores que hayas propuesto y ya estén publicados en el mapa de la comunidad se conservan de forma anónima (dejan de estar vinculados a tu cuenta); los pendientes de revisar se eliminan. Las copias de seguridad de la base de datos se renuevan en un plazo máximo de 30 días.</p>
+</section>
+
+<section>
+<h2 data-i18n="Tus derechos">Tus derechos</h2>
+<p data-i18n="pv.y1">Puedes acceder a tus datos, rectificarlos, suprimirlos, limitar u oponerte a su tratamiento y pedir su portabilidad escribiendo a la dirección de contacto o, para el borrado, directamente desde la hoja de cuenta. Si crees que el tratamiento no es correcto, puedes reclamar ante la Agencia Española de Protección de Datos (<a href="https://www.aepd.es" target="_blank" rel="noopener">aepd.es</a>) o la autoridad de tu país.</p>
+<p data-i18n="pv.y2">El sitio no está dirigido a menores de 14 años.</p>
+</section>
+
+<section>
+<h2 data-i18n="Marcadores de la comunidad">Marcadores de la comunidad</h2>
+<ul>
+<li data-i18n="pv.m1">Al proponer un marcador (lugar, objeto y nota) aceptas que se publique en el mapa de la comunidad, visible para todos, bajo la licencia <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>, igual que el resto de datos del mapa.</li>
+<li data-i18n="pv.m2">Los marcadores pasan por moderación y pueden editarse o retirarse sin previo aviso. No incluyas datos personales ni contenido ajeno al juego.</li>
+<li data-i18n="pv.m3">Si un marcador publicado te afecta o crees que infringe algún derecho, escribe a la dirección de contacto y se revisará.</li>
+</ul>
+</section>
+
+<p class="muted"><span data-i18n="Última actualización:">Última actualización:</span> <span id="updated"></span> · <a href="about.html" data-i18n="Créditos y licencias">Créditos y licencias</a></p>
+</main>
+<script src="src/i18n.js"></script>
+<script src="src/site.js"></script>
+<script>
+  I18N.apply();
+  if (SITE.contact) { const c = document.getElementById("contact"); c.className = ""; c.innerHTML = `<a href="mailto:${SITE.contact}">${SITE.contact}</a>`; }
+  document.getElementById("updated").textContent = new Date(SITE.updated + "T12:00:00Z").toLocaleDateString(I18N.locale(), { dateStyle: "long" });
+</script>
+</body>
+</html>
