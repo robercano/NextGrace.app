@@ -1,97 +1,104 @@
-# Tarnished Ledger — estado del proyecto y hoja de ruta
+# Tarnished Ledger — project status and roadmap
 
-Documento de continuidad: lo que hay, por qué está así y lo que falta. Léelo entero antes de tocar nada; el README cubre la instalación.
+Continuity document: what exists, why it is the way it is, and what is left. Read it whole before changing anything; `README.md` covers setup and `docs/ARCHITECTURE.md` the code layout and the recipes for extending it.
 
-## Qué es
+## What it is
 
-Lector de partidas de Elden Ring (PC, `ER0000.sl2`) para preparar la siguiente sesión desde el móvil: ficha del personaje al estilo de los menús del juego, inventario con iconos, planificador de forja, progreso (gracias, jefes, objetos únicos), mapa con lo pendiente, cuenta opcional con Steam para sincronizar marcas y un "consejero" que genera un informe con Claude. Privado por ahora (Cloudflare Access); objetivo: público y con mapa editable por la comunidad.
+A reader for Elden Ring PC saves (`ER0000.sl2`) to prepare the next session from a phone: a character sheet in the style of the game's menus, inventory with icons, smithing planner, progress (graces, bosses, unique items), a map with what is pending, an optional Steam account to sync marks, and an "advisor" that writes a report with Claude. Private for now (Cloudflare Access); goal: public, with a community-editable map.
 
-Usuario: Rob (SteamID REPLACE_WITH_YOUR_STEAMID64, moderador). Dos personajes: Gabriell (Astrologer 220, casi todo hecho) y Arcano (Prophet ~44, Liurnia a medias; usa Finger Seal + Winged Scythe). Idioma de la interfaz: español o inglés (conmutador ES/EN en la cabecera; `?lang=en`, se guarda en `localStorage` `tl.lang`); nombres de objetos siempre en inglés (los de la wiki).
+User: Rob (SteamID REPLACE_WITH_YOUR_STEAMID64, moderator). Two characters: Gabriell (Astrologer 220, almost everything done) and Arcano (Prophet ~44, halfway through Liurnia; uses Finger Seal + Winged Scythe). Interface language: Spanish or English (ES/EN toggle in the header; `?lang=en`, stored in `localStorage` `tl.lang`); item names always in English (the wiki's).
 
-## Arquitectura
+## Architecture
 
-- **Todo en el navegador** para leer el save: `src/ersave.js` (parser), `src/app.js` (ficha), `map.html` (mapa), `src/marks.js` (marcas manuales, localStorage), `src/cloud.js` (capa de cuenta), `src/glossary.js` (explicaciones + enlaces a la wiki, `es`/`en`), `src/i18n.js` (traducción: las claves son el texto en español, `T("texto", …args)` con `{0}`; en HTML `data-i18n`, `data-i18n-ph`, `data-i18n-title`; `I18N.apply()` al cargar, `I18N.locale()` para números y fechas). Para añadir un texto nuevo: escribirlo en español envuelto en `T()` y añadir su traducción a la tabla `EN`. PWA (`sw.js`, subir `VERSION` en cada cambio; actualmente `tl-v57`).
-- **Despliegue**: Cloudflare **Worker con assets estáticos** (no Pages): `wrangler.toml` + `worker/index.js`, que enruta `/api/*` a los handlers de `functions/api/**` (escritos con la forma de Pages Functions, por si se vuelve a Pages) y sirve el resto como ficheros (`html_handling = "none"`, `/` → `index.html` en el worker). `.assetsignore` excluye código y herramientas. Deploy automático en cada push a `main` (Workers Builds, `npx wrangler deploy`). Los bindings viven en `wrangler.toml`: D1 `DB` (`tarnished-ledger`, id `1e0ef758-…`) y `ADMIN_STEAMIDS`. Secreto en el panel: `ANTHROPIC_API_KEY`.
-- **Base de datos (D1)**: `db/schema.sql` (+ `db/migrations/`). Tablas: `users`, `sessions` (token hasheado, cookie `tl_session` 30 días), `characters` (`char_key = <steamid>:<slot>`, resumen JSON; nunca el .sl2), `marks` (marcas manuales por personaje), `markers` (comunidad; `pending|approved|rejected`), `advice` y `advice_log` (consejero).
-- **Auth**: Steam OpenID (solo identidad pública). Un personaje solo puede sincronizarlo la cuenta de Steam dueña del save.
-- **Datos del juego**: `data/reqs.json` (requisitos/escalado desde la wiki; el workflow `reqs` lo regenera y deja el log en `tools/reqs_log.txt` porque los logs de Actions no se pueden leer desde la sesión), `data/items.json` (4184 objetos, de SaveForge + ER-Save-Editor), `data/flags.json` (BST de event flags; 396 gracias, 173 jefes, 318 objetos únicos, 271 zonas de mapa), `data/places.json` + `data/map.json` (marcadores del mapa interactivo de eldenring.wiki.gg, CC BY-NC-SA), `data/progression.json` (tabla curada: zonas, niveles, softcaps, piedras, bell bearings), `data/user_markers.json` (marcadores estáticos, legado).
-- **Arte**: `icons/*.webp` (2858 iconos de la wiki) y `icons/map/*.webp` (fondos 4K). Es arte de FromSoftware: solo en repo privado; los workflows se niegan si el repo es público. Antes de abrir el repo hay que sacarlos del historial.
+- **Everything in the browser** to read the save: `src/ersave.js` (parser), `src/rules.js` (game rules, pure), `src/icons.js` (item pictures), `src/app.js` (sheet UI), `map.html` (map), `src/marks.js` (manual marks, localStorage), `src/cloud.js` (account layer), `src/glossary.js` (explanations + wiki links, `es`/`en`), `src/i18n.js` (translation: Spanish strings are the keys, `T("text", …args)` with `{0}`; in HTML `data-i18n`, `data-i18n-ph`, `data-i18n-title`; `I18N.apply()` on load, `I18N.locale()` for numbers and dates). PWA (`sw.js`; bump `VERSION` on every change; currently `tl-v64`).
+- **Deployment**: Cloudflare **Worker with static assets** (not Pages): `wrangler.toml` + `worker/index.js`, which routes `/api/*` to the handlers in `functions/api/**` (written in the Pages Functions shape, in case it goes back to Pages) and serves the rest as files (`html_handling = "none"`, `/` → `index.html` in the worker). `.assetsignore` excludes code, tools and docs. Automatic deploy on every push to `main` (Workers Builds, `npx wrangler deploy`). Bindings live in `wrangler.toml`: D1 `DB` (`tarnished-ledger`, id `1e0ef758-…`) and `ADMIN_STEAMIDS`. Secret in the dashboard: `ANTHROPIC_API_KEY`.
+- **Database (D1)**: `db/schema.sql` (+ `db/migrations/`). Tables: `users`, `sessions` (hashed token, cookie `tl_session` 30 days), `characters` (`char_key = <steamid>:<slot>`, JSON summary; never the .sl2), `marks` (manual marks per character), `markers` (community; `pending|approved|rejected`), `advice` and `advice_log` (advisor), `history` and `advice_jobs` (created lazily by the Worker).
+- **Auth**: Steam OpenID (public identity only; name and avatar from the public profile XML, no Web API key). A character can only be synced by the Steam account that owns the save.
+- **Game data**: `data/reqs.json` (requirements/scaling from the wiki; workflow `reqs`), `data/locations.json` (where-to-find texts from the wiki; workflow `locations`, monthly; applied to `items.json` `loc` by `tools/apply_locations.py`), `data/overrides/` (manual corrections that always win), `data/items.json` (4184 items, from SaveForge + ER-Save-Editor), `data/flags.json` (event-flag BST; 396 graces, 173 bosses, 318 unique items, 271 map regions), `data/places.json` + `data/map.json` (markers of the eldenring.wiki.gg interactive map, CC BY-SA 4.0), `data/progression.json` (curated table: zones, levels, soft caps, stones, bell bearings), `data/user_markers.json` (legacy static markers). Workflow logs are committed (`tools/*_log.txt`) because Actions logs cannot be read from every environment.
+- **Art**: `icons/*.webp` (2858 icons from the wiki) and `icons/map/*.webp` (4K backgrounds). FromSoftware's art: private repo only; the icon workflows refuse to run on a public repo. Must be purged from the history before opening the repo.
 
-## Formato del save (lo que costó encontrar)
+## Save format (what was hard to find)
 
-- BND4, cabecera 0x300; 10 slots × (MD5 0x10 + 0x280000); UserData10 después (slots activos +0x1954, perfiles +0x195E stride 0x24C: nombre, nivel +34, tiempo +38; SteamID +4).
-- Slot: GaItem map (0x1400 entradas), PlayerGameData 0x1B0 (atributos, runas, nombre UTF-16, clase, regalo, +0xBE huecos de talismán, **+0xBF runa mayor equipada** (hallado por diff de dos saves: 3 = Godrick; Gabriell tiene 10 = "Great Rune of the Unborn", pendiente de confirmar), +0xF7 runa activa, +0xF9/+0xFA frascos), bloques de equipo, inventario (registros de 12 bytes), hechizos, accesos rápidos y bolsa (como handles de GaItem), cofre, 29 bytes de escalares (muertes, última gracia), event flags 0x1BF99F.
-- Event flags: `block = id/1000 → pos` (tabla BST de SaveForge); byte = pos·125 + (id%1000)/8; bit = 7 − (id%1000)%8.
-- Id de arma = base·10000 + infusión·100 + nivel; sombrías máx +10, normales +25.
+- BND4, header 0x300; 10 slots × (MD5 0x10 + 0x280000); UserData10 after them (active slots +0x1954, profiles +0x195E stride 0x24C: name, level +34, playtime +38; SteamID +4).
+- Slot: GaItem map (0x1400 entries), PlayerGameData 0x1B0 (attributes, runes, UTF-16 name, class, keepsake, +0xBE talisman pouches, **+0xBF equipped Great Rune** (found by diffing two saves: 3 = Godrick; Gabriell has 10 = "Great Rune of the Unborn", to be confirmed), +0xF7 rune active, +0xF9/+0xFA flasks), equipment blocks, inventory (12-byte records), spells, quick slots and pouch (as GaItem handles), storage, 29 bytes of scalars (deaths, last grace), event flags 0x1BF99F.
+- Event flags: `block = id/1000 → pos` (SaveForge's BST table); byte = pos·125 + (id%1000)/8; bit = 7 − (id%1000)%8.
+- Weapon id = base·10000 + affinity·100 + level; somber max +10, normal +25.
 
-## Decisiones tomadas
+## Decisions
 
-- No se sube el save: solo un resumen por personaje (nivel, atributos, equipo, armas con nivel, piedras, hechizos, talismanes, cenizas, objetos clave, progreso).
-- Steam Cloud: no hay API de descarga para terceros (ICloudService es solo para el AppID propio; los ids de descarga son opacos). Solución: botón que abre `store.steampowered.com/account/remotestorageapp/?appid=1245620` y "Abrir .sl2". Nada de credenciales ni scraping.
-- Mapa: idea de MapGenie (pictogramas por tipo, filtros, estados), nunca sus iconos ni sus datos.
-- Moderación: propuestas pendientes hasta que un moderador aprueba; los moderadores publican directo (con casilla para enviar como pendiente y probar).
-- Consejero: no es un MCP que consulte Claude, sino un informe que genera el Worker con la API y cachea en D1 (1 h entre informes, 5/día; moderadores sin límite). Modelo por defecto `claude-sonnet-5-5` (`ADVICE_MODEL`). `ADVICE_MOCK=1` en local devuelve el contexto sin gastar.
-- Consejero, cuándo se genera: automáticamente al subir un save cuyo resumen cambió (el navegador lo lanza tras guardar el resumen, solo para el personaje en pantalla; si cambias de personaje mientras tanto se encola). La caché va por hash de resumen + idioma + `PROMPT_VERSION` (súbela al cambiar el prompt o el contexto y el siguiente save regenera solo). Con el mismo save el botón pasa a "Otra opinión" (pide confirmación y manda `force: true`). Un solo trabajo por personaje a la vez (`advice_jobs`, creada al vuelo; otra pestaña ve "generando…" y sondea cada 5 s).
-- Iconos: hoy extraídos de la wiki (faltan 13 sin página). Para la web pública se sustituyen por los extraídos de la copia del juego de Rob (ver «Beta pública»).
+- The save is never uploaded: only a summary per character (level, attributes, gear, weapons with level, stones, spells, talismans, ashes, key items, progress). `Cloud.summarize` is the complete list.
+- Steam Cloud: there is no download API for third parties (ICloudService only works for your own AppID; download ids are opaque). Solution: a button that opens `store.steampowered.com/account/remotestorageapp/?appid=1245620` plus "Open .sl2". No credentials, no scraping.
+- Map: MapGenie's idea (glyphs by type, filters, states), never its icons or data.
+- Moderation: proposals stay pending until a moderator approves; moderators publish directly (with a checkbox to send as pending, for testing).
+- Advisor: not an MCP that queries Claude, but a report the Worker generates with the API and caches in D1 (1 h between reports, 5/day; moderators unlimited). Default model `claude-sonnet-5-5` (`ADVICE_MODEL`). `ADVICE_MOCK=1` locally returns the context without spending.
+- Advisor, when it runs: automatically after uploading a save whose summary changed (the browser starts it after saving the summary, only for the character on screen; switching character meanwhile queues it). Cache key = hash of summary + language + `PROMPT_VERSION` (bump it when the prompt or the context changes and the next save regenerates by itself). With the same save the button becomes "Another opinion" (asks for confirmation and sends `force: true`). One job per character at a time (`advice_jobs`; another tab sees "generating…" and polls every 5 s).
+- Icons: today from the wiki (13 without a page). For the public site they are replaced by icons extracted from Rob's copy of the game (see "Public beta").
 
-## Hecho (cronológico)
+## Done (chronological)
 
-1. Parser + ficha (estado, equipo, inventario, forja) y selector de personaje.
-2. Iconos de la wiki (script en PC + workflow), enlaces a la wiki, filtro tengo/no tengo.
-3. Progreso desde event flags; mapa con gracias, jefes, lugares, objetos pendientes por lugar, editor de marcadores.
-4. Rediseño al estilo de los menús del juego; jerarquía save → personaje → Ficha/Mapa → pestañas.
-5. Pictogramas por tipo en el mapa, filtros de lugar, estados visitado/pendiente, marcas manuales por personaje.
-6. Runa mayor equipada (offset +0xBF).
-7. Alpha con cuenta: Steam OpenID, D1, sync de marcas, resúmenes de personaje, marcadores de la comunidad con moderación; conversión a Worker con assets.
-8. Glosario con explicaciones y enlaces en la ficha; moderación con casilla "enviar como pendiente".
-9. Progreso con casillas tocables → listas pendientes/hechos/todos por región y enlace al mapa filtrado (`map.html#l=boss&t=main&s=todo`); selector Todo/Pendiente/Hecho en el mapa.
-10. Consejero (pestaña + API + migración 002); respuesta en streaming con latidos; enlaces del informe al mapa (`#focus=`).
-12. "¿Puedo usarlo?": `tools/fetch_reqs.py` + workflow `reqs` → `data/reqs.json` (requisitos, escalado, tipo, skill, FP/huecos de hechizos; 740/748 armas). Marcas rojas/amarillas (no cumples / solo a dos manos) en inventario, equipo y forja, filtro "Puedo usar / No cumplo", requisitos en el detalle, y el Consejero recibe por arma requisitos, escalado y usabilidad.
-11. Estado: "Pendiente de aplicar" (semillas, runas sin consumir, remembranzas, libros/pergaminos, campanas, gloveworts, piedras de dragón) y planificador de nivel (coste real por nivel, soft caps, runas en objetos). Forja: cenizas de espíritu con gloveworts. Progreso: diario de sesión (tabla `history`, creada por el Worker al vuelo; snapshot por cada tiempo de juego distinto).
-13. Traducción al inglés de toda la web (ficha, mapa, glosario, mensajes de error) y del informe del Consejero (`SYSTEM_EN`; la caché va por idioma).
-14. Consejero automático al subir un save nuevo, versión de prompt en el hash, "Otra opinión" con confirmación y estado "generando" compartido entre pestañas.
+1. Parser + sheet (status, equipment, inventory, smithing) and character picker.
+2. Wiki icons (PC script + workflow), wiki links, have / don't-have filter.
+3. Progress from event flags; map with graces, bosses, places, pending items by place, marker editor.
+4. Redesign in the style of the game's menus; hierarchy save → character → Sheet/Map → tabs.
+5. Glyphs by type on the map, place filters, visited/pending states, manual marks per character.
+6. Equipped Great Rune (offset +0xBF).
+7. Alpha with account: Steam OpenID, D1, marks sync, character summaries, community markers with moderation; conversion to Worker with assets.
+8. Glossary with explanations and links on the sheet; moderation with the "send as pending" checkbox.
+9. Progress with tappable tiles → pending/done/all lists by region and link to the filtered map (`map.html#l=boss&t=main&s=todo`); All/Pending/Done selector on the map.
+10. Advisor (tab + API + migration 002); streamed answer with heartbeats; report links to the map (`#focus=`).
+11. Status: "Unused upgrades" (seeds, unconsumed runes, remembrances, books/scrolls, bell bearings, gloveworts, dragon stones) and level planner (real cost per level, soft caps, runes in items). Smithing: spirit ashes with gloveworts. Progress: session diary (`history` table; snapshot per distinct playtime).
+12. "Can I use it?": `tools/fetch_reqs.py` + workflow `reqs` → `data/reqs.json` (requirements, scaling, type, skill, FP/slots; 740/748 weapons). Red/yellow/orange marks (not met / two-handed only / only with equipment bonuses) in inventory, equipment and smithing, usability filter, requirements in the detail, and the advisor receives per-weapon requirements, scaling and usability.
+13. English translation of the whole site (sheet, map, glossary, error messages) and of the advisor's report (`SYSTEM_EN`; cache per language).
+14. Automatic advisor after uploading a new save, prompt version in the hash, "Another opinion" with confirmation, "generating" state shared between tabs.
+15. Public-beta groundwork (see below): location texts from the wiki replacing Fextralife's, manual overrides, GPL-3.0 + credits/legal page, read-only notice, privacy policy and community-marker terms, account deletion, `src/rules.js`/`src/icons.js` split, `docs/ARCHITECTURE.md`, documentation in English.
 
-## Pendiente / ideas
+## Public beta: legal review and plan (1 Nov 2026)
 
-- [ ] Rob: ejecutar `db/migrations/002_advice.sql`, poner `ANTHROPIC_API_KEY` y probar el primer informe; ajustar el prompt con el resultado.
-- [ ] Consejero: si molesta que se corte al cerrar la web enseguida, pasar a cola en D1 + cron del Worker. Herramienta de wiki (que compruebe escalado/requisitos de armas antes de recomendarlas); quizá pedir "qué hacer hoy en 1 hora".
-- [ ] Confirmar la tabla de ids de runa mayor (valores distintos de 0, 3 y 10).
-- [ ] Mapa: más coordenadas (solo 17 de 35 jefes principales tienen pin; vía marcadores de la comunidad); iconos por objeto en marcadores comunitarios; filtro de tipo de jefe visible en la UI (hoy solo por hash).
-- [ ] Iconos que faltan (alias de nombres).
-- [ ] Gestión de cuenta: que un usuario pueda retirar un marcador aprobado suyo (el borrado de cuenta está en «Beta pública»).
-- [ ] Público (ver «Beta pública» abajo): quitar Cloudflare Access; OAuth propio si se expone un MCP.
-- [ ] MCP remoto (`/mcp/<token>`) con las mismas herramientas, para usar desde la app de Claude o Claude Code.
-- [ ] Opcional PC: vigilar el .sl2 con File System Access API para actualizar sin abrir el archivo a mano.
+Inventory of what the repo contains and what Rob decided about each item. Not legal advice.
 
-## Beta pública: revisión legal y plan (1 nov 2026)
-
-Inventario de lo que hay en el repo y qué decidió Rob sobre cada punto. No es asesoramiento legal.
-
-| Material | Origen y situación | Decisión |
+| Material | Origin and situation | Decision |
 |---|---|---|
-| `icons/*.webp` (2858) y `icons/map/*.webp` (fondos 4K) | Arte de FromSoftware/Bandai Namco, bajado de la wiki. Riesgo real: aviso de retirada (DMCA), no demanda. | Extraer de la copia del juego de Rob (`tools/extract_icons_game.py`, `tools/EXTRACT.md`), guardarlos en un **repo privado aparte** y servirlos desde el servidor (bucket R2 detrás del Worker, workflow del repo privado que sube al bucket). Riesgo asumido por Rob. Aviso "no afiliado" + contacto de retirada. Nunca en el repo público ni en su historial; la web funciona sin iconos (muestra el nombre). |
-| `items.json → loc` (3629 textos de ubicación) y `places.json` (derivado) | Prosa de **Fextralife** copiada por SaveForge (`item_text_generated.go`, delatada por "[Map Link]"). Fextralife no licencia su contenido. | Sustituir por la sección Location/Where to find de eldenring.wiki.gg (API MediaWiki, lotes de 50), aceptando huecos. Workflow `locations` repetible (rellena huecos en ejecuciones posteriores, nunca borra) + `data/overrides/locations.json` manual que gana siempre. `reqs` pasa al mismo esquema. Log en `tools/locations_log.txt`. |
-| `reqs.json`, `map.json`, textos de ubicación nuevos | eldenring.wiki.gg: **CC BY-SA 4.0** (comprobado en el pie de la wiki; el README decía BY-NC-SA, es un error). Las cifras son hechos del juego. | Atribución en la página de créditos con enlace a la licencia; esos ficheros de datos quedan bajo CC BY-SA 4.0. No afecta al código ni a los informes. |
-| `src/ersave.js`, `flags.json`, `items.json` (ids/nombres) | Escritos/extraídos con SaveForge (GPL-3.0), ER-Save-Editor y EldenRing-Save-Manager como referencia. Leaflet BSD-2. Cinzel y EB Garamond (Google Fonts, libres). | Proyecto bajo **GPL-3.0** (`LICENSE`), créditos a los tres proyectos con sus licencias, aviso de Leaflet y fuentes. Lectura del formato del save por ingeniería inversa: riesgo asumido; disclaimer de **solo lectura** (nunca se modifica el save, no se toca el juego ni ningún anti-cheat) en la pantalla de inicio y en la página legal. Sin logo ni tipografías de Elden Ring. |
-| Datos de usuarios: SteamID, nombre y avatar, resúmenes de personaje, marcadores, logs de Cloudflare | Rob pasa a ser responsable del tratamiento (RGPD). El resumen del personaje se envía a Anthropic para el informe (nunca el save ni la identidad de Steam). | Página de privacidad (qué, para qué, cuánto tiempo, encargados: Cloudflare y Anthropic, cómo borrar), **borrado de cuenta y datos desde la web**, "Powered by Steam" si el callback usa la Web API, condiciones mínimas para marcadores de la comunidad + contacto de retirada. **Nada de analítica** → sin banner de cookies (sesión y localStorage son estrictamente necesarios). Contacto a decidir por Rob (correo propio o del proyecto). |
-| `progression.json`, glosario, informes del consejero, nombre "Tarnished Ledger" | Propios / permitidos por los términos de la API. | Sin cambios. |
+| `icons/*.webp` (2858) and `icons/map/*.webp` (4K backgrounds) | FromSoftware/Bandai Namco art, downloaded from the wiki. Realistic risk: a takedown notice (DMCA), not a lawsuit. | Extract from Rob's own copy of the game (`tools/extract_icons_game.py`, `tools/EXTRACT.md`), keep them in a **separate private repo** and serve them from the server (R2 bucket behind the Worker, fed by a workflow of the private repo). Risk accepted by Rob. "Not affiliated" notice + takedown contact. Never in the public repo or its history; the site works without icons (shows the name). |
+| `items.json → loc` (3629 location texts) and `places.json` (derived) | **Fextralife** prose copied by SaveForge (`item_text_generated.go`, betrayed by "[Map Link]"). Fextralife does not license its content. | Replaced by the Location/Acquisition section of eldenring.wiki.gg (MediaWiki API, batches of 50), accepting gaps: 2599 of 2886 names (90 %) → 3765 of 4184 items with text. Repeatable workflow `locations` (fills gaps on later runs, never deletes) + manual `data/overrides/locations.json` that always wins. `reqs` uses the same scheme. Log in `tools/locations_log.txt`. |
+| `reqs.json`, `map.json`, new location texts | eldenring.wiki.gg: **CC BY-SA 4.0** (checked in the wiki footer; the README used to say BY-NC-SA, a mistake). The figures are facts about the game. | Attribution on the credits page with a link to the licence; those data files are CC BY-SA 4.0. Does not affect the code or the reports. |
+| `src/ersave.js`, `flags.json`, `items.json` (ids/names) | Written/extracted with SaveForge (GPL-3.0), ER-Save-Editor and EldenRing-Save-Manager as references. Leaflet BSD-2. Cinzel and EB Garamond (Google Fonts, free). | Project under **GPL-3.0** (`LICENSE`), credits to the three projects with their licences, Leaflet and fonts notices. Reading the save format by reverse engineering: risk accepted; **read-only** disclaimer (the save is never modified, the game and anti-cheat are never touched) on the start screen and on the legal page. No Elden Ring logo or typefaces. |
+| User data: SteamID, name and avatar, character summaries, markers, Cloudflare logs | Rob becomes the data controller (GDPR). The character summary is sent to Anthropic for the report (never the save or the Steam identity). | Privacy page (what, why, how long, processors: Cloudflare and Anthropic, how to delete), **account and data deletion from the site**, minimal terms for community markers + takedown contact. **No analytics** → no cookie banner (session and localStorage are strictly necessary). Contact address to be chosen by Rob (`src/site.js`). Steam login uses OpenID + the public profile, not the Web API, so no "Powered by Steam" requirement. |
+| `progression.json`, glossary, advisor reports, the name "Tarnished Ledger" | Our own / allowed by the API terms. | No change. |
 
-### Tareas (un commit por cada una, para probar una a una)
+### Tasks (one commit each, so they can be tested one by one)
 
-1. [ ] `tools/fetch_locations.py` + workflow `locations` (manual y mensual): textos de ubicación desde wiki.gg a `items.json`, log de huecos, fecha de recarga en el fichero. No borra lo existente si la wiki no tiene texto.
-2. [ ] `data/overrides/locations.json` (y `reqs`): correcciones manuales que ganan sobre la wiki; `reqs` usa el mismo mecanismo de recarga.
-3. [ ] Ejecutar `locations` en Actions, revisar el log con Rob, regenerar `places.json` y retirar los textos de Fextralife.
-4. [ ] `LICENSE` GPL-3.0 y página de créditos/legal (`about.html`): atribuciones (wiki.gg CC BY-SA 4.0, SaveForge, ER-Save-Editor, EldenRing-Save-Manager, Leaflet, fuentes), aviso "no afiliado", arte propiedad de sus dueños con contacto de retirada, disclaimer de solo lectura. Enlace desde el pie de la ficha y del mapa. Corregir README (CC BY-SA).
-5. [ ] Disclaimer de solo lectura en la pantalla de inicio.
-6. [ ] Página de privacidad (ES/EN) y condiciones mínimas de los marcadores de la comunidad.
-7. [ ] Borrado de cuenta y datos desde la hoja de cuenta (`DELETE /api/me`: users, sessions, characters, marks, advice, advice_log, history; los marcadores aprobados quedan anonimizados o se borran, a decidir).
-8. [ ] "Powered by Steam" si el callback usa la Web API (revisar `functions/api/auth/`).
-9. [ ] Iconos propios: primera ejecución de `extract_icons_game.py` con los ficheros de Rob (ajustar el parser de `.layout` si hace falta) → repo privado de assets → bucket R2 → el Worker sirve `/icons/` desde R2 → retirar `icons/` del repo.
-10. [ ] Abrir el repo: purgar el arte del historial (`git filter-repo`), comprobar que los workflows siguen negándose con arte, quitar Cloudflare Access.
+1. [x] `tools/fetch_locations.py` + workflow `locations` (manual and monthly): location texts from wiki.gg into `data/locations.json`, gap log, fetch date in the file. Never deletes what exists if the wiki has no text.
+2. [x] `data/overrides/locations.json` (and `reqs`): manual corrections that win over the wiki; `reqs` keeps previous entries and merges overrides (`--apply-only`).
+3. [x] Run `locations` in Actions, review the log, regenerate `places.json` and retire the Fextralife texts (`apply=1` run; 0 "[Map Link]" left).
+4. [x] `LICENSE` GPL-3.0 + credits/legal page (`about.html`) linked from the sheet and the map; README fixed (CC BY-SA).
+5. [x] Read-only notice on the start screen.
+6. [x] Privacy page (ES/EN) and community-marker terms (`privacy.html`); contact in `src/site.js`.
+7. [x] Account and data deletion (`DELETE /api/me`: users, sessions, characters + history, marks, advice, advice_log; approved markers re-attributed to the placeholder user `deleted`, pending ones removed) from the account sheet.
+8. [x] "Powered by Steam": not required (OpenID + public profile only); Valve trademark cited on the credits page.
+9. [ ] Own icons: first run of `extract_icons_game.py` with Rob's game files (adjust the `.layout` parser if needed) → private assets repo → R2 bucket → the Worker serves `/icons/` from R2 → remove `icons/` from the repo.
+10. [ ] Open the repo: purge the art from the history (`git filter-repo`), check that the workflows still refuse with art, remove Cloudflare Access.
+11. [x] All Markdown in English (`README.md`, `ROADMAP.md`, `docs/ARCHITECTURE.md`, `tools/EXTRACT.md`, `icons/README.md`; Spanish summary in `README.es.md`).
+12. [x] Code structure pass for maintainers: `src/rules.js` (pure game rules, sources noted), `src/icons.js`, section index in `app.js`, file headers, `docs/ARCHITECTURE.md` with recipes.
 
-## Cómo trabajar
+Rob still has to: choose the contact address (`src/site.js`), run the icon extraction on his PC (task 9), and give the go for opening the repo (task 10).
 
-- Local (`wrangler.toml` ya está en el repo): `npx wrangler d1 execute DB --local --file db/schema.sql` y `npx wrangler dev --port 8791 [--var ADVICE_MOCK:1]`. Para probar con sesión, inserta en la D1 local un usuario y una sesión (`sessions.id` = SHA-256 del token de la cookie).
-- Saves de prueba (fuera del repo, `.gitignore`): un save de octubre con Arcano 35 y otro con Arcano 44 y la runa de Godrick equipada.
-- Fuentes consultadas: oisis/EldenRing-SaveForge (Go), ClayAmore/ER-Save-Editor (Rust), Ariescyn/EldenRing-Save-Manager, eldenring.wiki.gg (API MediaWiki y DataMaps).
-- Commits en español, firmados como Rob; subir `VERSION` del service worker con cada cambio de ficheros.
+## Pending / ideas
+
+- [ ] Advisor: if it bothers that it is cut when the site is closed right away, move to a D1 queue + Worker cron. Wiki tool (check scaling/requirements before recommending weapons); maybe "what to do today in 1 hour".
+- [ ] Confirm the Great Rune id table (values other than 0, 3 and 10).
+- [ ] Map: more coordinates (only 17 of 35 main bosses have a pin; via community markers); per-item icons on community markers; boss-type filter visible in the UI (today only through the hash).
+- [ ] Missing icons (name aliases) until the game-extracted pack replaces them.
+- [ ] Account management: let a user withdraw an approved marker of their own.
+- [ ] Location gaps: 287 names without text after the second run (mostly goods: golden runes, pots, altered armor, DLC stubs); fill through monthly runs and `data/overrides/locations.json`.
+- [ ] Python tools (`tools/*.py`): docstrings and log messages are still in Spanish; translate when touched.
+- [ ] Optional: self-host the fonts (today they load from Google Fonts, which the privacy policy mentions).
+- [ ] Public: OAuth of our own if an MCP is exposed.
+- [ ] Remote MCP (`/mcp/<token>`) with the same tools, to use from the Claude app or Claude Code.
+- [ ] Optional on PC: watch the .sl2 with the File System Access API to refresh without opening the file by hand.
+
+## How to work
+
+- Locally (`wrangler.toml` is in the repo): `npx wrangler d1 execute DB --local --file db/schema.sql` and `npx wrangler dev --port 8791 [--var ADVICE_MOCK:1]`. To test with a session, insert a user and a session into the local D1 (`sessions.id` = SHA-256 of the cookie token).
+- Test saves (outside the repo, `.gitignore`): one from October with Arcano 35 and another with Arcano 44 and Godrick's rune equipped.
+- Sources consulted: oisis/EldenRing-SaveForge (Go), ClayAmore/ER-Save-Editor (Rust), Ariescyn/EldenRing-Save-Manager, eldenring.wiki.gg (MediaWiki API and DataMaps).
+- Commits in Spanish so far, signed as Rob; bump the service worker `VERSION` with every change to served files.

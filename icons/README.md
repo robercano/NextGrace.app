@@ -1,13 +1,17 @@
 # icons/
 
-Pack de iconos para uso personal. **No subas iconos a un repo público**: son arte de FromSoftware.
+Icon pack for personal use. **Never commit icons to a public repo**: they are FromSoftware's art. For a public
+deployment, extract them from your own copy of the game (`tools/EXTRACT.md`) and serve them from outside the repo
+(the plan is an R2 bucket behind the Worker). The site works without icons: it shows the item name instead.
 
-Opción A (automática): con el repo en **privado**, Actions → **icons** → Run workflow. Descarga los iconos
-de eldenring.wiki.gg (1 petición/segundo, ~1 h para todos), los convierte a WebP de 64 px, regenera
-`index.json` y hace commit a `main`. Se puede relanzar: solo baja los que faltan.
+Option A (automatic, legacy): with the repo **private**, Actions → **icons** → Run workflow. It downloads the icons
+from eldenring.wiki.gg (1 request/s, ~1 h for all), converts them to 64 px WebP, regenerates `index.json` and
+commits to `main`. It can be re-run: it only fetches what is missing. `icons-pages` does a second pass using the
+image named in each item's wiki infobox.
 
-Opción B (manual): `tools/tl-icons.js` pegado en la consola del navegador en la wiki genera `er-icons.zip`;
-descomprímelo aquí y ejecuta `python tools/icons_index.py`.
+Option B (manual): `tools/tl-icons.js` pasted into the browser console on the wiki produces `er-icons.zip`;
+unzip it here and run `python tools/icons_index.py`.
 
-Nombres: `<slug del objeto>.webp` (p. ej. `dagger.webp`, `verdigris_helm.webp`). La página busca por
-nombre base sin afinidad ni +N.
+File names: `<item id>.webp` (preferred; upgraded weapons use the base id) or `<slug of the name>.webp`
+(e.g. `dagger.webp`, `verdigris_helm.webp`). `src/icons.js` documents the lookup order (id, name, name without
+affinity or +N, family fallbacks for bell bearings, cookbooks, letters…).

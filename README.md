@@ -1,101 +1,83 @@
 # Tarnished Ledger
 
-Lector de partidas de Elden Ring (PC, `ER0000.sl2`) que funciona entero en el navegador: estado del personaje, equipo, inventario y planificador de forja. Pensado para consultar desde el móvil y preparar la siguiente sesión.
+A reader for Elden Ring PC saves (`ER0000.sl2`) that runs entirely in the browser: character status, equipment, inventory, smithing planner, progress tracker, interactive map and an AI "advisor" for your next session. Built to be used from a phone between sessions.
 
-El save se lee entero en el navegador y nunca se sube. Opcionalmente puedes entrar con Steam para guardar tus marcas manuales y un resumen de tus personajes en tu cuenta (base de datos D1) y proponer marcadores al mapa de la comunidad (con moderación).
+The save is parsed in the browser and **never uploaded, never modified**. Optionally you can sign in with Steam to keep your manual marks and a per-character summary in your account (Cloudflare D1), propose markers to the community map (moderated) and get the advisor's report.
 
-## Estructura
+Interface in Spanish and English (ES/EN button in the header, or `?lang=en`). Item, boss and place names stay in English, as on the wiki.
+
+*¿Prefieres leerlo en español? Hay un resumen en [README.es.md](README.es.md).*
+
+## Layout
 
 ```
-index.html            página (UI + estilos)
-src/ersave.js         parser del .sl2 (cabecera BND4, 10 slots, GaItem map, inventario, cofre, equipo)
-src/app.js            lógica de la página
-src/marks.js          marcas manuales por personaje (localStorage)
-src/cloud.js          capa de cuenta opcional (login Steam, sincronización, marcadores de la comunidad)
-functions/api/        Pages Functions: la API (auth Steam OpenID, personajes, marcas, marcadores, moderación)
-worker/index.js       entrada del Worker: /api/* → functions, resto → assets
-db/schema.sql         esquema de la base de datos D1
-wrangler.toml         configuración del Worker (assets, D1 `DB`, var `ADMIN_STEAMIDS`); .assetsignore excluye código y herramientas
-data/items.json       base de datos de objetos (ID → nombre, tipo, clase, nivel máx.)
-icons/                tu pack de iconos (ver icons/README.md) + index.json
-sw.js, manifest.*     PWA: se puede "añadir a pantalla de inicio" y funciona offline
-tools/                scripts auxiliares (extraer la DB, generar el pack de iconos)
+index.html            the sheet (UI + styles)        map.html   interactive map       about.html / privacy.html  legal
+src/ersave.js         .sl2 parser (BND4 header, 10 slots, GaItem map, inventory, storage, equipment)
+src/rules.js          game rules: level cost, requirements & stat bonuses, equip load, stone costs…
+src/icons.js          item pictures (site pack + user pack in IndexedDB)
+src/app.js            UI of the sheet                src/i18n.js   T() and the English table
+src/marks.js          manual marks (localStorage)    src/cloud.js  optional account layer
+src/glossary.js       the "i" tips                   src/site.js   contact address
+functions/api/        the API (Pages-Functions style handlers): Steam OpenID, characters, marks, markers, advisor, history
+worker/index.js       Worker entry: /api/* → functions, everything else → static assets
+db/schema.sql         D1 schema (+ db/migrations/)
+wrangler.toml         Worker config (assets, D1 binding `DB`, var `ADMIN_STEAMIDS`); .assetsignore keeps code and docs out
+data/                 game data (see docs/ARCHITECTURE.md): items, flags, requirements, locations, map, progression
+icons/                icon pack (see icons/README.md) + index.json — game art, private repo only
+tools/                scripts that build data/ (wiki fetchers, extractors) and the icon tools
+sw.js, manifest.*     PWA: "add to home screen", works offline
 ```
 
-## Desplegar en Cloudflare Pages (privado)
+`docs/ARCHITECTURE.md` explains how the pieces fit and has recipes for extending them. `ROADMAP.md` has the project history, the save format notes and the open items.
 
-1. Sube este repo a GitHub (público o privado; si vas a incluir los iconos, privado).
-2. Cloudflare → **Workers & Pages → Create → Pages → Connect to Git** → elige el repo.
-   - Framework preset: *None*. Build command: vacío. Build output directory: `/`.
-   - Deploy. Tendrás `https://<proyecto>.pages.dev`; cada push a `main` vuelve a desplegar.
-3. Hacerlo privado: **Zero Trust → Access → Applications → Add an application → Self-hosted**.
-   - Application domain: `<proyecto>.pages.dev` (y también `*.<proyecto>.pages.dev` para las previews).
-   - Policy: *Allow* → Include → *Emails* → tu correo. Login method: One-time PIN.
-   - Cloudflare te pedirá el PIN por email la primera vez en cada dispositivo (sesión de 24 h por defecto; se puede subir a 1 mes en la aplicación).
-4. Opcional: en Pages → Settings → *Access policy* puedes activar la protección de las previews con un clic.
+## Deploy (Cloudflare Worker + static assets)
 
-## Alpha con cuenta (Worker + D1)
+The site is deployed as a **Cloudflare Worker with static assets** (`wrangler.toml`): `worker/index.js` routes `/api/*` to the handlers in `functions/api/**` and serves the rest as files. The site works without an account; to enable Steam login and the database:
 
-El sitio se despliega como **Cloudflare Worker con assets estáticos** (`wrangler.toml`): `worker/index.js` enruta `/api/*` a los handlers de `functions/api/**` y sirve el resto como ficheros. La web sigue funcionando sin cuenta; para activar el login con Steam y la base de datos:
+1. **Create the database**: Cloudflare dashboard → *Storage & Databases → D1 SQL Database → Create* → name `tarnished-ledger`. In the *Console* tab paste `db/schema.sql` and run it.
+2. **Put its id in `wrangler.toml`**: the database page shows *Database ID* (a UUID); replace `REPLACE_WITH_D1_DATABASE_ID`. Bindings live in `wrangler.toml` (not in the dashboard): every deploy applies them.
+3. **Moderators**: `ADMIN_STEAMIDS` in `wrangler.toml` (SteamID64, comma-separated). Their markers are published directly and they see the queue under *Account → Moderation*.
+4. **Deploy**: push to `main` (Workers Builds runs `npx wrangler deploy`) or run `npx wrangler deploy` locally. Check `https://<worker>.workers.dev/api/health` → `{"ok":true,"db":true,"admins":true,…}`.
+5. **Private preview** (optional): *Zero Trust → Access → Applications → Add → Self-hosted* with your e-mail and a one-time PIN. Steam login is independent of Access; remove the Access application to open the site.
 
-1. **Crear la base**: panel de Cloudflare → *Storage & Databases → D1 SQL Database → Create* → nombre `tarnished-ledger`. En la pestaña *Console* pega `db/schema.sql` y ejecútalo.
-2. **Poner su ID en `wrangler.toml`**: en la página de la base aparece *Database ID* (un UUID); sustituye `REPLACE_WITH_D1_DATABASE_ID`. Los bindings viven en `wrangler.toml` (no en el panel): cada deploy los aplica.
-3. **Moderadores**: `ADMIN_STEAMIDS` en `wrangler.toml` (SteamID64, separados por comas). Sus marcadores se publican directos y ven la cola en *Cuenta → Moderación*.
-4. **Deploy**: push a `main` (Workers Builds ejecuta `npx wrangler deploy`) o `npx wrangler deploy` en local. Comprueba `https://<worker>.workers.dev/api/health` → `{"ok":true,"db":true,"admins":true}`.
-5. **Cloudflare Access**: para que otros puedan entrar, quita la aplicación de Access (o añade sus correos). El login de Steam es independiente de Access.
+What the account stores: public Steam identity (SteamID, name, avatar), a summary per character (level, class, playtime, attributes, gear, progress, ids of the items you own; never the `.sl2`), your manual marks, the markers you propose and the advisor's reports. A character belongs to the Steam account that owns the save (`char_key = <steamid>:<slot>`), so nobody can sync marks of someone else's character. Users can delete their account and all its data from the account sheet.
 
-Qué guarda la cuenta: identidad pública de Steam (SteamID, nombre, avatar), un resumen por personaje (nivel, clase, tiempo, equipo, progreso, ids de objetos que tienes; nunca el `.sl2`), tus marcas manuales y los marcadores que propongas. Un personaje pertenece a la cuenta de Steam dueña del save (`char_key = <steamid>:<slot>`), así nadie puede sincronizar marcas de un personaje ajeno.
+API: `GET|DELETE /api/me`, `PUT /api/characters`, `GET|PUT /api/marks/:char_key`, `GET|POST /api/markers`, `DELETE /api/markers/:id`, `GET|POST /api/admin/markers`, `GET|POST /api/advice/:char_key`, `GET /api/history/:char_key`, `GET /api/auth/steam` → `/api/auth/callback`, `POST /api/auth/logout`, `GET /api/health`. Session: cookie `tl_session` (HttpOnly, 30 days; only its hash is stored). Handlers follow the Pages Functions shape, so the same code works if the project is deployed as Pages (`functions/` folder).
 
-API: `GET /api/me`, `PUT /api/characters`, `GET|PUT /api/marks/:char_key`, `GET|POST /api/markers`, `DELETE /api/markers/:id`, `GET|POST /api/admin/markers`, `GET /api/auth/steam` → `/api/auth/callback`, `POST /api/auth/logout`, `GET /api/health`. Sesión: cookie `tl_session` (HttpOnly, 30 días; en la base solo se guarda su hash). Los handlers tienen la forma de Pages Functions, así que el mismo código sirve si el proyecto se despliega como Pages (carpeta `functions/`).
-
-Desarrollo local con la API (base D1 local en `.wrangler/`):
+Local development with the API (local D1 under `.wrangler/`):
 
 ```
 npx wrangler d1 execute DB --local --file db/schema.sql
 npx wrangler dev --port 8791
 ```
 
-## Consejero (informe con Claude)
+Without the API any static server works (`python -m http.server 8080`). When you change served files, bump `VERSION` in `sw.js` so installed clients refresh their cache.
 
-Pestaña *Consejero* de la ficha: el Worker llama a la API de Claude con el resumen del personaje (lo mismo que ya guarda la cuenta: atributos, armas y piedras, jefes y gracias, nunca el `.sl2`), más `data/progression.json` (tabla orientativa de zonas, niveles y piedras), y guarda el informe en D1 (`advice`). El informe se genera automáticamente al abrir un save nuevo con la sesión iniciada (en cuanto se guarda el resumen; puedes seguir mirando otras pestañas y el mapa mientras tanto). Si el save no ha cambiado, el botón *Otra opinión* permite pedir otra versión (pide confirmación: mismo contexto, solo cambia la redacción). Límites: 1 h de espera entre informes y 5 al día por usuario (los moderadores no tienen límite). Al cambiar el prompt, sube `PROMPT_VERSION` en el handler para que los informes guardados cuenten como desactualizados. `functions/api/advice/[char_key].js`.
+## Advisor (report written by Claude)
 
-Activarlo:
-1. Ejecuta `db/migrations/002_advice.sql` en la *Console* de la base D1 (el `schema.sql` completo también lo incluye).
-2. *Worker → Settings → Variables and secrets → Add → Secret*: `ANTHROPIC_API_KEY` con una clave de [console.anthropic.com](https://console.anthropic.com/). Opcional: variable `ADVICE_MODEL` (por defecto `claude-sonnet-5-5`).
-3. En local: `npx wrangler dev --var ADVICE_MOCK:1` devuelve un informe falso con el contexto que se enviaría al modelo (campo `ctx`), útil para revisar el prompt sin gastar.
+*Advisor* tab of the sheet: the Worker calls the Claude API with the character summary (the same thing the account stores: attributes, weapons and stones, bosses and graces, never the `.sl2`) plus `data/progression.json` (an indicative table of zones, levels and stones), and stores the report in D1 (`advice`). The report is generated automatically when you open a newer save while signed in (as soon as the summary is saved; you can keep browsing meanwhile). If the save hasn't changed, *Another opinion* asks for a new version (with a confirmation: same context, only the wording changes). Limits: 1 h between reports and 5 per day per user (moderators are unlimited). When the prompt changes, bump `PROMPT_VERSION` in the handler so stored reports count as stale. Code: `functions/api/advice/[char_key].js`.
 
-## Iconos
+Enable it:
+1. Run `db/migrations/002_advice.sql` in the D1 *Console* (the full `schema.sql` includes it too).
+2. *Worker → Settings → Variables and secrets → Add → Secret*: `ANTHROPIC_API_KEY` with a key from [console.anthropic.com](https://console.anthropic.com/). Optional: variable `ADVICE_MODEL` (default `claude-sonnet-5-5`).
+3. Locally, `npx wrangler dev --var ADVICE_MOCK:1` returns a fake report with the context that would be sent to the model (field `ctx`), handy to review the prompt without spending.
 
-Ver `icons/README.md`. La página busca primero `icons/index.json` (pack subido al repo) y, si no existe, el pack cargado con el botón "Cargar iconos" (guardado en IndexedDB del navegador).
+## Map
 
-## Desarrollo local
+`map.html` uses the markers of the [eldenring.wiki.gg](https://eldenring.wiki.gg) interactive map (`tools/fetch_map.py` → `data/map.json`, CC BY-SA 4.0) and places every item you are missing at the place named in its location text (`tools/build_places.py` → `data/places.json`). Markers you add are kept in your browser and, when signed in, sent to the community map (visible to everyone once a moderator approves them). The map backgrounds (`icons/map/*.webp`) are game art: private repo only.
 
-Cualquier servidor estático vale:
+## Game data from the wiki
 
-```
-python -m http.server 8080
-```
+`data/reqs.json` (requirements, scaling, weights) and the item location texts (`data/locations.json` → `loc` in `data/items.json`) come from eldenring.wiki.gg through the `reqs` and `locations` workflows (Actions → *Run workflow*; `locations` also runs monthly). Each run fills gaps and updates texts but never deletes what the wiki no longer returns; manual corrections go in `data/overrides/` and always win. The run logs are committed to `tools/*_log.txt`.
 
-y abre `http://localhost:8080`. Al cambiar ficheros, sube `VERSION` en `sw.js` para que los clientes instalados refresquen la caché.
+## Icons
 
-## Hoja de ruta
+See `icons/README.md`. The page looks first for `icons/index.json` (pack committed to the repo) and then for the pack loaded with the *Load icons* button (kept in the browser's IndexedDB). For a public deployment the plan is to extract the icons from your own copy of the game (`tools/EXTRACT.md`) and serve them from outside the repo.
 
-Ver [ROADMAP.md](ROADMAP.md): estado del proyecto, decisiones, formato del save y pendientes.
+## Language
 
-## Mapa
+Spanish strings are the translation keys: write new text in Spanish inside `T()` (or with `data-i18n` in the HTML) and add the English to the `EN` table in `src/i18n.js`.
 
-`map.html` usa los marcadores del mapa interactivo de [eldenring.wiki.gg](https://eldenring.wiki.gg) (`tools/fetch_map.py` → `data/map.json`, licencia CC BY-SA 4.0) y sitúa cada objeto que te falta en el lugar que nombra su texto de ubicación (`tools/build_places.py` → `data/places.json`). Los marcadores que añadas se guardan en tu navegador y, si has entrado con Steam, se envían al mapa de la comunidad (visibles para todos cuando un moderador los aprueba). "Copiar JSON" sigue sirviendo para volcarlos en `data/user_markers.json`. Los fondos (`icons/map/*.webp`) son arte del juego: solo en repo privado.
+## Licence and credits
 
-## Créditos
-
-Formato del save reconstruido a partir de [ClayAmore/ER-Save-Editor](https://github.com/ClayAmore/ER-Save-Editor), [Ariescyn/EldenRing-Save-Manager](https://github.com/Ariescyn/EldenRing-Save-Manager) y la especificación de [oisis/EldenRing-SaveForge](https://github.com/oisis/EldenRing-SaveForge). Base de datos de objetos derivada de SaveForge y ER-Save-Editor. Elden Ring es una marca de FromSoftware / Bandai Namco; este proyecto no está afiliado.
-
-<!-- deploy: 2026-10-29T16:18:37Z -->
-
-## Idioma
-
-La interfaz está en español y en inglés. El botón ES/EN de la cabecera cambia el idioma (también `?lang=en` en la URL); la elección se guarda en el navegador. Los nombres de objetos, jefes y lugares se mantienen en inglés, como en la wiki. Para añadir textos nuevos: escribirlos en español dentro de `T()` (o con `data-i18n` en el HTML) y añadir la traducción a la tabla `EN` de `src/i18n.js`.
-
-## Licencia y créditos
-
-Código bajo GPL-3.0 (`LICENSE`). Datos derivados de [eldenring.wiki.gg](https://eldenring.wiki.gg) (`data/reqs.json`, `data/locations.json`, `data/map.json`, `data/places.json`) bajo CC BY-SA 4.0. Nombres, ids y banderas de evento extraídos con EldenRing-SaveForge (GPL-3.0). La página `about.html` recoge todas las atribuciones, el aviso de no afiliación y el de solo lectura; `CONTACT` en ese fichero es el correo para retiradas. Proyecto de fans sin relación con FromSoftware ni Bandai Namco.
+Code under GPL-3.0 (`LICENSE`). Data derived from [eldenring.wiki.gg](https://eldenring.wiki.gg) (`data/reqs.json`, `data/locations.json`, `data/map.json`, `data/places.json`) under CC BY-SA 4.0. Item names, ids and event flags extracted with [oisis/EldenRing-SaveForge](https://github.com/oisis/EldenRing-SaveForge) (GPL-3.0); the save format was also studied with [ClayAmore/ER-Save-Editor](https://github.com/ClayAmore/ER-Save-Editor) and [Ariescyn/EldenRing-Save-Manager](https://github.com/Ariescyn/EldenRing-Save-Manager). `about.html` carries every attribution, the not-affiliated notice and the read-only notice; the contact address for takedowns and privacy requests is set in `src/site.js`. Fan project, not affiliated with FromSoftware or Bandai Namco; ELDEN RING is their trademark.
