@@ -170,7 +170,7 @@ def strip_markup(s):
 def base_name(n):
     """Nombre sin +N ni infusión (como wikiName en src/app.js)."""
     n = re.sub(r"\s*\+\s*\d+\s*$", "", n).strip()
-    for inf in INFUSIONS:
+    for inf in INFUSIONS + ["Bloody"]:  # "Bloody X" is how the game names some Blood-affinity drops
         if n.startswith(inf + " ") and len(n) > len(inf) + 1:
             return n[len(inf) + 1:]
     return n
