@@ -1,5 +1,6 @@
-/* glossary.js — short explanations (ES) + wiki page for the things the sheet shows. ~3 KB, loaded with the page.
- * GLOSSARY[key] = { w: wiki page title (eldenring.wiki.gg), es: one-paragraph explanation }
+/* glossary.js — short explanations + wiki page for the things the sheet shows (the "i" tips). Loaded with the page.
+ * GLOSSARY[key] = { w: wiki page title (eldenring.wiki.gg), es: one-paragraph explanation, en: the same in English }
+ * Keys are referenced from app.js as kvr(..., key) / data-g="key". To add a tip: add an entry here and pass its key.
  */
 (function (root) {
   const G = {

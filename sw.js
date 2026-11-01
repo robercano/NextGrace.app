@@ -1,5 +1,5 @@
 // Service worker: app shell offline. Bump VERSION when files change.
-const VERSION = "tl-v62";
+const VERSION = "tl-v63";
 const SHELL = ["./", "index.html", "map.html", "about.html", "privacy.html", "src/site.js", "src/ersave.js", "src/rules.js", "src/icons.js", "src/app.js", "src/i18n.js", "src/glossary.js", "src/marks.js", "src/cloud.js", "data/items.json", "data/flags.json", "data/places.json", "data/map.json", "data/progression.json", "data/reqs.json", "data/user_markers.json", "vendor/leaflet/leaflet.js", "vendor/leaflet/leaflet.css", "manifest.webmanifest", "favicon.svg"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== VERSION).map(k => caches.delete(k)))).then(() => self.clients.claim())); });

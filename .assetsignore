@@ -16,3 +16,4 @@ saves
 .assetsignore
 package.json
 package-lock.json
+docs

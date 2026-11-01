@@ -122,6 +122,13 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
 <script src="src/marks.js"></script>
 <script src="src/cloud.js"></script>
 <script>
+/*
+ * map.html — the interactive map (Leaflet over the wiki's map tiles in icons/map/, coordinates from data/map.json).
+ * Shows graces, bosses, places and the items you are missing (data/places.json links items to places by their location
+ * text), community markers (Cloud.markers) and your own ones (localStorage). Hash filters: #l=grace|boss|place|miss|user,
+ * t=main|field|rem (boss type), s=all|todo|done, q=<text>, focus=<name>[&q=item] (centre and open a popup).
+ * State comes from the sheet (index.html) through localStorage: tl.last (parsed save, slimmed) and tl.cur (character slot).
+ */
 (async function () {
   const $ = s => document.querySelector(s);
   I18N.apply();
