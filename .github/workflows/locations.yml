@@ -1,0 +1,43 @@
+# Textos de ubicación de los objetos desde eldenring.wiki.gg (CC BY-SA 4.0, con atribución) → data/locations.json
+# Cada ejecución rellena huecos y actualiza textos; nunca borra. Con apply=1 vuelca además a items.json/places.json.
+name: locations
+on:
+  workflow_dispatch:
+    inputs:
+      probe:
+        description: "Solo sondeo: imprime encabezados y texto extraído de N páginas por tipo (0 = descarga completa)"
+        default: "0"
+      apply:
+        description: "1 = volcar a data/items.json (loc) y regenerar data/places.json"
+        default: "0"
+  schedule:
+    - cron: "17 4 1 * *"   # el día 1 de cada mes: recarga y vuelca
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: Descargar ubicaciones
+        run: python tools/fetch_locations.py --probe "${{ github.event.inputs.probe || '0' }}" | tee tools/locations_log.txt
+      - name: Volcar a items.json y places.json
+        if: ${{ github.event_name == 'schedule' || github.event.inputs.apply == '1' }}
+        run: python tools/apply_locations.py | tee -a tools/locations_log.txt
+      - name: Commit
+        run: |
+          git config user.name "locations-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add data/locations.json data/items.json data/places.json tools/locations_log.txt 2>/dev/null || git add tools/locations_log.txt
+          if git diff --cached --quiet; then echo "Sin cambios"; exit 0; fi
+          git commit -m "locations: textos de ubicación desde la wiki"
+          for i in 1 2 3 4 5; do
+            git fetch origin main && git rebase origin/main && git push origin HEAD:main && exit 0
+            git rebase --abort 2>/dev/null || true; sleep 10
+          done
+          exit 1
