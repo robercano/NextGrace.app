@@ -25,7 +25,7 @@ def main():
     over = {k: v for k, v in over.items() if not k.startswith("_") and isinstance(v, str) and v.strip()}
     n_over = n_wiki = n_none = n_changed = 0
     for sid, e in db.items():
-        base = W.base_name(e["n"])
+        base = W.base_name(e["n"], e.get("k"), sid)
         text = over.get(sid) or over.get(e["n"]) or over.get(base)
         if text:
             n_over += 1

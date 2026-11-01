@@ -167,17 +167,22 @@ def strip_markup(s):
     return s.strip()
 
 
-def base_name(n):
-    """Nombre sin +N ni infusión (como wikiName en src/app.js)."""
-    n = re.sub(r"\s*\+\s*\d+\s*$", "", n).strip()
-    for inf in INFUSIONS + ["Bloody"]:  # "Bloody X" is how the game names some Blood-affinity drops
-        if n.startswith(inf + " ") and len(n) > len(inf) + 1:
-            return n[len(inf) + 1:]
+def base_name(n, kind=None, item_id=None):
+    """Nombre sin +N (salvo talismanes, cuyo +1/+2 es otro objeto) y, solo en armas con afinidad según su id
+    (id % 10000 // 100 != 0), sin el prefijo de afinidad ("Heavy Dagger" → "Dagger"). Como wikiName en src/app.js.
+    Sin kind/id (uso suelto), recorta el prefijo si lo hay."""
+    if kind != "talisman":
+        n = re.sub(r"\s*\+\s*\d+\s*$", "", n).strip()
+    infused = True if item_id is None else (kind == "weapon" and (int(item_id) % 10000) // 100 != 0)
+    if kind in (None, "weapon") and infused:
+        for inf in INFUSIONS + ["Bloody"]:  # "Bloody X" is how the game names some Blood-affinity drops
+            if n.startswith(inf + " ") and len(n) > len(inf) + 1:
+                return n[len(inf) + 1:]
     return n
 
 
-def title_variants(n):
-    """Títulos que puede tener la página de un objeto, del más probable al menos."""
+def title_variants(n, kind=None):
+    """Títulos que puede tener la página de un objeto, del más probable al menos (variantes de afinidad solo en armas)."""
     v = [n]
     if "[" in n:
         v.append(n.replace("[", "(").replace("]", ")"))
@@ -187,9 +192,10 @@ def title_variants(n):
             v.append(n[len(pre):])
     if n.startswith("Map: "):
         v.append(n[len("Map: "):] + " (map)")
-    stripped = INF_ANY.sub("", n).strip()
-    if stripped and stripped != n:
-        v.append(stripped)
+    if kind == "weapon":
+        stripped = INF_ANY.sub("", n).strip()
+        if stripped and stripped != n:
+            v.append(stripped)
     return list(dict.fromkeys(v))
 
 

@@ -37,7 +37,7 @@ def groups(db):
     for sid, e in db.items():
         if e.get("f") or e["n"] in PLACEHOLDERS or e["n"].startswith("?"):
             continue
-        g.setdefault(W.base_name(e["n"]), []).append(sid)
+        g.setdefault(W.base_name(e["n"], e.get("k"), sid), []).append(sid)
     return g
 
 
@@ -116,14 +116,15 @@ def extract(txt):
     return None, None
 
 
-def fetch_pages(names):
+def fetch_pages(names, kind_of=None):
     """nombre -> (título real, wikitext) probando variantes de título para los que no existen."""
+    kind_of = kind_of or {}
     found = W.wikitext(names)
     missing = [n for n in names if n not in found]
     if missing:
         alt = {}
         for n in missing:
-            for v in W.title_variants(n)[1:]:
+            for v in W.title_variants(n, kind_of.get(n))[1:]:
                 alt.setdefault(v, []).append(n)
         if alt:
             print(f"  variantes para {len(missing)} sin página: {len(alt)} títulos", flush=True)
@@ -151,11 +152,11 @@ def main():
         sample = []
         for k in ("weapon", "armor", "talisman", "goods", "aow", "ammo"):
             sample += [n for n in names if kind_of.get(n) == k][:a.probe]
-        pages = fetch_pages(sample)
+        pages = fetch_pages(sample, kind_of)
         for n in sample:
             print("=" * 78); print(f"{n}  [{kind_of.get(n)}]")
             if n not in pages:
-                print("  (sin página; variantes probadas:", W.title_variants(n), ")"); continue
+                print("  (sin página; variantes probadas:", W.title_variants(n, kind_of.get(n)), ")"); continue
             title, txt = pages[n]
             print(f"  página: {title}")
             print("  encabezados:", [t for _, t, _ in W.sections(txt) if t])
@@ -169,7 +170,7 @@ def main():
     store = W.load_json("data/locations.json") or {"entries": {}}
     entries = store.get("entries", {})
     today = datetime.datetime.utcnow().strftime("%Y-%m-%d")
-    pages = fetch_pages(names)
+    pages = fetch_pages(names, kind_of)
     stats = collections.Counter(); heads = collections.Counter(); hows = collections.Counter()
     nopage, notext = [], []
     for n in names:
