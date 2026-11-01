@@ -1,5 +1,7 @@
 // GET  /api/advice/:char_key → cached report for the character (owner only)
-// POST /api/advice/:char_key → regenerate if the summary changed and the cooldown/daily cap allow it
+// POST /api/advice/:char_key → regenerate if the summary changed (or {force:true}) and the cooldown/daily cap allow it;
+//      {auto:true} is the browser kicking it off right after uploading a new save. One job per character at a time
+//      (advice_jobs, created on the fly): a second request while one runs gets {running:true} and should poll GET.
 //
 // The report is produced by Claude from the character summary stored in the account (never the save file),
 // the progress flags resolved to names, and a curated progression table (data/progression.json).
@@ -7,6 +9,21 @@ import { handler, requireUser, json, bad, sha256 } from "../../_lib.js";
 
 const COOLDOWN_H = 1, DAILY_CAP = 5, MAX_TOKENS = 12000; // los modelos 5.x piensan por defecto y el razonamiento cuenta en max_tokens
 const DEFAULT_MODEL = "claude-sonnet-5-5";
+const PROMPT_VERSION = 2; // bump when SYSTEM/buildContext change: the cached report is then considered stale
+const JOB_TTL_S = 240; // a job older than this is assumed dead (Worker evicted)
+
+const hashOf = async (summary, lang) => (await sha256((summary || "") + "|" + lang + "|p" + PROMPT_VERSION)).slice(0, 16);
+async function jobs(context) {
+  await context.env.DB.prepare("CREATE TABLE IF NOT EXISTS advice_jobs (char_key TEXT PRIMARY KEY, hash TEXT, lang TEXT, started_at TEXT NOT NULL)").run();
+}
+async function runningJob(context, ck) {
+  await jobs(context);
+  const j = await context.env.DB.prepare("SELECT hash, lang, started_at FROM advice_jobs WHERE char_key = ?").bind(ck).first();
+  if (!j) return null;
+  const sec = Math.round((Date.now() - Date.parse(j.started_at + "Z")) / 1000);
+  if (sec > JOB_TTL_S) { await context.env.DB.prepare("DELETE FROM advice_jobs WHERE char_key = ?").bind(ck).run(); return null; }
+  return { seconds: Math.max(0, sec), lang: j.lang };
+}
 
 async function asset(context, path) {
   const url = new URL(path, context.request.url);
@@ -104,11 +121,12 @@ export const onRequestGet = handler(async context => {
   const u = await requireUser(context); const ck = decode(context.params.char_key); const row = await own(context, u, ck);
   const lang = new URL(context.request.url).searchParams.get("lang") === "en" ? "en" : "es";
   const a = await context.env.DB.prepare("SELECT text, model, hash, created_at FROM advice WHERE char_key = ?").bind(ck).first();
-  const hash = (await sha256((row.summary || "") + "|" + lang)).slice(0, 16);
+  const hash = await hashOf(row.summary, lang);
   const used = await usage(context, u.steamid);
   const stale = !a || a.hash !== hash;
   const cool = a ? Math.max(0, COOLDOWN_H * 3600 - (Date.now() - Date.parse(a.created_at + "Z")) / 1000) : 0;
-  return json({ advice: a ? { text: a.text, model: a.model, created_at: a.created_at } : null, stale, cooldown: Math.round(cool), used, cap: DAILY_CAP, configured: !!(context.env.ANTHROPIC_API_KEY || context.env.ADVICE_MOCK) });
+  const running = await runningJob(context, ck);
+  return json({ advice: a ? { text: a.text, model: a.model, created_at: a.created_at } : null, stale, running, cooldown: Math.round(cool), used, cap: DAILY_CAP, configured: !!(context.env.ANTHROPIC_API_KEY || context.env.ADVICE_MOCK) });
 });
 
 export const onRequestPost = handler(async context => {
@@ -117,15 +135,18 @@ export const onRequestPost = handler(async context => {
   if (!S.weapons) return bad("summary too old: open the save again while logged in", 409);
   let body = {}; try { body = await context.request.json(); } catch (e) {}
   const lang = body.lang === "en" ? "en" : "es";
-  const hash = (await sha256((row.summary || "") + "|" + lang)).slice(0, 16);
+  const hash = await hashOf(row.summary, lang);
   const a = await context.env.DB.prepare("SELECT text, model, hash, created_at FROM advice WHERE char_key = ?").bind(ck).first();
-  if (a && a.hash === hash && !context.env.ADVICE_MOCK) return json({ advice: { text: a.text, model: a.model, created_at: a.created_at }, unchanged: true });
+  if (a && a.hash === hash && !body.force) return json({ advice: { text: a.text, model: a.model, created_at: a.created_at }, unchanged: true });
+  const running = await runningJob(context, ck);
+  if (running) return json({ running });
   if (a && (Date.now() - Date.parse(a.created_at + "Z")) < COOLDOWN_H * 3600e3 && u.role !== "admin") return bad(`wait ${COOLDOWN_H} h between reports`, 429);
   const used = await usage(context, u.steamid);
   if (used >= DAILY_CAP && u.role !== "admin") return bad("daily cap reached", 429);
   // Long job (30-120 s): answer as a newline-delimited stream with heartbeats so proxies and mobile browsers keep the connection; last line is the result.
   const { readable, writable } = new TransformStream(); const w = writable.getWriter(), enc = new TextEncoder();
   const send = obj => w.write(enc.encode(JSON.stringify(obj) + "\n")).catch(() => {});
+  await context.env.DB.prepare("INSERT INTO advice_jobs (char_key, hash, lang, started_at) VALUES (?, ?, ?, datetime('now')) ON CONFLICT(char_key) DO UPDATE SET hash = excluded.hash, lang = excluded.lang, started_at = datetime('now')").bind(ck, hash, lang).run();
   const job = (async () => {
     let beat = Date.now(); const hb = setInterval(() => send({ beat: Math.round((Date.now() - beat) / 1000) }), 4000);
     try {
@@ -138,7 +159,7 @@ export const onRequestPost = handler(async context => {
     } catch (e) {
       let msg = e && e.message || String(e); if (e instanceof Response) { try { msg = (await e.json()).error || msg; } catch (x) { msg = e.statusText || msg; } }
       await send({ error: msg });
-    } finally { clearInterval(hb); try { await w.close(); } catch (e) {} }
+    } finally { clearInterval(hb); try { await context.env.DB.prepare("DELETE FROM advice_jobs WHERE char_key = ?").bind(ck).run(); } catch (e) {} try { await w.close(); } catch (e) {} }
   })();
   if (context.waitUntil) context.waitUntil(job);
   return new Response(readable, { headers: { "content-type": "application/x-ndjson; charset=utf-8", "cache-control": "no-store", "x-accel-buffering": "no" } });

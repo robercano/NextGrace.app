@@ -10,7 +10,7 @@ Usuario: Rob (SteamID REPLACE_WITH_YOUR_STEAMID64, moderador). Dos personajes: G
 
 ## Arquitectura
 
-- **Todo en el navegador** para leer el save: `src/ersave.js` (parser), `src/app.js` (ficha), `map.html` (mapa), `src/marks.js` (marcas manuales, localStorage), `src/cloud.js` (capa de cuenta), `src/glossary.js` (explicaciones + enlaces a la wiki, `es`/`en`), `src/i18n.js` (traducción: las claves son el texto en español, `T("texto", …args)` con `{0}`; en HTML `data-i18n`, `data-i18n-ph`, `data-i18n-title`; `I18N.apply()` al cargar, `I18N.locale()` para números y fechas). Para añadir un texto nuevo: escribirlo en español envuelto en `T()` y añadir su traducción a la tabla `EN`. PWA (`sw.js`, subir `VERSION` en cada cambio; actualmente `tl-v55`).
+- **Todo en el navegador** para leer el save: `src/ersave.js` (parser), `src/app.js` (ficha), `map.html` (mapa), `src/marks.js` (marcas manuales, localStorage), `src/cloud.js` (capa de cuenta), `src/glossary.js` (explicaciones + enlaces a la wiki, `es`/`en`), `src/i18n.js` (traducción: las claves son el texto en español, `T("texto", …args)` con `{0}`; en HTML `data-i18n`, `data-i18n-ph`, `data-i18n-title`; `I18N.apply()` al cargar, `I18N.locale()` para números y fechas). Para añadir un texto nuevo: escribirlo en español envuelto en `T()` y añadir su traducción a la tabla `EN`. PWA (`sw.js`, subir `VERSION` en cada cambio; actualmente `tl-v57`).
 - **Despliegue**: Cloudflare **Worker con assets estáticos** (no Pages): `wrangler.toml` + `worker/index.js`, que enruta `/api/*` a los handlers de `functions/api/**` (escritos con la forma de Pages Functions, por si se vuelve a Pages) y sirve el resto como ficheros (`html_handling = "none"`, `/` → `index.html` en el worker). `.assetsignore` excluye código y herramientas. Deploy automático en cada push a `main` (Workers Builds, `npx wrangler deploy`). Los bindings viven en `wrangler.toml`: D1 `DB` (`tarnished-ledger`, id `1e0ef758-…`) y `ADMIN_STEAMIDS`. Secreto en el panel: `ANTHROPIC_API_KEY`.
 - **Base de datos (D1)**: `db/schema.sql` (+ `db/migrations/`). Tablas: `users`, `sessions` (token hasheado, cookie `tl_session` 30 días), `characters` (`char_key = <steamid>:<slot>`, resumen JSON; nunca el .sl2), `marks` (marcas manuales por personaje), `markers` (comunidad; `pending|approved|rejected`), `advice` y `advice_log` (consejero).
 - **Auth**: Steam OpenID (solo identidad pública). Un personaje solo puede sincronizarlo la cuenta de Steam dueña del save.
@@ -31,6 +31,7 @@ Usuario: Rob (SteamID REPLACE_WITH_YOUR_STEAMID64, moderador). Dos personajes: G
 - Mapa: idea de MapGenie (pictogramas por tipo, filtros, estados), nunca sus iconos ni sus datos.
 - Moderación: propuestas pendientes hasta que un moderador aprueba; los moderadores publican directo (con casilla para enviar como pendiente y probar).
 - Consejero: no es un MCP que consulte Claude, sino un informe que genera el Worker con la API y cachea en D1 (1 h entre informes, 5/día; moderadores sin límite). Modelo por defecto `claude-sonnet-5-5` (`ADVICE_MODEL`). `ADVICE_MOCK=1` en local devuelve el contexto sin gastar.
+- Consejero, cuándo se genera: automáticamente al subir un save cuyo resumen cambió (el navegador lo lanza tras guardar el resumen, solo para el personaje en pantalla; si cambias de personaje mientras tanto se encola). La caché va por hash de resumen + idioma + `PROMPT_VERSION` (súbela al cambiar el prompt o el contexto y el siguiente save regenera solo). Con el mismo save el botón pasa a "Otra opinión" (pide confirmación y manda `force: true`). Un solo trabajo por personaje a la vez (`advice_jobs`, creada al vuelo; otra pestaña ve "generando…" y sondea cada 5 s).
 - Iconos: extraídos de la wiki (no de los ficheros del juego). Faltan ~171 (nombres con corchetes, notas, gloveworts).
 
 ## Hecho (cronológico)
@@ -48,11 +49,12 @@ Usuario: Rob (SteamID REPLACE_WITH_YOUR_STEAMID64, moderador). Dos personajes: G
 12. "¿Puedo usarlo?": `tools/fetch_reqs.py` + workflow `reqs` → `data/reqs.json` (requisitos, escalado, tipo, skill, FP/huecos de hechizos; 740/748 armas). Marcas rojas/amarillas (no cumples / solo a dos manos) en inventario, equipo y forja, filtro "Puedo usar / No cumplo", requisitos en el detalle, y el Consejero recibe por arma requisitos, escalado y usabilidad.
 11. Estado: "Pendiente de aplicar" (semillas, runas sin consumir, remembranzas, libros/pergaminos, campanas, gloveworts, piedras de dragón) y planificador de nivel (coste real por nivel, soft caps, runas en objetos). Forja: cenizas de espíritu con gloveworts. Progreso: diario de sesión (tabla `history`, creada por el Worker al vuelo; snapshot por cada tiempo de juego distinto).
 13. Traducción al inglés de toda la web (ficha, mapa, glosario, mensajes de error) y del informe del Consejero (`SYSTEM_EN`; la caché va por idioma).
+14. Consejero automático al subir un save nuevo, versión de prompt en el hash, "Otra opinión" con confirmación y estado "generando" compartido entre pestañas.
 
 ## Pendiente / ideas
 
 - [ ] Rob: ejecutar `db/migrations/002_advice.sql`, poner `ANTHROPIC_API_KEY` y probar el primer informe; ajustar el prompt con el resultado.
-- [ ] Consejero: herramienta de wiki (que compruebe escalado/requisitos de armas antes de recomendarlas); quizá pedir "qué hacer hoy en 1 hora".
+- [ ] Consejero: si molesta que se corte al cerrar la web enseguida, pasar a cola en D1 + cron del Worker. Herramienta de wiki (que compruebe escalado/requisitos de armas antes de recomendarlas); quizá pedir "qué hacer hoy en 1 hora".
 - [ ] Confirmar la tabla de ids de runa mayor (valores distintos de 0, 3 y 10).
 - [ ] Mapa: más coordenadas (solo 17 de 35 jefes principales tienen pin; vía marcadores de la comunidad); iconos por objeto en marcadores comunitarios; filtro de tipo de jefe visible en la UI (hoy solo por hash).
 - [ ] Iconos que faltan (alias de nombres).

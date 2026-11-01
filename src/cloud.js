@@ -36,6 +36,7 @@
         keyItems: (c.all || []).filter(i => i.cat === "key_items").map(i => i.name).slice(0, 300),
         flasks: { crimson: c.crimsonFlasks, cerulean: c.ceruleanFlasks }, talismanSlots: 1 + (c.talismanSlots || 0), greatRuneActive: !!c.greatRuneActive, matchmakingWpnLvl: c.matchmakingWpnLvl, lastGrace: c.lastGrace };
     },
+    pushed() { return pushP.catch(() => null); },
     pushCharacters(chars) {
       if (!me) return Promise.resolve(null);
       return pushP = api("/characters", { method: "PUT", body: { characters: chars.filter(c => !c.error).map(c => ({ char_key: Marks.charKey(c), name: c.name, level: c.level, class: c.className, playtime: c.playtimeSec, summary: Cloud.summarize(c) })) } });
@@ -60,8 +61,10 @@
     // Advisor (server-side report cached in the account)
     async advice(charKey) { return api("/advice/" + encodeURIComponent(charKey) + "?lang=" + (root.I18N ? root.I18N.lang : "es")); },
     // POST streams ndjson: {beat}/{progress} lines while the model works, then {advice} or {error}
-    async adviceRefresh(charKey, onProgress) {
-      const r = await fetch("/api/advice/" + encodeURIComponent(charKey), { method: "POST", credentials: "same-origin", headers: { "content-type": "application/json" }, body: JSON.stringify({ lang: root.I18N ? root.I18N.lang : "es" }) });
+    // opts: {force} regenerate even if the save is unchanged ("another opinion"); {auto} started by the app after uploading a save.
+    // Non-stream answers: {advice, unchanged} (same save) or {running:{seconds}} (a job is already in progress: poll advice()).
+    async adviceRefresh(charKey, onProgress, opts) {
+      const r = await fetch("/api/advice/" + encodeURIComponent(charKey), { method: "POST", credentials: "same-origin", headers: { "content-type": "application/json" }, body: JSON.stringify(Object.assign({ lang: root.I18N ? root.I18N.lang : "es" }, opts || {})) });
       if (r.status === 401) return { error: "login", status: 401 };
       const ct = r.headers.get("content-type") || "";
       if (!ct.includes("ndjson")) { let d = null; try { d = await r.json(); } catch (e) {} return r.ok ? d : Object.assign({ error: (d && d.error) || r.statusText, status: r.status }, d || {}); }

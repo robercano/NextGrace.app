@@ -57,7 +57,7 @@ npx wrangler dev --port 8791
 
 ## Consejero (informe con Claude)
 
-Pestaña *Consejero* de la ficha: el Worker llama a la API de Claude con el resumen del personaje (lo mismo que ya guarda la cuenta: atributos, armas y piedras, jefes y gracias, nunca el `.sl2`), más `data/progression.json` (tabla orientativa de zonas, niveles y piedras), y guarda el informe en D1 (`advice`). Se regenera solo si el resumen ha cambiado (has abierto una partida más reciente), con 1 h de espera entre informes y 5 al día por usuario (los moderadores no tienen límite). `functions/api/advice/[char_key].js`.
+Pestaña *Consejero* de la ficha: el Worker llama a la API de Claude con el resumen del personaje (lo mismo que ya guarda la cuenta: atributos, armas y piedras, jefes y gracias, nunca el `.sl2`), más `data/progression.json` (tabla orientativa de zonas, niveles y piedras), y guarda el informe en D1 (`advice`). El informe se genera automáticamente al abrir un save nuevo con la sesión iniciada (en cuanto se guarda el resumen; puedes seguir mirando otras pestañas y el mapa mientras tanto). Si el save no ha cambiado, el botón *Otra opinión* permite pedir otra versión (pide confirmación: mismo contexto, solo cambia la redacción). Límites: 1 h de espera entre informes y 5 al día por usuario (los moderadores no tienen límite). Al cambiar el prompt, sube `PROMPT_VERSION` en el handler para que los informes guardados cuenten como desactualizados. `functions/api/advice/[char_key].js`.
 
 Activarlo:
 1. Ejecuta `db/migrations/002_advice.sql` en la *Console* de la base D1 (el `schema.sql` completo también lo incluye).
