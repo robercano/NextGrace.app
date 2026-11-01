@@ -1,0 +1,157 @@
+2840 nombres (Counter({'goods': 1225, 'armor': 735, 'weapon': 584, 'aow': 116, 'talisman': 114, 'ammo': 66}))
+  18/18
+==============================================================================
+Dagger  [weapon]
+  página: Dagger
+  encabezados: ['[[File: ER Custom Icon Description.png|40px|link=Item Description]] Description', '[[File:ER Custom Icon Acquisition.png|40px|link=Acquisition]] Acquisition', '[[File:ER Main Menu Icon Messages.png|40px|Notes]] Notes', '[[File: ER Main Menu Icon Skill Instruction.png|40px|link=Ashes of War]] Ashes of War', '[[File:ER Main Menu Icon Blacksmith.png|40px|link=Upgrading]] Upgrade Information']
+  {{for}} params: 2
+  {{Infobox Weapon}} params: 36
+  {{PAGENAME}} params: 0
+  {{ER}} params: 0
+  extraído (None): None
+==============================================================================
+Black Knife  [weapon]
+  página: Black Knife
+  encabezados: ['[[File: ER Custom Icon Description.png|40px|link=Item Description]] Description', '[[File:ER Custom Icon Acquisition.png|40px|link=Acquisition]] Acquisition', '[[File:ER Main Menu Icon Messages.png|40px|Notes]] Notes', '[[File:ER Main Menu Icon Blacksmith.png|40px|link=Upgrading]] Upgrade Information', 'Trivia']
+  {{Infobox Weapon}} params: 36
+  {{ER}} params: 0
+  {{Description}} params: 2
+  {{Navbox Melee Armaments}} params: 0
+  extraído (None): None
+==============================================================================
+Parrying Dagger  [weapon]
+  página: Parrying Dagger
+  encabezados: ['[[File: ER Custom Icon Description.png|40px|link=Item Description]] Description', '[[File:ER Custom Icon Acquisition.png|40px|link=Acquisition]] Acquisition', '[[File:ER Main Menu Icon Messages.png|40px|Notes]] Notes', '[[File: ER Main Menu Icon Skill Instruction.png|40px|link=Ashes of War]] Ashes of War', '[[File:ER Main Menu Icon Blacksmith.png|40px|link=Upgrading]] Upgrade Information']
+  {{Infobox_Weapon}} params: 31
+  {{ER}} params: 0
+  {{Description}} params: 2
+  {{clear}} params: 0
+  extraído (None): None
+==============================================================================
+Iron Helmet  [armor]
+  página: Iron Helmet
+  encabezados: ['Description', 'Acquisition']
+  {{Infobox_Armor}} params: 19
+  {{ER}} params: 0
+  {{Description}} params: 2
+  extraído (section:Acquisition): 'Sold by Nomadic Merchant at Castle Morne Rampart in the Weeping Peninsula. ru:Железный шлем.'
+==============================================================================
+Scale Armor  [armor]
+  página: Scale Armor
+  encabezados: ['Description', 'Acquisition']
+  {{DisambigMsg}} params: 3
+  {{Infobox_Armor}} params: 19
+  {{ER}} params: 0
+  {{Description}} params: 2
+  extraído (section:Acquisition): 'Nomadic Merchant at Castle Morne Rampart in the Weeping Peninsula region. ru:Чешуйчатый доспех 2.'
+==============================================================================
+Iron Gauntlets  [armor]
+  página: Iron Gauntlets
+  encabezados: ['Description', 'Acquisition']
+  {{Infobox_Armor}} params: 19
+  {{ER}} params: 0
+  {{Description}} params: 2
+  extraído (section:Acquisition): 'Nomadic Merchant at Castle Morne Rampart in the Weeping Peninsula region. ru:Железные перчатки.'
+==============================================================================
+Crimson Amber Medallion  [talisman]
+  página: Crimson Amber Medallion
+  encabezados: ['[[File:ER Custom Icon Description.png|50px|Description]] Description', '[[File:ER Custom Icon Acquisition.png|50px|Acquisition]] Acquisition', '[[File:ER Custom Icon Effect.png|50px|Effect]] Effect', '[[File:ER Main Menu Icon Messages.png|50px|Notes]] Notes', 'See also', 'Gallery']
+  {{Infobox_Item}} params: 9 → {'obtained': '[[Keepsakes]]<br/>Purchase'}
+  {{PAGENAME}} params: 0
+  {{ER}} params: 0
+  {{Description}} params: 2
+  extraído (param:obtained): 'Keepsakes. Purchase.'
+==============================================================================
+Cerulean Amber Medallion  [talisman]
+  página: Cerulean Amber Medallion
+  encabezados: ['[[File:ER Custom Icon Description.png|50px|Description]] Description', '[[File:ER Custom Icon Acquisition.png|50px|Acquisition]] Acquisition', '[[File:ER Custom Icon Effect.png|50px|Effect]] Effect', '[[File:ER Main Menu Icon Messages.png|50px|Notes]] Notes', 'See also']
+  {{Infobox_Item}} params: 8 → {'obtained': '[[Lakeside Crystal Cave]]'}
+  {{PAGENAME}} params: 0
+  {{ER}} params: 0
+  {{Description}} params: 2
+  extraído (param:obtained): 'Lakeside Crystal Cave.'
+==============================================================================
+Viridian Amber Medallion  [talisman]
+  página: Viridian Amber Medallion
+  encabezados: ['[[File:ER Custom Icon Description.png|40px|Description]] Description', '[[File:ER Custom Icon Acquisition.png|40px|Acquisition]] Acquisition', '[[File:ER Custom Icon Effect.png|40px|Effect]] Effect', '[[File:ER Main Menu Icon Messages.png|40px|Notes]] Notes', 'See also']
+  {{Infobox Item}} params: 8 → {'obtained': '[[Miranda the Blighted Bloom]]'}
+  {{PAGENAME}} params: 0
+  {{ER}} params: 0
+  {{Description}} params: 2
+  extraído (param:obtained): 'Miranda the Blighted Bloom.'
+==============================================================================
+Tarnished's Furled Finger  [goods]
+  página: Tarnished's Furled Finger
+  encabezados: ['Description', 'Acquistion', 'Gallery', 'See also']
+  {{Infobox_Item}} params: 6
+  {{ER}} params: 0
+  {{Description}} params: 11 → {'en_source': '[[1.07]]', 'jp_source': '[[1.07]]', 'fr_source': '[[1.07]]', 'fr_translate1_source': 'Meadhainnigh'}
+  extraído (None): None
+==============================================================================
+Duelist's Furled Finger  [goods]
+  página: Duelist's Furled Finger
+  encabezados: ['Description', 'Gallery']
+  {{Infobox Item}} params: 10 → {'obtained': ''}
+  {{ER}} params: 0
+  extraído (None): None
+==============================================================================
+Bloody Finger  [goods]
+  página: Bloody Finger
+  encabezados: ['Description', 'Acquisition', 'Effect', 'Gallery']
+  {{Infobox Item}} params: 34 → {'obtained': "Obtained after giving [[White Mask Varré|Varré]] the [[Lord of Blood's Favor (Soaked)|Blood-Soaked F"}
+  {{PAGENAME}} params: 0
+  {{ER}} params: 0
+  {{Description}} params: 6
+  extraído (section:Acquisition): "Obtained after giving Varré the Blood-Soaked Favor and joining Mohg's Bloody Fingers."
+==============================================================================
+Ash of War: Lion's Claw  [aow]
+  página: Ash of War: Lion's Claw
+  encabezados: ['Description', 'Effect', 'Acquisition']
+  {{Infobox Item}} params: 13 → {'obtained': ''}
+  {{ER}} params: 0
+  {{Description}} params: 13
+  {{SOTE}} params: 0
+  extraído (section:Acquisition): "Guaranteed Drop: Caelid. Drops from the Elder Lion found in Fort Gael. Note that since it can't move from the dirt floor of the Fort, it's possible to kill it safely by using ranged attacks. Once this item has been obtained, it can be duplicated by trading in Lost Ashes of War to Smithing Master Hewg."
+==============================================================================
+Ash of War: Impaling Thrust  [aow]
+  página: Ash of War: Impaling Thrust
+  encabezados: ['Description', 'Effect', 'Acquisition', 'See also']
+  {{Infobox Item}} params: 11 → {'obtained': 'Purchase'}
+  {{ER}} params: 0
+  {{Description}} params: 13
+  {{SOTE}} params: 0
+  extraído (section:Acquisition): "Purchase: Stormhill / Volcano Manor. 1x Sold for 1,000 Runes from Bernahl at either the Warmaster's Shack in Stormhill or the Drawing Room of Volcano Manor. Should Bernahl be killed before purchasing it from him, this item can still be bought from the Twin Maiden Husks for the same price after giving them Bernahl's Bell Bearing."
+==============================================================================
+Ash of War: Piercing Fang  [aow]
+  página: Ash of War: Piercing Fang
+  encabezados: ['Description', 'Effect', 'Acquisition', 'See also']
+  {{Infobox_Item}} params: 8
+  {{ER}} params: 0
+  {{Description}} params: 13
+  {{SOTE}} params: 0
+  extraído (section:Acquisition): 'Guaranteed Drop/Quest Item: Limgrave / Liurnia of the Lakes / Altus Plateau. Found pre-equipped on the Nagakiba, which can be looted off the body of Bloody Finger Hunter Yura, either at the end of his questline or by killing him before that. Once this item has been obtained, it can be duplicated by trading in Lost Ashes of War to Smithing Master Hewg.'
+==============================================================================
+Arrow  [ammo]
+  página: Arrow
+  encabezados: ['Description', 'Acquisition']
+  {{Infobox Item}} params: 15 → {'obtained': 'Purchase'}
+  {{ER}} params: 0
+  extraído (section:Acquisition): 'Nomadic Merchant southeast of Coastal Cave, beneath the collapsed structure. Nomadic Merchant at Castle Morne Rampart in the Weeping Peninsula region. Nomadic Merchant east of Saintsbridge. Abandoned Merchant in the Siofra River region.'
+==============================================================================
+Serpent Arrow  [ammo]
+  página: Serpent Arrow
+  encabezados: ['Description', 'Acquisition', 'Trivia']
+  {{stub}} params: 0
+  {{Infobox Item}} params: 33 → {'obtained': 'Purchase<br>Loot'}
+  {{PAGENAME}} params: 0
+  {{ER}} params: 0
+  extraído (section:Acquisition): "the Dragonbarrow's Isolated Merchant sells endless Serpent Arrows for 120 runes each. Serpent Arrows are also dropped by Serpent Snails & Skeletal Snails."
+==============================================================================
+Bone Arrow (Fletched)  [ammo]
+  página: Bone Arrow (Fletched)
+  encabezados: ['[[File:ER Custom Icon Description.png|50px|Description]] Description', '[[File:ER Custom Icon Acquisition.png|50px|Acquisition]] Acquisition', '[[File:ER Main Menu Icon Item Crafting.png|50px|Crafting]] Crafting', 'See Also']
+  {{Infobox Item}} params: 16 → {'obtained': 'Craftable'}
+  {{ER}} params: 0
+  {{Description}} params: 6
+  {{#lst:Cookbook}} params: 1
+  extraído (param:obtained): 'Craftable.'
