@@ -5,6 +5,7 @@
 (function (root) {
   const EN = {
     // header / onboarding
+    "onb0": "Your save is read entirely in this browser: nothing is uploaded and the file is <b>never modified</b> (the site only reads it; it does not touch the game or any anti-cheat system). <a href=\"about.html\">More information</a>.",
     "onb1": "Steam opens the page with your Elden Ring files (sign in to Steam if asked). Tap <i>Download</i> next to <code>ER0000.sl2</code>.",
     "onb2": "Pick the <code>ER0000.sl2</code> you just downloaded (on PC the one in <code>%AppData%\\EldenRing\\&lt;SteamID&gt;\\</code> works too).",
     "Abrir Steam Cloud": "Open Steam Cloud", "Elegir archivo": "Choose file", "Runas": "Runes", "Mostrar más": "Show more", "Acceso rápido y bolsa": "Quick items & pouch",
