@@ -61,6 +61,8 @@ button{cursor:pointer}
 .mode{font-family:var(--display);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:6px 18px;border:1px solid var(--line);border-bottom:0}
 .mode:first-child{border-radius:3px 0 0 0}.mode:last-child{border-radius:0 3px 0 0;border-left:0}
 .mode[aria-current=true]{color:var(--gold-2);background:#c9a44a14;border-color:var(--gold-dim)}
+/* the selected tab owns the divider on both sides, so "Mapa" shows the same gold edge as "Ficha" */
+.mode:last-child[aria-current=true]{border-left:1px solid var(--gold-dim)}.mode[aria-current=true]+.mode{border-left:0}
 .tabs{display:flex;overflow-x:auto;scrollbar-width:none;gap:0;padding:0 max(8px,env(safe-area-inset-right,0px)) 0 max(8px,env(safe-area-inset-left,0px))}
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex:1 0 auto;background:none;border:0;border-bottom:2px solid transparent;color:var(--fg-2);font-family:var(--display);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;padding:9px 12px 8px;white-space:nowrap}
