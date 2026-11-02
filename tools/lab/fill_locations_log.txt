@@ -1,0 +1,17 @@
+287 nombres sin texto (ya en borrador: 0, desconocidos previos: 0)
+  ERROR model error 400: `temperature` is deprecated for this model.
+  ERROR model error 400: `temperature` is deprecated for this model.
+  ERROR model error 400: `temperature` is deprecated for this model.
+  ERROR model error 400: `temperature` is deprecated for this model.
+  ERROR model error 400: `temperature` is deprecated for this model.
+  ERROR model error 400: `temperature` is deprecated for this model.
+  ERROR model error 400: `temperature` is deprecated for this model.
+  ERROR model error 400: `temperature` is deprecated for this model.
+  ERROR model error 400: `temperature` is deprecated for this model.
+  ERROR model error 400: `temperature` is deprecated for this model.
+  ERROR model error 400: `temperature` is deprecated for this model.
+  ERROR model error 400: `temperature` is deprecated for this model.
+borradores nuevos 0, desconocidos 0 → data/locations_draft.json (~$0.00)
+objetos: 4184; con texto manual 0, de la wiki 3765, borrador IA 0, sin texto 419; cambian 0
+289 lugares; objetos con texto de ubicación 3765, con lugar 2254, con lugar concreto (no solo región) 1868
+data/items.json y data/places.json regenerados
