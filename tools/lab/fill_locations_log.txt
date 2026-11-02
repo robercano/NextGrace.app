@@ -1,7 +1,21 @@
-20 nombres sin texto (ya en borrador: 0, desconocidos previos: 287)
-  primera respuesta (muestra): {"Ancient Dragon Apostle's Cookbook [1]":"UNKNOWN","Ancient Dragon Apostle's Cookbook [2]":"UNKNOWN","Ancient Dragon Apostle's Cookbook [3]":"UNKNOWN","Ancient Dragon Apostle's Cookbook [4]":"UNKNOWN","Ancient Dragon Florissax":"UNKNOWN","Ancient Dragon Knight's Cookbook [1]":"UNKNOWN","Ancient Dragon Knight's Cookbook [2]":"UNKNOWN","Antiquity Scholar's Cookbook [1]":"UNKNOWN","Antiquity Scholar's Cookbook [2]":"UNKNOWN","Armorer's Cookbook (5)":"UNKNOWN","Armorer's Cookbook [1]":"UNKNOWN","Armorer's Cookbook [2]":"UNKNOWN","Armorer's Cookbook [3]":"UNKNOWN","Armorer's Cookbook [4]":"UNKNOWN"
-  20/20 · ~$0.025
-borradores nuevos 0, desconocidos 287 → data/locations_draft.json (~$0.03)
-objetos: 4184; con texto manual 0, de la wiki 3765, borrador IA 0, sin texto 419; cambian 0
-289 lugares; objetos con texto de ubicación 3765, con lugar 2254, con lugar concreto (no solo región) 1868
+287 nombres sin texto (ya en borrador: 0, desconocidos previos: 0)
+  primera respuesta (muestra): {"Ancient Dragon Apostle's Cookbook [1]":"Found on a corpse in Crumbling Farum Azula, in the early section past the Beside the Great Bridge site of grace. (unsure)","Ancient Dragon Apostle's Cookbook [2]":"Found in Crumbling Farum Azula on a corpse among the ruined buildings in the middle section of the area. (unsure)","Ancient Dragon Apostle's Cookbook [3]":"Found in Crumbling Farum Azula on a corpse near the area leading to the Dragon Temple. (unsure)","Ancient Dragon Apostle's Cookbook [4]":"Found in Crumbling Farum Azula on a corpse in one of the later sections of the area. (unsure)","Anci
+  20/287 · ~$0.211
+  40/287 · ~$0.509
+  60/287 · ~$0.718
+  80/287 · ~$0.924
+  100/287 · ~$1.148
+  120/287 · ~$1.390
+  140/287 · ~$1.591
+  160/287 · ~$1.852
+  180/287 · ~$2.106
+  200/287 · ~$2.329
+  220/287 · ~$2.627
+  240/287 · ~$2.904
+  260/287 · ~$3.161
+  280/287 · ~$3.434
+  287/287 · ~$3.547
+borradores nuevos 275, desconocidos 12 → data/locations_draft.json (~$3.55)
+objetos: 4184; con texto manual 0, de la wiki 3765, borrador IA 343, sin texto 76; cambian 343
+289 lugares; objetos con texto de ubicación 4108, con lugar 2427, con lugar concreto (no solo región) 1957
 data/items.json y data/places.json regenerados

@@ -1,6 +1,1395 @@
 {
- "entries": {},
- "unknown": [],
- "source": "Claude (claude-sonnet-5-5), unverified drafts; review and move good ones to data/overrides/locations.json",
+ "entries": {
+  "Ancient Dragon Apostle's Cookbook [1]": {
+   "text": "Found on a corpse in Crumbling Farum Azula, in the early section past the Beside the Great Bridge site of grace. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Ancient Dragon Apostle's Cookbook [2]": {
+   "text": "Found in Crumbling Farum Azula on a corpse among the ruined buildings in the middle section of the area. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Ancient Dragon Apostle's Cookbook [3]": {
+   "text": "Found in Crumbling Farum Azula on a corpse near the area leading to the Dragon Temple. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Ancient Dragon Apostle's Cookbook [4]": {
+   "text": "Found in Crumbling Farum Azula on a corpse in one of the later sections of the area. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Ancient Dragon Florissax": {
+   "text": "Shadow of the Erdtree spirit ash found in the Jagged Peak region, obtained after progressing past the dragon-related content there. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Ancient Dragon Knight's Cookbook [1]": {
+   "text": "Shadow of the Erdtree; found on a corpse in the Jagged Peak foothills region. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Ancient Dragon Knight's Cookbook [2]": {
+   "text": "Shadow of the Erdtree; found further along the Jagged Peak region on the way toward the summit. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Antiquity Scholar's Cookbook [1]": {
+   "text": "Shadow of the Erdtree; found on a corpse in the Ancient Ruins of Rauh area. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Antiquity Scholar's Cookbook [2]": {
+   "text": "Shadow of the Erdtree; found in the Ancient Ruins of Rauh, in a different part of the ruins from the first volume. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Armorer's Cookbook (5)": {
+   "text": "Appears to be a duplicate or unused listing of Armorer's Cookbook [5]; the normal version is found in the Mountaintops of the Giants. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Armorer's Cookbook [1]": {
+   "text": "Found on a corpse in Stormhill, Limgrave, near the Warmaster's Shack. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Armorer's Cookbook [2]": {
+   "text": "Found in the Weeping Peninsula, on a corpse near Castle Morne. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Armorer's Cookbook [3]": {
+   "text": "Found in Liurnia of the Lakes on a corpse in one of the ruined villages. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Armorer's Cookbook [4]": {
+   "text": "Found on the Altus Plateau on a corpse near one of the roadside ruins. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Armorer's Cookbook [5]": {
+   "text": "Found in the Mountaintops of the Giants on a corpse. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Armorer's Cookbook [6]": {
+   "text": "Found in Leyndell, Royal Capital on a corpse. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Armorer's Cookbook [7]": {
+   "text": "Found in Caelid on a corpse in the area around Sellia or Fort Faroth. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Battlefield Priest's Cookbook [1]": {
+   "text": "Found on a corpse at one of the Lands Between forts, possibly Fort Faroth in Dragonbarrow. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Battlefield Priest's Cookbook [2]": {
+   "text": "Found on a corpse in the Altus Plateau or Mt. Gelmir area. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Battlefield Priest's Cookbook [3]": {
+   "text": "Found on a corpse in the Mountaintops of the Giants. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Battlefield Priest's Cookbook [4]": {
+   "text": "Found on a corpse in a late-game area, likely near the Consecrated Snowfield. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Beast Claw": {
+   "text": "Shadow of the Erdtree weapon, found on a corpse in the Land of Shadow, likely in the Gravesite Plain region. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Black Knight Captain Huw": {
+   "text": "Shadow of the Erdtree spirit ash, found in the Land of Shadow in an area guarded by Black Knights. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Black Knight Commander Andreas": {
+   "text": "Shadow of the Erdtree spirit ash, found in the Land of Shadow, possibly at the Ruins of Unte or a nearby Black Knight outpost. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Blue Cipher Ring": {
+   "text": "Sold by the Twin Maiden Husks at Roundtable Hold. It may also be obtainable early from a Hunter's quest-related source. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Brave's Battlewear": {
+   "text": "Part of the Brave's set, found on a corpse in the open world in the mid-game. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Brave's Battlewear (Altered)": {
+   "text": "Created by altering Brave's Battlewear at a Site of Grace.",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Burial Crow's Letter": {
+   "text": "Shadow of the Erdtree item, found in the Land of Shadow near the burial crow enemies. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Carian Knight's Bloody Shield": {
+   "text": "Shadow of the Erdtree shield, found in the Land of Shadow, possibly tied to a Carian knight encounter. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Cerulean Crystal Tear (Variant)": {
+   "text": "Variant of the Cerulean Crystal Tear, which is dropped by an Erdtree Avatar at a Minor Erdtree. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Corhyn's Bell Bearing": {
+   "text": "Obtained from Brother Corhyn when he dies, either by killing him or through his questline. Give it to the Twin Maiden Husks to unlock his incantations.",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Crucible Hammer-Helm": {
+   "text": "Shadow of the Erdtree helm, found in the Land of Shadow, possibly in a chest near Shadow Keep. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "D's Bell Bearing": {
+   "text": "Obtained when D, Hunter of the Dead dies, either by killing him or through Fia's questline. Give it to the Twin Maiden Husks to buy his armor.",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Deathsbane White Jerky": {
+   "text": "Shadow of the Erdtree consumable, found as loot in the Land of Shadow or crafted from a cookbook. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Dragon Cult Prayerbook": {
+   "text": "Found on a corpse at a fort associated with the Dragon Cult, possibly Fort Faroth. Give it to a Finger Reader or incantation-teaching merchant to unlock its incantations. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Drawstring Eternal Sleep Grease": {
+   "text": "Shadow of the Erdtree consumable, found as loot in the Land of Shadow or crafted after obtaining the matching cookbook. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Drawstring Freezing Grease": {
+   "text": "Shadow of the Erdtree consumable, found as loot in the Land of Shadow or crafted after obtaining the matching cookbook. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Duelist's Furled Finger": {
+   "text": "Sold by the Twin Maiden Husks in Roundtable Hold. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Entwining Umbilical Cord": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree, on a corpse in the later regions of the map. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Erdtree Codex": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree, near the Ancient Ruins of Rauh. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Erdtree Prayerbook": {
+   "text": "Found on a corpse in Leyndell, Royal Capital. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Eternal Sleep Grease": {
+   "text": "Craftable after finding its cookbook in the Land of Shadow in Shadow of the Erdtree. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Fetal Position": {
+   "text": "Obtained in the Stone Coffin Fissure in the Shadow of the Erdtree DLC. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Fevor's Cookbook [1]": {
+   "text": "Found on a corpse in the Land of Shadow in Shadow of the Erdtree, part of a three-book set. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Fevor's Cookbook [2]": {
+   "text": "Found on a corpse in the Land of Shadow in Shadow of the Erdtree, part of a three-book set. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Fevor's Cookbook [3]": {
+   "text": "Found on a corpse in the Land of Shadow in Shadow of the Erdtree, part of a three-book set. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Finger-Weaver's Cookbook [1]": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree, on a corpse. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Finger-Weaver's Cookbook [2]": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree, on a corpse. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Fire Arrow": {
+   "text": "Sold by several merchants, including Nomadic Merchants and the Twin Maiden Husks, and can also be crafted once the matching cookbook is found. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Fire Knight's Cookbook [1]": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree, in the Shadow Keep area. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Fire Knight's Cookbook [2]": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree, in the Shadow Keep area. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Forager Brood Cookbook [1]": {
+   "text": "Found on a corpse in the Land of Shadow in Shadow of the Erdtree, one of six books spread across the map. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Forager Brood Cookbook [2]": {
+   "text": "Found on a corpse in the Land of Shadow in Shadow of the Erdtree, one of six books spread across the map. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Forager Brood Cookbook [3]": {
+   "text": "Found on a corpse in the Land of Shadow in Shadow of the Erdtree, one of six books spread across the map. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Forager Brood Cookbook [4]": {
+   "text": "Found on a corpse in the Land of Shadow in Shadow of the Erdtree, one of six books spread across the map. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Forager Brood Cookbook [5]": {
+   "text": "Found on a corpse in the Land of Shadow in Shadow of the Erdtree, one of six books spread across the map. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Forager Brood Cookbook [6]": {
+   "text": "Found on a corpse in the Land of Shadow in Shadow of the Erdtree, one of six books spread across the map. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Forager Brood Cookbook [7]": {
+   "text": "A Shadow of the Erdtree cookbook in the Forager Brood series, found on a corpse in the Land of Shadow, likely in the southern or eastern regions. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Frenzied's Cookbook [1]": {
+   "text": "Found on a corpse in the Frenzied Flame Village area in northeastern Liurnia of the Lakes. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Frenzied's Cookbook [2]": {
+   "text": "Found near the Frenzied Flame Village and its tower in northeastern Liurnia, after the Frenzied's Cookbook [1] location. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Fugitive Warrior's Recipe [5]": {
+   "text": "Found on a corpse near Fort Faroth in Dragonbarrow, Caelid. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Ghost Glovewort [1]": {
+   "text": "Low-grade ghost spirit-upgrade material picked from glowing plants in the Siofra River and Ainsel River areas, also sold by the Twin Maiden Husks with the corresponding Bell Bearing. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Ghost Glovewort [2]": {
+   "text": "Gathered in the Siofra River, Ainsel River and Nokron, Eternal City areas, and sold by the Twin Maiden Husks once the relevant Bell Bearing is given. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Ghost Glovewort [3]": {
+   "text": "Gathered in Nokron, Eternal City, the Ainsel River Main and Lake of Rot underground areas, and also found in some catacombs. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Ghost Glovewort [4]": {
+   "text": "Gathered in Nokron, the Lake of Rot and Deeproot Depths, with additional copies in late catacombs. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Ghost Glovewort [5]": {
+   "text": "Gathered mainly in Deeproot Depths and the Lake of Rot underground regions, and sold by the Twin Maiden Husks after giving Ghost-Glovewort Picker's Bell Bearing [2]. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Ghost Glovewort [6]": {
+   "text": "Gathered in Deeproot Depths and the Lake of Rot, also appearing in Mountaintops-area catacombs. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Ghost Glovewort [7]": {
+   "text": "Gathered in Mohgwyn Palace and Miquella's Haligtree, and sold by the Twin Maiden Husks after giving Ghost-Glovewort Picker's Bell Bearing [3]. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Ghost Glovewort [8]": {
+   "text": "Gathered in Mohgwyn Palace, Miquella's Haligtree and Elphael, Brace of the Haligtree. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Ghost Glovewort [9]": {
+   "text": "Gathered in Mohgwyn Palace and Elphael, Brace of the Haligtree, with copies in late catacombs such as those in the Consecrated Snowfield. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Ghost-Glovewort Picker's Bell Bearing [2]": {
+   "text": "Found in Deeproot Depths or Mohgwyn Palace; give it to the Twin Maiden Husks at the Roundtable Hold to buy mid-grade Ghost Glovewort. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Ghost-Glovewort Picker's Bell Bearing [3]": {
+   "text": "Found in Elphael, Brace of the Haligtree; give it to the Twin Maiden Husks at the Roundtable Hold to buy high-grade Ghost Glovewort. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Glintstone Craftsman's Cookbook [1]": {
+   "text": "Found on a corpse in Liurnia of the Lakes, near the eastern lakeshore. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Glintstone Craftsman's Cookbook [2]": {
+   "text": "Found on a corpse in Liurnia of the Lakes, near the Academy Gate Town area. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Glintstone Craftsman's Cookbook [3]": {
+   "text": "Found in Liurnia of the Lakes, in the area around the Carian Study Hall or the Three Sisters. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Glintstone Craftsman's Cookbook [4]": {
+   "text": "Found in Liurnia of the Lakes, in the area around Caria Manor. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Glintstone Craftsman's Cookbook [5]": {
+   "text": "Found on a corpse in Liurnia of the Lakes, possibly in the northern part of the region near Caria Manor. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Glintstone Craftsman's Cookbook [6]": {
+   "text": "Found on a corpse in Liurnia of the Lakes, possibly in the eastern area near the Liurnia Highway or Bellum Highway. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Glintstone Craftsman's Cookbook [7]": {
+   "text": "Found on a corpse in the Altus Plateau or Mt. Gelmir region. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Glintstone Craftsman's Cookbook [8]": {
+   "text": "Found on a corpse in the Mountaintops of the Giants, possibly near the Zamor Ruins. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Glovewort Picker's Bell Bearing [2]": {
+   "text": "Found in the underground regions, possibly the Deeproot Depths or the Nokron area. Hand it to the Twin Maiden Husks to buy Grave Glovewort. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Glovewort Picker's Bell Bearing [3]": {
+   "text": "Found late in the underground or late-game regions, possibly near Mohgwyn Palace. Hand it to the Twin Maiden Husks to buy higher-tier Grave Glovewort. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Gold Sewing Needle": {
+   "text": "Found on a corpse in Miquella's Haligtree. It can be given to Boc to improve his tailoring. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Golden Horn Tender": {
+   "text": "Found in the Land of Shadow (Shadow of the Erdtree), possibly in the Jagged Peak or Ancient Ruins of Rauh area. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Golden Order Principles": {
+   "text": "Obtained in Leyndell, Royal Capital, possibly from a corpse or a quest NPC connected to Brother Corhyn and Goldmask. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Golden Rune [10]": {
+   "text": "Found on corpses throughout mid-to-late-game areas such as the Altus Plateau, Leyndell and Mt. Gelmir, and dropped by some enemies. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Golden Rune [11]": {
+   "text": "Found on corpses in late-game areas such as the Mountaintops of the Giants, Crumbling Farum Azula and Miquella's Haligtree. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Golden Rune [12]": {
+   "text": "Found on corpses in late-game areas such as the Consecrated Snowfield, Farum Azula and the Haligtree. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Golden Rune [13]": {
+   "text": "Found on corpses in the latest areas of the game, including Crumbling Farum Azula, Elphael and the Land of Shadow. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Golden Rune [1]": {
+   "text": "Found on corpses throughout early areas such as Limgrave and Stormhill. Also sold by several Nomadic Merchants. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Golden Rune [2]": {
+   "text": "Found on corpses throughout Limgrave, the Weeping Peninsula and Stormveil Castle, and dropped by some early enemies. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Golden Rune [3]": {
+   "text": "Found on corpses in early-to-mid areas such as Stormveil Castle, Liurnia of the Lakes and Caelid. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Golden Rune [4]": {
+   "text": "Found on corpses in areas such as Liurnia of the Lakes, Caelid and Siofra River. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Golden Rune [5]": {
+   "text": "Found on corpses in mid-game areas such as Liurnia of the Lakes, Raya Lucaria Academy and Caelid. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Golden Rune [6]": {
+   "text": "Found on corpses in mid-game areas such as Caelid, Liurnia of the Lakes and the Altus Plateau. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Golden Rune [7]": {
+   "text": "Found on corpses throughout mid-game regions such as Altus Plateau, Mt. Gelmir and Leyndell, and occasionally dropped by enemies there. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Golden Rune [8]": {
+   "text": "Found on corpses in later regions such as Leyndell, Royal Capital and the Mountaintops of the Giants, and dropped by some enemies there. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Golden Rune [9]": {
+   "text": "Found on corpses in late-game areas such as the Mountaintops of the Giants, Consecrated Snowfield and Crumbling Farum Azula. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Gostoc's Bell Bearing": {
+   "text": "Obtained from Gatekeeper Gostoc in Stormveil Castle when he is killed. Give it to the Twin Maiden Husks at the Roundtable Hold to add his stock to theirs.",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Gowry's Bell Bearing": {
+   "text": "Obtained from Gowry at Gowry's Shack in Caelid, either by killing him or after his questline concludes. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Grass Hair Ornament": {
+   "text": "Shadow of the Erdtree head piece found on a corpse in the Land of Shadow. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Grave Glovewort [1]": {
+   "text": "Common in early catacombs and underground areas such as the Limgrave and Weeping Peninsula catacombs and Siofra River. Also sold by the Twin Maiden Husks after you give them the Glovewort Picker's Bell Bearing [1]. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Grave Glovewort [2]": {
+   "text": "Found in early catacombs and Siofra River, and in Liurnia catacombs. Also sold by the Twin Maiden Husks after you give them the Glovewort Picker's Bell Bearing [1]. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Grave Glovewort [3]": {
+   "text": "Found in Liurnia and Caelid catacombs and around Siofra and Ainsel River. Also sold by the Twin Maiden Husks after you give them the Glovewort Picker's Bell Bearing [1]. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Grave Glovewort [4]": {
+   "text": "Found in Caelid and Altus Plateau catacombs and the Ainsel River area. Purchasable from the Twin Maiden Husks after you give them the Glovewort Picker's Bell Bearing [2]. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Grave Glovewort [5]": {
+   "text": "Found in Altus Plateau and Mt. Gelmir catacombs, Nokron and Deeproot Depths. Purchasable from the Twin Maiden Husks after you give them the Glovewort Picker's Bell Bearing [2]. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Grave Glovewort [6]": {
+   "text": "Found in Leyndell's surrounding catacombs, Deeproot Depths and Nokron. Purchasable from the Twin Maiden Husks after you give them the Glovewort Picker's Bell Bearing [2]. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Grave Glovewort [7]": {
+   "text": "Found in late-game catacombs such as those in the Mountaintops of the Giants, and in the Lake of Rot. Purchasable from the Twin Maiden Husks after you give them the Glovewort Picker's Bell Bearing [3]. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Grave Glovewort [8]": {
+   "text": "Found in the Mountaintops of the Giants and Consecrated Snowfield catacombs and in Mohgwyn Palace. Purchasable from the Twin Maiden Husks after you give them the Glovewort Picker's Bell Bearing [3]. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Grave Glovewort [9]": {
+   "text": "Found in the latest areas such as Consecrated Snowfield catacombs, Mohgwyn Palace and Miquella's Haligtree. Purchasable from the Twin Maiden Husks after you give them the Glovewort Picker's Bell Bearing [3]. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Grave Keeper's Cookbook [1]": {
+   "text": "Shadow of the Erdtree cookbook found on a corpse in or near one of the Land of Shadow catacombs. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Grave Keeper's Cookbook [2]": {
+   "text": "Shadow of the Erdtree cookbook found on a corpse in a later Land of Shadow catacomb area. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Gravebird Ashes": {
+   "text": "Shadow of the Erdtree spirit ash found in the Gravesite Plain area of the Land of Shadow. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Great Ghost Glovewort": {
+   "text": "Found in late-game areas such as Mohgwyn Palace, Consecrated Snowfield and Miquella's Haligtree, often near spirit-related enemies. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Great Grave Glovewort": {
+   "text": "Found in late-game areas such as Mohgwyn Palace, the Hidden Path to the Haligtree, Consecrated Snowfield and the Subterranean Shunning-Grounds. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Greater Potentate's Cookbook [10]": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree, possibly near the Ancient Ruins of Rauh. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Greater Potentate's Cookbook [11]": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree, possibly near the Cerulean Coast. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Greater Potentate's Cookbook [12]": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree, possibly in the Hinterland. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Greater Potentate's Cookbook [13]": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree, possibly in the Ancient Ruins of Rauh area. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Greater Potentate's Cookbook [14]": {
+   "text": "Found late in Shadow of the Erdtree, possibly in or around Enir-Ilim. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Greater Potentate's Cookbook [1]": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree, possibly in the Gravesite Plain early in the expansion. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Greater Potentate's Cookbook [2]": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree, possibly in the Gravesite Plain region. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Greater Potentate's Cookbook [3]": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree, possibly within Shadow Keep. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Greater Potentate's Cookbook [4]": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree, possibly near Fog Rift Fort. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Greater Potentate's Cookbook [5]": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree, possibly around Belurat or the Scadu Altus area. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Greater Potentate's Cookbook [6]": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree, possibly in the Abyssal Woods. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Greater Potentate's Cookbook [7]": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree, possibly near Charo's Hidden Grave. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Greater Potentate's Cookbook [8]": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree, possibly in Shadow Keep's Specimen Storehouse. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Greater Potentate's Cookbook [9]": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree, possibly in the Abyssal Woods. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Grovel For Mercy": {
+   "text": "Obtained from Patches in Murkwater Cave by sparing him when he begs for his life after you fight him.",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Hermit Merchant's Bell Bearing [1]": {
+   "text": "Dropped by the Hermit Merchant found in Mohgwyn Palace when he is killed. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Hermit Merchant's Bell Bearing [2]": {
+   "text": "Dropped by the Hermit Merchant in Leyndell, Ashen Capital when he is killed. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Hermit Merchant's Bell Bearing [3]": {
+   "text": "Dropped by the Hermit Merchant at the Hermit Merchant's Shack in the Mountaintops of the Giants when he is killed. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Hero's Rune [1]": {
+   "text": "Found as loot in several mid-to-late game areas such as Volcano Manor, Leyndell and the Mountaintops of the Giants, and dropped by some tougher enemies. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Hero's Rune [2]": {
+   "text": "Found as loot in late-game areas such as Leyndell, the Mountaintops of the Giants and Crumbling Farum Azula. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Hero's Rune [3]": {
+   "text": "Found in late-game areas such as the Mountaintops of the Giants, Consecrated Snowfield, Crumbling Farum Azula and Miquella's Haligtree, either lying on corpses or dropped by tougher enemies. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Hero's Rune [4]": {
+   "text": "Found in late-game areas such as the Mountaintops of the Giants, Consecrated Snowfield, Crumbling Farum Azula and Miquella's Haligtree, either lying on corpses or dropped by tougher enemies. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Hero's Rune [5]": {
+   "text": "Found in late-game areas such as the Mountaintops of the Giants, Consecrated Snowfield, Crumbling Farum Azula and Miquella's Haligtree, either lying on corpses or dropped by tougher enemies. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Holy Water Grease": {
+   "text": "Found on corpses in later areas such as Leyndell and Miquella's Haligtree. It can also be crafted once the cookbook containing its recipe has been obtained. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Horned Warrior Ashes": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree, in a late-game area associated with the Hornsent warriors, possibly around Enir-Ilim. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Igon's Cookbook [1]": {
+   "text": "Given by Igon at the Grand Altar of Dragon Communion area in the Gravesite Plain when you talk to him early in his questline. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Igon's Cookbook [2]": {
+   "text": "Obtained by progressing Igon's questline in the Jagged Peak region, after the fight against Bayle the Dread. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Iji's Bell Bearing": {
+   "text": "Obtained once Iji has died, either by killing him in Liurnia or as a result of the related questline. Giving it to the Twin Maiden Husks unlocks his stock. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Iji's Confession": {
+   "text": "Found at Iji's usual spot on the road to Caria Manor in Liurnia of the Lakes after he dies as part of Ranni's or Blaidd's questline. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Impenetrable Thorns": {
+   "text": "A Shadow of the Erdtree sorcery found in the Land of Shadow, possibly in the Shadow Keep region. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Isolated Merchant's Bell Bearing [1]": {
+   "text": "Obtained by killing the Isolated Merchant on the Weeping Peninsula, near the Fourth Church of Marika. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Isolated Merchant's Bell Bearing [2]": {
+   "text": "Obtained by killing the Isolated Merchant in Dragonbarrow, Caelid. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Isolated Merchant's Bell Bearing [3]": {
+   "text": "Obtained by killing an Isolated Merchant in the Land of Shadow in Shadow of the Erdtree. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Jolán and Anna": {
+   "text": "A Shadow of the Erdtree spirit ash obtained in the Land of Shadow, possibly tied to an NPC questline. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Land of Shadow": {
+   "text": "A Shadow of the Erdtree incantation found in the Land of Shadow, possibly in the Scadu Altus region. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Letter from Volcano Manor": {
+   "text": "Given by Tanith at Volcano Manor after you accept her invitation to join, providing your assassination targets. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Mad Craftsman's Cookbook [1]": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree, possibly in or around the Shadow Keep. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Mad Craftsman's Cookbook [2]": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree, possibly in or around the Shadow Keep. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Mad Craftsman's Cookbook [3]": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree, possibly in or around the Shadow Keep. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Map: Abyss": {
+   "text": "Found on a map stele near the entrance of the Abyssal Woods in Shadow of the Erdtree. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Map: Ainsel River": {
+   "text": "Read from the map stele in Ainsel River, near the Uhl Palace Ruins Site of Grace. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Map: Altus Plateau": {
+   "text": "Read from the map stele on the Altus Plateau, a short way from the Altus Plateau Site of Grace after you emerge from the Grand Lift of Dectus or the Ruin-Strewn Precipice. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Map: Caelid": {
+   "text": "Read from the map stele in western Caelid, along the road near the Caelid Highway South Site of Grace. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Map: Consecrated Snowfield": {
+   "text": "Read from the map stele in the Consecrated Snowfield, near the Consecrated Snowfield Site of Grace. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Map: Deeproot Depths": {
+   "text": "Read from the map stele in the Deeproot Depths, near the Great Waterfall Crest Site of Grace. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Map: Dragonbarrow": {
+   "text": "Read from the map stele in Greyoll's Dragonbarrow, near the Dragonbarrow West Site of Grace. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Map: Gravesite Plain": {
+   "text": "Read from the map stele in the Gravesite Plain, just ahead of the Gravesite Plain Site of Grace shortly after entering the Land of Shadow.",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Map: Lake of Rot": {
+   "text": "Read from the map stele in the Lake of Rot, near the Lake of Rot Shoreside Site of Grace. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Map: Leyndell, Royal Capital": {
+   "text": "Read from the map stele inside Leyndell, Royal Capital, near the Avenue Balcony Site of Grace. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Map: Limgrave, East": {
+   "text": "Read from the map stele in eastern Limgrave, near the Fort Haight West Site of Grace. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Map: Limgrave, West": {
+   "text": "Read from the map stele at the Gatefront Ruins in western Limgrave, near the Gatefront Site of Grace.",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Map: Liurnia, East": {
+   "text": "Read from the map stele in eastern Liurnia of the Lakes, along the road north of the Liurnia Lake Shore Site of Grace. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Map: Liurnia, North": {
+   "text": "Read from the map stele in northern Liurnia of the Lakes, near Academy Gate Town. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Map: Liurnia, West": {
+   "text": "Read from the map stele in western Liurnia of the Lakes, near the Four Belfries. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Map: Mohgwyn Palace": {
+   "text": "Read from the map stele in the Mohgwyn Dynasty Mausoleum area, near the Palace Approach Ledge-Road Site of Grace. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Map: Mountaintops of the Giants, East": {
+   "text": "Read from the map stele in the eastern Mountaintops of the Giants, near the Ancient Snow Valley Ruins. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Map: Mountaintops of the Giants, West": {
+   "text": "Read from the map stele in the western Mountaintops of the Giants, near the Zamor Ruins Site of Grace. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Map: Mt. Gelmir": {
+   "text": "Read from the map stele on Mt. Gelmir, near the Ninth Mt. Gelmir Campsite Site of Grace. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Map: Rauh Ruins": {
+   "text": "Read from the map stele in the Rauh Ruins in the Land of Shadow, near the Rauh Ancient Ruins, East Site of Grace. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Map: Scadu Altus": {
+   "text": "Read from the map stele in Scadu Altus in the Land of Shadow, near the Highroad Cross Site of Grace. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Map: Southern Shore": {
+   "text": "Picked up from the map stele in the Southern Shore region of the Realm of Shadow, along the Cerulean Coast area. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Map: Weeping Peninsula": {
+   "text": "Picked up from the map stele on the Weeping Peninsula, along the road toward Castle Morne. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Meeting Place Map": {
+   "text": "Given by an NPC during Needle Knight Leda's questline in the Realm of Shadow. It marks a location where allies gather. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Memory of Grace": {
+   "text": "Held from the very start of the game as part of the starting inventory.",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Millicent's Tunic": {
+   "text": "Part of Millicent's set, found after her questline concludes at the place where her story ends. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Minor Erdtree": {
+   "text": "An incantation found in the Lands Between, possibly in a chest or sold by a merchant later in the game. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Miriel's Bell Bearing": {
+   "text": "Tied to Miriel, Pastor of Vows at the Church of Vows in Liurnia, if he is no longer present. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Missionary's Cookbook (3)": {
+   "text": "Found on a corpse in Limgrave. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Missionary's Cookbook [1]": {
+   "text": "Found on a corpse in Limgrave early in the game. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Missionary's Cookbook [2]": {
+   "text": "Found on a corpse in Limgrave, possibly near the Stormhill area. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Missionary's Cookbook [3]": {
+   "text": "Found on a corpse in Limgrave. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Missionary's Cookbook [4]": {
+   "text": "Found on a corpse in Liurnia of the Lakes. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Missionary's Cookbook [5]": {
+   "text": "Found on a corpse in the Altus Plateau region. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Missionary's Cookbook [6]": {
+   "text": "Found on a corpse in the Mountaintops of the Giants. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Missionary's Cookbook [7]": {
+   "text": "Found on a corpse in the Consecrated Snowfield. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Mushroom-Seller's Bell Bearing [1]": {
+   "text": "Dropped by one of the mushroom-selling merchants in the Realm of Shadow when killed. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Mushroom-Seller's Bell Bearing [2]": {
+   "text": "Dropped by a second mushroom-selling merchant in the Realm of Shadow when killed. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Merchant's Bell Bearing [10]": {
+   "text": "Dropped by the Nomadic Merchant in the Mountaintops of the Giants when killed. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Merchant's Bell Bearing [11]": {
+   "text": "Dropped by the Nomadic Merchant in the Consecrated Snowfield when killed. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Merchant's Bell Bearing [1]": {
+   "text": "Dropped by the Nomadic Merchant in western Limgrave when killed. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Merchant's Bell Bearing [2]": {
+   "text": "Dropped by the Nomadic Merchant in southern Liurnia of the Lakes, near the lakeshore. Give it to the Twin Maiden Husks at the Roundtable Hold to add his stock to their shop. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Merchant's Bell Bearing [3]": {
+   "text": "Dropped by the Nomadic Merchant in eastern Liurnia of the Lakes, along the eastern cliffs and highway. Give it to the Twin Maiden Husks at the Roundtable Hold to add his stock to their shop. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Merchant's Bell Bearing [4]": {
+   "text": "Dropped by the Nomadic Merchant in Caelid, near the Caelid Highway South. Give it to the Twin Maiden Husks to add his stock to their shop. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Merchant's Bell Bearing [5]": {
+   "text": "Dropped by the Nomadic Merchant in northern Liurnia of the Lakes. Give it to the Twin Maiden Husks to add his stock to their shop. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Merchant's Bell Bearing [6]": {
+   "text": "Dropped by the Nomadic Merchant on the Altus Plateau, near the Altus Highway. Give it to the Twin Maiden Husks to add his stock to their shop. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Merchant's Bell Bearing [7]": {
+   "text": "Dropped by the Nomadic Merchant on Mt. Gelmir or in the Altus region. Give it to the Twin Maiden Husks to add his stock to their shop. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Merchant's Bell Bearing [8]": {
+   "text": "Dropped by the Nomadic Merchant in the Capital Outskirts. Give it to the Twin Maiden Husks to add his stock to their shop. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Merchant's Bell Bearing [9]": {
+   "text": "Dropped by the Nomadic Merchant in the Mountaintops of the Giants. Give it to the Twin Maiden Husks to add his stock to their shop. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [10]": {
+   "text": "Found on a corpse in Liurnia of the Lakes. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [11]": {
+   "text": "Found on a corpse in Liurnia of the Lakes. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [12]": {
+   "text": "Found on a corpse in Liurnia of the Lakes. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [13]": {
+   "text": "Found on a corpse in Liurnia of the Lakes. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [14]": {
+   "text": "Found on a corpse on the Altus Plateau. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [15]": {
+   "text": "Found on a corpse on the Altus Plateau. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [16]": {
+   "text": "Found on a corpse in Caelid. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [17]": {
+   "text": "Found on a corpse in Caelid. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [18]": {
+   "text": "Found on a corpse on Mt. Gelmir. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [19]": {
+   "text": "Found on a corpse on the Altus Plateau. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [1]": {
+   "text": "Found on a corpse in Limgrave, near the Gatefront Ruins. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [20]": {
+   "text": "Found on a corpse in the Capital Outskirts. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [21]": {
+   "text": "Found on a corpse in the Mountaintops of the Giants, I believe along the route between the Grand Lift of Rold and the Zamor Ruins. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [22]": {
+   "text": "Found in the Mountaintops of the Giants or the Consecrated Snowfield, on a corpse near one of the snowfield ruins. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [23]": {
+   "text": "Found in the late-game snow region, possibly the Consecrated Snowfield, lying beside a corpse near a merchant or camp. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [24]": {
+   "text": "Found in the Consecrated Snowfield on a corpse along the main path through the snowfield. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [2]": {
+   "text": "Found in western Limgrave, possibly sold by Merchant Kalé at the Church of Elleh or lying near the Gatefront area. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [3]": {
+   "text": "Found in Limgrave, on a corpse near a ruin or campsite early in the region. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [4]": {
+   "text": "Found in Limgrave or the Weeping Peninsula, beside a corpse near an early-game landmark. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [5]": {
+   "text": "Found in Limgrave or Stormhill, on a corpse in the open field. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [6]": {
+   "text": "Found in the Weeping Peninsula on a corpse, possibly near Castle Morne's approach. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [7]": {
+   "text": "Found in the Weeping Peninsula, beside a corpse near one of the ruins in the region. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [8]": {
+   "text": "Found in Liurnia of the Lakes on a corpse near the lakeshore ruins. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nomadic Warrior's Cookbook [9]": {
+   "text": "Found in Liurnia of the Lakes, likely on a corpse in the eastern or southern part of the region. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Nox Greaves": {
+   "text": "Part of the Nox sets, obtained in the Nokron and Sellia areas, either from a chest in Night's Sacred Ground or from the Nox enemies in Sellia, Town of Sorcery. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Perfumer's Cookbook [1]": {
+   "text": "Found in Liurnia of the Lakes or the Altus Plateau on a corpse near a perfumer-related ruin. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Perfumer's Cookbook [2]": {
+   "text": "Found on the Altus Plateau, possibly in or near the Shaded Castle area. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Perfumer's Cookbook [3]": {
+   "text": "Found on the Altus Plateau or Mt. Gelmir region, likely on a corpse near a ruin. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Perfumer's Cookbook [4]": {
+   "text": "Found in Leyndell, Royal Capital or its outskirts, on a corpse along the main route. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Pidia's Bell Bearing": {
+   "text": "Dropped by Pidia, Carian Servant, when he is killed in his small house in the Caria Manor area of Liurnia. Hand it to the Twin Maiden Husks to buy his stock. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Prayer Room Key": {
+   "text": "Found in the Land of Shadow in Shadow of the Erdtree. It opens a locked prayer room. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Ragged Armor": {
+   "text": "Part of the Ragged set, found on a corpse together with the other Ragged pieces. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Ragged Armor (Altered)": {
+   "text": "Made by altering the Ragged Armor at a Site of Grace once you own the base armor. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Ragged Hat (Altered)": {
+   "text": "Made by altering the Ragged Hat at a Site of Grace once you own the base hat. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Rogier's Bell Bearing": {
+   "text": "Obtained from Sorcerer Rogier at Roundtable Hold, either by killing him or from his body after his questline ends. Give it to the Twin Maiden Husks to buy his sorceries.",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Roped Freezing Pot": {
+   "text": "Crafted from a Cracked Pot and materials once you have the matching cookbook. A few can also be found as loot in cold areas such as the Mountaintops of the Giants. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Sellen's Bell Bearing": {
+   "text": "Obtained from Sorceress Sellen, either by killing her at Waypoint Ruins or when her questline concludes. Give it to the Twin Maiden Husks to buy her sorceries.",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Seluvis's Bell Bearing": {
+   "text": "Dropped by Preceptor Seluvis at Seluvis's Rise in Liurnia, either by killing him or after his part in Ranni's questline ends. Give it to the Twin Maiden Husks to buy his stock.",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Shadow Realm Rune [1]": {
+   "text": "A common loot item from corpses and pickups in early areas of the Land of Shadow, such as the Gravesite Plain. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Shadow Realm Rune [2]": {
+   "text": "Found as loot on corpses throughout early and mid areas of the Land of Shadow. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Shadow Realm Rune [3]": {
+   "text": "Found as loot on corpses across the Land of Shadow, mostly in mid-game regions like Scadu Altus. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Shadow Realm Rune [4]": {
+   "text": "Found as loot in mid-to-late areas of the Land of Shadow, including Shadow Keep and Scadu Altus. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Shadow Realm Rune [5]": {
+   "text": "Found as loot in later regions of the Land of Shadow, such as the Abyssal Woods and Cerulean Coast. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Shadow Realm Rune [6]": {
+   "text": "Found as loot in late areas of the Land of Shadow, such as the Jagged Peak and Enir-Ilim. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Shadow Realm Rune [7]": {
+   "text": "A rare loot item found in the final areas of the Land of Shadow, such as Enir-Ilim. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Shattershard Arrow (Fletched)": {
+   "text": "Crafted with the appropriate cookbook, and occasionally found as loot. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Sleepbone Arrow": {
+   "text": "Crafted after obtaining the appropriate cookbook, and also found as loot in a few locations. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Small Red Effigy": {
+   "text": "Available from the Twin Maiden Husks at Roundtable Hold, alongside the other Colosseum-related multiplayer items. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Smithing-Stone Miner's Bell Bearing [2]": {
+   "text": "Dropped by the Onyx Lord boss in the Sealed Tunnel beneath the Altus Plateau. Give it to the Twin Maiden Husks to add higher-tier Smithing Stones to their stock. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Smithing-Stone Miner's Bell Bearing [3]": {
+   "text": "Found in the late-game regions around the Mountaintops of the Giants and Consecrated Snowfield, possibly as a dungeon boss reward. Give it to the Twin Maiden Husks to add Smithing Stones [5] and [6] to their stock. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Smithing-Stone Miner's Bell Bearing [4]": {
+   "text": "Found on a corpse in Crumbling Farum Azula. Give it to the Twin Maiden Husks to add Smithing Stones [7] and [8] to their stock. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Somber Smithing Stone [2]": {
+   "text": "Found in early-to-mid areas such as Limgrave, Weeping Peninsula and Liurnia tunnels and catacombs, and dropped by some bosses. Purchasable from the Twin Maiden Husks after giving them the Somberstone Miner's Bell Bearing [1]. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Somber Smithing Stone [3]": {
+   "text": "Found throughout Liurnia, Caelid and the Siofra River, for example in the Raya Lucaria Crystal Tunnel and on corpses. Purchasable from the Twin Maiden Husks after giving them the Somberstone Miner's Bell Bearing [1]. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Somber Smithing Stone [4]": {
+   "text": "Found in Caelid, Altus Plateau and the underground rivers, including Sellia Crystal Tunnel and Nokron. Purchasable from the Twin Maiden Husks after giving them the Somberstone Miner's Bell Bearing [2]. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Somber Smithing Stone [5]": {
+   "text": "Found in Altus Plateau, Mt. Gelmir, Leyndell and the Siofra/Nokron areas, often guarded by enemies. Purchasable from the Twin Maiden Husks after giving them the Somberstone Miner's Bell Bearing [2]. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Somber Smithing Stone [6]": {
+   "text": "Dropped by the Fallingstar Beast in Sellia Crystal Tunnel, and found in Leyndell and Nokron. Purchasable from the Twin Maiden Husks after giving them the Somberstone Miner's Bell Bearing [3]. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Somber Smithing Stone [7]": {
+   "text": "Found in Leyndell, the Mountaintops of the Giants and Volcano Manor, including in the Deeproot Depths. Purchasable from the Twin Maiden Husks after giving them the Somberstone Miner's Bell Bearing [3]. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Somber Smithing Stone [8]": {
+   "text": "Found in late-game areas such as the Consecrated Snowfield, Mohgwyn Palace and Crumbling Farum Azula. Purchasable from the Twin Maiden Husks after giving them the Somberstone Miner's Bell Bearing [4]. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Somber Smithing Stone [9]": {
+   "text": "Found in late-game areas such as Miquella's Haligtree, Elphael, Mohgwyn Palace and Crumbling Farum Azula, and dropped by some late bosses. Purchasable from the Twin Maiden Husks after giving them the Somberstone Miner's Bell Bearing [5]. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Somberstone Miner's Bell Bearing [2]": {
+   "text": "Dropped by the Crystalian duo boss at the end of Altus Tunnel on the Altus Plateau. Give it to the Twin Maiden Husks to add Somber Smithing Stones [4] and [5] to their stock. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Somberstone Miner's Bell Bearing [3]": {
+   "text": "Found in the Mountaintops of the Giants region. Give it to the Twin Maiden Husks to add Somber Smithing Stones [6] and [7] to their stock. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Somberstone Miner's Bell Bearing [4]": {
+   "text": "Found in the late game, possibly in Mohgwyn Palace or the Consecrated Snowfield. Give it to the Twin Maiden Husks to add Somber Smithing Stone [8] to their stock. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Somberstone Miner's Bell Bearing [5]": {
+   "text": "Found in Crumbling Farum Azula. Give it to the Twin Maiden Husks to add Somber Smithing Stone [9] to their stock. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "St. Trina Disciple's Cookbook [1]": {
+   "text": "Shadow of the Erdtree item found in the Land of Shadow, possibly on a corpse near a church or ruin associated with St. Trina's followers. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "St. Trina Disciple's Cookbook [2]": {
+   "text": "Shadow of the Erdtree item found in the Land of Shadow, possibly on a corpse in the Cerulean Coast or Abyssal Woods region. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "St. Trina Disciple's Cookbook [3]": {
+   "text": "Shadow of the Erdtree item found in the Land of Shadow, likely on a corpse in a late-expansion area. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "St. Trina's Arrow": {
+   "text": "Found as a pickup in the Lands Between, likely in Liurnia or the Siofra River area. Possibly also craftable or sold by a merchant later. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Storehouse Cross Message": {
+   "text": "Shadow of the Erdtree item read at a Miquella's Cross inside the Shadow Keep's Storehouse section. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "The Carian Oath": {
+   "text": "Obtained in connection with the Carian royal family, likely from Ranni or her retainers during her questline. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Thops's Bell Bearing": {
+   "text": "Found on Thops's body in the Schoolhouse Classroom area of Raya Lucaria Academy after you give him the Academy Glintstone Key and progress his quest.",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "Veteran's Helm": {
+   "text": "Part of the Veteran's set, which can be purchased from the Twin Maiden Husks at Roundtable Hold after defeating Commander Niall at Castle Sol. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  },
+  "White Cipher Ring": {
+   "text": "Purchased from the Twin Maiden Husks at Roundtable Hold. (unsure)",
+   "model": "claude-opus-5-5",
+   "date": "2026-11-02"
+  }
+ },
+ "unknown": [
+  "Asimi's Husk",
+  "Asimi, Silver Chrysalid",
+  "Asimi, Silver Tear",
+  "Funereal Night Spectral Steed Attire",
+  "Gold Waistwrap",
+  "Perfumer's Cookbook (1)",
+  "Perfumer's Cookbook (13)",
+  "Perfumer's Cookbook (2)",
+  "Silver of Caria Spectral Steed Attire",
+  "Torn Diary Page",
+  "Tree Sentinel Spectral Steed Attire",
+  "Vision of Grace"
+ ],
+ "source": "Claude (claude-opus-5-5), unverified drafts; review and move good ones to data/overrides/locations.json",
  "updated": "2026-11-02"
 }
