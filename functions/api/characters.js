@@ -2,14 +2,15 @@
 import { handler, requireUser, readJson, json, bad } from "../_lib.js";
 // The summary is built by the browser (Cloud.summarize) and cannot be verified against the save, so it is bounded here: a real
 // character never exceeds these sizes, and a fabricated one must not be able to inflate the advisor's prompt.
-const CAPS = { weapons: 400, talismans: 160, spells: 12, spellsOwned: 150, ashes: 300, keyItems: 300 }, STR = 80, MAX_BYTES = 64 * 1024;
+// A finished character (Gabriell, level 220) has ~450 weapons, 150 talismans, 200 spells, 170 ashes, 230 key items, 2200 ids: 135 KB.
+const CAPS = { weapons: 900, talismans: 200, spells: 14, spellsOwned: 300, ashes: 450, keyItems: 400, haveKeys: 4000 }, STR = 80, MAX_BYTES = 320 * 1024;
 function sanitizeSummary(S) {
   if (!S || typeof S !== "object" || Array.isArray(S)) return {};
   const str = v => typeof v === "string" ? v.slice(0, STR) : v;
   const out = {};
   for (const [k, v] of Object.entries(S)) {
     if (Array.isArray(v)) out[k] = v.slice(0, CAPS[k] || 500).map(x => typeof x === "string" ? str(x) : (x && typeof x === "object" && !Array.isArray(x)) ? Object.fromEntries(Object.entries(x).slice(0, 12).map(([a, b]) => [a.slice(0, 16), typeof b === "string" ? str(b) : (b && typeof b === "object") ? JSON.parse(JSON.stringify(b).slice(0, 200) || "null") : b])) : (typeof x === "number" ? x : null));
-    else if (v && typeof v === "object") out[k] = Object.fromEntries(Object.entries(v).slice(0, 40).map(([a, b]) => [a.slice(0, 32), Array.isArray(b) ? b.slice(0, 500).map(x => typeof x === "string" ? str(x) : x) : typeof b === "string" ? str(b) : (b && typeof b === "object") ? Object.fromEntries(Object.entries(b).slice(0, 40).map(([c, d]) => [c.slice(0, 32), typeof d === "string" ? str(d) : d])) : b]));
+    else if (v && typeof v === "object") out[k] = Object.fromEntries(Object.entries(v).slice(0, 40).map(([a, b]) => [a.slice(0, 64), Array.isArray(b) ? b.slice(0, 1500).map(x => typeof x === "string" ? str(x) : x) : typeof b === "string" ? str(b) : (b && typeof b === "object") ? Object.fromEntries(Object.entries(b).slice(0, 40).map(([c, d]) => [c.slice(0, 64), typeof d === "string" ? str(d) : d])) : b]));
     else out[k] = str(v);
   }
   let json = JSON.stringify(out);

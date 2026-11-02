@@ -3,7 +3,9 @@
 apply_locations.py — escribe el campo "loc" de data/items.json a partir de:
   1. data/overrides/locations.json  (manual; gana siempre)   { "<id>" | "<nombre base>": "texto" }
   2. data/locations.json            (descargado de la wiki por tools/fetch_locations.py)
-Los objetos sin texto en ninguna de las dos fuentes se quedan sin "loc" (la web muestra solo el enlace a la wiki).
+  3. data/locations_draft.json      (borradores escritos por Claude, tools/lab/fill_locations.mjs; marcan "locd": 1 en el objeto
+                                     para que la web avise de que no están verificados)
+Los objetos sin texto en ninguna fuente se quedan sin "loc" (la web muestra solo el enlace a la wiki).
 Después regenera data/places.json (tools/build_places.py) porque depende de esos textos.
 
 Uso: python tools/apply_locations.py [--dry]
@@ -21,12 +23,13 @@ def main():
     data = W.load_json("data/items.json")
     db = data["items"]
     store = (W.load_json("data/locations.json") or {}).get("entries", {})
+    draft = (W.load_json("data/locations_draft.json") or {}).get("entries", {})
     over = W.load_json("data/overrides/locations.json") or {}
     over = {k: v for k, v in over.items() if not k.startswith("_") and isinstance(v, str) and v.strip()}
-    n_over = n_wiki = n_none = n_changed = 0
+    n_over = n_wiki = n_draft = n_none = n_changed = 0
     for sid, e in db.items():
         base = W.base_name(e["n"], e.get("k"), sid)
-        text = over.get(sid) or over.get(e["n"]) or over.get(base)
+        text = over.get(sid) or over.get(e["n"]) or over.get(base); is_draft = False
         if text:
             n_over += 1
         else:
@@ -35,14 +38,23 @@ def main():
             if text:
                 n_wiki += 1
             else:
-                n_none += 1
-        if (e.get("loc") or None) != (text or None):
+                ent = draft.get(base) or draft.get(e["n"])
+                text = ent["text"] if ent else None
+                if text:
+                    n_draft += 1; is_draft = True
+                else:
+                    n_none += 1
+        if (e.get("loc") or None) != (text or None) or bool(e.get("locd")) != is_draft:
             n_changed += 1
         if text:
             e["loc"] = text
         else:
             e.pop("loc", None)
-    print(f"objetos: {len(db)}; con texto manual {n_over}, de la wiki {n_wiki}, sin texto {n_none}; cambian {n_changed}")
+        if is_draft:
+            e["locd"] = 1
+        else:
+            e.pop("locd", None)
+    print(f"objetos: {len(db)}; con texto manual {n_over}, de la wiki {n_wiki}, borrador IA {n_draft}, sin texto {n_none}; cambian {n_changed}")
     if a.dry:
         return
     W.save_json("data/items.json", data)

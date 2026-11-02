@@ -1,0 +1,59 @@
+# Experiments with the Claude API (secret ANTHROPIC_API_KEY in the GitHub repo: Settings → Secrets and variables → Actions).
+#  - advice:    report for the characters in tools/lab/summaries/ with several models and prompt variants → tools/lab/results/<date>/
+#  - locations: where-to-find DRAFTS for the items the wiki has no text for → data/locations_draft.json (+ items.json, places.json)
+name: lab
+on:
+  workflow_dispatch:
+    inputs:
+      what:
+        description: "advice | locations | both"
+        default: "advice"
+      models:
+        description: "advice: models, comma-separated"
+        default: "claude-sonnet-5-5,claude-opus-5-5"
+      variants:
+        description: "advice: prompt variants (see tools/lab/advice_lab.mjs)"
+        default: "A,B,C"
+      lang:
+        description: "advice: es | en"
+        default: "es"
+      chars:
+        description: "advice: character names, comma-separated (empty = all)"
+        default: ""
+      limit:
+        description: "locations: max names to ask for (0 = all)"
+        default: "0"
+jobs:
+  lab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Advisor lab
+        if: ${{ github.event.inputs.what == 'advice' || github.event.inputs.what == 'both' }}
+        run: node tools/lab/advice_lab.mjs --models "${{ github.event.inputs.models }}" --variants "${{ github.event.inputs.variants }}" --lang "${{ github.event.inputs.lang }}" --chars "${{ github.event.inputs.chars }}" | tee tools/lab/advice_lab_log.txt
+      - name: Location drafts
+        if: ${{ github.event.inputs.what == 'locations' || github.event.inputs.what == 'both' }}
+        run: |
+          L="${{ github.event.inputs.limit }}"; [ "$L" = "0" ] && L=9999
+          node tools/lab/fill_locations.mjs --limit "$L" | tee tools/lab/fill_locations_log.txt
+          python3 tools/apply_locations.py | tee -a tools/lab/fill_locations_log.txt
+      - name: Commit
+        run: |
+          git config user.name "lab-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add tools/lab data/locations_draft.json data/items.json data/places.json 2>/dev/null || true
+          if git diff --cached --quiet; then echo "Sin cambios"; exit 0; fi
+          git commit -m "lab: ${{ github.event.inputs.what }}"
+          for i in 1 2 3 4 5; do
+            git fetch origin main && git rebase origin/main && git push origin HEAD:main && exit 0
+            git rebase --abort 2>/dev/null || true; sleep 10
+          done
+          exit 1

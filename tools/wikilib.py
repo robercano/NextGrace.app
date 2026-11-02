@@ -8,8 +8,8 @@ import json, os, re, time
 
 try:
     import requests
-except ImportError:
-    raise SystemExit("pip install requests")
+except ImportError:  # only the fetchers need it; apply_locations.py imports this module for the helpers
+    requests = None
 
 WIKI = os.environ.get("TL_WIKI", "https://eldenring.wiki.gg")
 LICENSE = "CC BY-SA 4.0"
@@ -19,13 +19,16 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 INFUSIONS = ["Heavy", "Keen", "Quality", "Fire", "Flame Art", "Lightning", "Sacred", "Magic", "Cold", "Poison", "Blood", "Occult"]
 INF_ANY = re.compile(r"\b(" + "|".join(re.escape(i) for i in INFUSIONS) + r")\b\s*")
 
-session = requests.Session()
-session.headers["User-Agent"] = UA
+session = requests.Session() if requests else None
+if session:
+    session.headers["User-Agent"] = UA
 _last = [0.0]
 
 
 def get(params):
     """GET api.php con espera entre peticiones y reintentos ante 429/503."""
+    if not session:
+        raise SystemExit("pip install requests")
     backoff = 30
     for _ in range(8):
         wait = DELAY - (time.time() - _last[0])
