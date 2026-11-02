@@ -28,8 +28,14 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
 .bar h1{font-family:var(--display);font-size:1rem;margin:0;flex:1;white-space:nowrap;color:var(--accent)}
 .modes{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px;padding:6px 12px 0;background:var(--panel);border-bottom:1px solid var(--line)}
 .modec{display:flex;justify-content:flex-end}
-.who{align-self:center;color:var(--gold-2);font-family:var(--display);font-size:.78rem;font-weight:600;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* same chip as the sheet: the character on screen; tapping shows the other characters of the save */
+.who{justify-self:start;align-self:center;background:transparent;border:0;padding:2px 0;font:inherit;color:var(--accent);font-family:var(--display);font-size:.78rem;font-weight:600;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;cursor:pointer;text-align:left}
 .who small{color:var(--muted);font-family:var(--body);font-size:.8rem;font-weight:400;letter-spacing:0;margin-left:4px}
+.whopop{position:absolute;z-index:900;left:12px;background:var(--bg);border:1px solid var(--line);padding:6px;display:flex;flex-direction:column;gap:4px;min-width:200px}
+.whopop button{background:var(--panel);border:1px solid var(--line);padding:6px 10px;text-align:left;font:inherit;color:var(--fg);display:flex;gap:8px;align-items:baseline;cursor:pointer}
+.whopop button[aria-pressed=true]{border-color:var(--accent)}
+.whopop b{font-family:var(--display);font-size:.85rem;color:var(--fg)}
+.whopop span{color:var(--muted);font-size:.82rem}
 .mode{font-family:var(--display);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:6px 18px;border:1px solid var(--line);border-bottom:0}
 .mode:first-child{border-radius:3px 0 0 0}.mode:last-child{border-radius:0 3px 0 0;border-left:0}
 .mode[aria-current=true]{color:var(--accent);background:#d6a93d14;border-color:#8c7332}
@@ -87,7 +93,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   <h1>Next Grace</h1>
   <select id="charSel" aria-label="Personaje" hidden></select>
 </div>
-<div class="modes"><span class="who" id="who"></span><div class="modec"><a class="mode" href="./" data-i18n="Ficha">Ficha</a><a class="mode" aria-current="true" href="map.html" data-i18n="Mapa">Mapa</a></div></div>
+<div class="modes"><button class="who" id="who"></button><div class="modec"><a class="mode" href="./" data-i18n="Ficha">Ficha</a><a class="mode" aria-current="true" href="map.html" data-i18n="Mapa">Mapa</a></div></div>
 <div class="sels">
   <select id="layerSel" aria-label="Capa">
     <option value="tlb" data-i18n="Tierras Intermedias">Tierras Intermedias</option>
@@ -161,7 +167,16 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   let last = null; try { last = JSON.parse(localStorage.getItem("tl.last") || "null"); } catch (e) {}
   const chars = (last && last.chars || []).filter(c => !c.error);
   const sel = $("#charSel");
-  if (chars.length) { sel.innerHTML = chars.map((c, i) => `<option value="${i}">${esc(c.name)} · ${c.level}</option>`).join(""); sel.hidden = chars.length < 2; }
+  if (chars.length) { sel.innerHTML = chars.map((c, i) => `<option value="${i}">${esc(c.name)} · ${c.level}</option>`).join(""); } // kept hidden: the "who" chip drives it
+  // character picker under the chip (the sheet uses its drawer for this)
+  $("#who").addEventListener("click", e => {
+    let pop = $(".whopop"); if (pop) { pop.remove(); return; } if (chars.length < 2) return;
+    pop = document.createElement("div"); pop.className = "whopop"; const r = e.currentTarget.getBoundingClientRect(); pop.style.top = (r.bottom + 4 + window.scrollY) + "px";
+    pop.innerHTML = chars.map((c, i) => `<button data-i="${i}" aria-pressed="${c === CUR}"><b>${esc(c.name)}</b><span>${T("Nv {0}", c.level)} · ${esc(c.className || "")}</span></button>`).join("");
+    pop.onclick = ev => { const b = ev.target.closest("[data-i]"); if (!b) return; sel.value = b.dataset.i; sel.onchange(); pop.remove(); };
+    document.body.appendChild(pop);
+    setTimeout(() => document.addEventListener("click", function off(ev) { if (!pop.contains(ev.target) && ev.target !== $("#who")) { pop.remove(); document.removeEventListener("click", off); } }), 0);
+  });
   let curSlot = null; try { curSlot = localStorage.getItem("tl.cur"); } catch (e) {}
   let CUR = chars.find(c => String(c.slot) === curSlot) || chars[0] || null;
   if (CUR) sel.value = String(chars.indexOf(CUR));
@@ -230,7 +245,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
 
   let q = hashQ;
   function render() {
-    { const w = $("#who"); if (w) w.innerHTML = CUR ? `${esc(CUR.name || "")}<small>${T("Nv {0}", CUR.level)}</small>` : ""; }
+    { const w = $("#who"); if (w) w.innerHTML = CUR ? `${esc(CUR.name || "")}<small>${T("Nv {0}", CUR.level)}${chars.length > 1 ? " ▾" : ""}</small>` : ""; }
     for (const k in layers) layers[k].clearLayers();
     const layer = $("#layerSel").value;
     const have = CUR ? haveSet(CUR) : null;
