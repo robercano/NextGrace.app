@@ -64,6 +64,12 @@ async function main(DB, FLAGS, REQS){
   // ---- tabs ----------------------------------------------------------------
   let TAB = "status";
   function showTab(t) { TAB = t; for (const b of document.querySelectorAll(".tab")) b.setAttribute("aria-selected", b.dataset.t === t); for (const s of document.querySelectorAll(".screen")) s.setAttribute("aria-hidden", s.id !== "s-" + t); try { localStorage.setItem("tl.tab", t); } catch (e) {} if (location.hash !== "#" + t) history.replaceState(null, "", "#" + t); }
+  // header drawer (hamburger): file, Steam Cloud, language, characters
+  const menuOpen = on => { $("#menu").hidden = !on; $("#menuBack").hidden = !on; $("#menuBtn").setAttribute("aria-expanded", on); };
+  $("#menuBtn").addEventListener("click", () => menuOpen($("#menu").hidden));
+  $("#menuBack").addEventListener("click", () => menuOpen(false));
+  $("#menu").addEventListener("click", e => { if (e.target.closest("[data-slot], #barOpen, a")) menuOpen(false); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") menuOpen(false); });
   $("#tabs").addEventListener("click", e => { const b = e.target.closest(".tab"); if (b) { showTab(b.dataset.t); if (b.dataset.t === "advice" && CUR) renderAdvice(CUR); } });
   window.addEventListener("hashchange", () => { const t = location.hash.slice(1); if (document.getElementById("s-" + t)) showTab(t); });
 
@@ -386,7 +392,7 @@ async function main(DB, FLAGS, REQS){
     sel.innerHTML = chars.map(c => `<option value="${c.slot}">${esc(c.name || "Slot " + (c.slot + 1))} · ${c.level}</option>`).join("");
     sel.hidden = true;
     sel.onchange = () => pick(chars, sel.value);
-    const cs = $("#chars"); cs.hidden = chars.length < 2;
+    const cs = $("#chars"); $("#menuChars").hidden = chars.length < 2;
     cs.innerHTML = chars.map(c => `<button data-slot="${c.slot}" aria-pressed="false"><b>${esc(c.name || "Slot " + (c.slot + 1))}</b><span>${T("Nv {0}", c.level)} · ${esc(c.className)}</span></button>`).join("");
     cs.onclick = e => { const b = e.target.closest("[data-slot]"); if (b) pick(chars, b.dataset.slot); };
     const bad = save.chars.filter(c => c.error);

@@ -160,6 +160,7 @@
     "Iconos del servidor (R2)": "Server icons (R2)", "El bucket R2 no está configurado todavía (binding ICONS en wrangler.toml).": "The R2 bucket is not configured yet (binding ICONS in wrangler.toml).",
     "{0} iconos en el bucket. Elige la carpeta icons/ generada por tools/extract_icons_game.py (o la de fondos del mapa) y se subirán uno a uno; los que ya existan se sobrescriben.": "{0} icons in the bucket. Pick the icons/ folder produced by tools/extract_icons_game.py (or the map backgrounds) and they are uploaded one by one; existing ones are overwritten.",
     "Subir carpeta de iconos": "Upload icons folder", "Subir fondos del mapa": "Upload map backgrounds", "Subidos {0} de {1}…": "Uploaded {0} of {1}…", "Subiendo {0} ficheros…": "Uploading {0} files…", "Listo: {0} subidos, {1} con error.": "Done: {0} uploaded, {1} failed.",
+    "Menú": "Menu", "Personaje": "Character", "Partida": "Save", "Abrir otro .sl2": "Open another .sl2", "Carga una partida más reciente": "Load a newer save", "Idioma": "Language",
     "Otra opinión": "Another opinion", "Generando el informe desde otra pestaña o dispositivo… ({0} s)": "Generating the report from another tab or device… ({0} s)",
     "Este informe ya corresponde a la partida abierta; se genera solo cuando abres un save nuevo.": "This report already matches the open save; a new one is generated automatically when you open a newer save.",
     "El informe ya corresponde a esta partida: generar otro solo dará una variante y cuenta para el cupo diario. ¿Generar de todos modos?": "The report already matches this save: another run only gives a variant and counts towards the daily cap. Generate anyway?",
@@ -203,7 +204,7 @@
     locale() { return lang === "en" ? "en-GB" : "es-ES"; },
     apply(root) {
       root = root || document; document.documentElement.lang = lang;
-      for (const b of root.querySelectorAll("[data-lang-toggle]")) { b.textContent = lang === "en" ? "ES" : "EN"; b.title = lang === "en" ? "Cambiar a español" : "Switch to English"; b.onclick = () => I18N.set(lang === "en" ? "es" : "en"); }
+      for (const b of root.querySelectorAll("[data-lang-toggle]")) { const full = b.querySelector("b"); if (full) full.textContent = lang === "en" ? "Español" : "English"; else b.textContent = lang === "en" ? "ES" : "EN"; b.title = lang === "en" ? "Cambiar a español" : "Switch to English"; b.onclick = () => I18N.set(lang === "en" ? "es" : "en"); }
       if (lang === "es") return; // markup is written in Spanish
       for (const el of root.querySelectorAll("[data-i18n]")) { const k = el.dataset.i18n || el.textContent.trim(); if (EN[k]) el.innerHTML = EN[k]; }
       for (const el of root.querySelectorAll("[data-i18n-ph]")) { const k = el.dataset.i18nPh || el.placeholder; el.dataset.i18nPh = k; el.placeholder = T(k); }
