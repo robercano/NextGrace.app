@@ -6,7 +6,7 @@ import fs from "node:fs"; import path from "node:path"; import { fileURLToPath }
 import { ask, cost } from "./anthropic.mjs";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const arg = (k, d) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : d; };
-const model = arg("--model", "claude-sonnet-5-5"), limit = +arg("--limit", "9999"), batch = +arg("--batch", "25");
+const model = arg("--model", "claude-sonnet-5-5"), limit = +arg("--limit", "9999"), batch = +arg("--batch", "20");
 const store = JSON.parse(fs.readFileSync(path.join(ROOT, "data/locations.json"), "utf8"));
 const DB = JSON.parse(fs.readFileSync(path.join(ROOT, "data/items.json"), "utf8")).items;
 const kindOf = {}; for (const e of Object.values(DB)) kindOf[e.n] = kindOf[e.n] || `${e.k}${e.s ? " / " + e.s : ""}${e.c ? " (" + e.c + ")" : ""}`;
@@ -20,8 +20,11 @@ for (let i = 0; i < todo.length; i += batch) {
   const names = todo.slice(i, i + batch);
   const user = "Items (name — type):\n" + names.map(n => `- ${n} — ${kindOf[n] || "?"}`).join("\n");
   try {
-    const r = await ask({ model, system: SYS, user, maxTokens: 4000, temperature: 0 });
-    const m = r.text.match(/\{[\s\S]*\}/); const obj = m ? JSON.parse(m[0]) : {};
+    // 5.x models think before answering and thinking counts toward max_tokens: leave room, or the text comes back empty
+    const r = await ask({ model, system: SYS, user, maxTokens: 12000 });
+    const m = r.text.match(/\{[\s\S]*\}/); let obj = {};
+    try { obj = m ? JSON.parse(m[0]) : {}; } catch (e) { console.log("  JSON inválido: " + r.text.slice(0, 200).replace(/\n/g, " ")); }
+    if (!m) console.log(`  sin JSON (stop ${r.stop}, ${r.usage.output_tokens} tokens): ${r.text.slice(0, 200).replace(/\n/g, " ")}`);
     for (const n of names) {
       const t = typeof obj[n] === "string" ? obj[n].trim() : "";
       if (!t || /^unknown$/i.test(t)) { if (!draft.unknown.includes(n)) draft.unknown.push(n); }
