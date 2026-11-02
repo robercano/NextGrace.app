@@ -1,20 +1,7 @@
-287 nombres sin texto (ya en borrador: 0, desconocidos previos: 0)
-  20/287 · ~$0.021
-  40/287 · ~$0.060
-  60/287 · ~$0.085
-  80/287 · ~$0.106
-  100/287 · ~$0.136
-  120/287 · ~$0.165
-  140/287 · ~$0.191
-  160/287 · ~$0.226
-  180/287 · ~$0.255
-  200/287 · ~$0.287
-  220/287 · ~$0.315
-  240/287 · ~$0.333
-  260/287 · ~$0.365
-  280/287 · ~$0.389
-  287/287 · ~$0.417
-borradores nuevos 0, desconocidos 287 → data/locations_draft.json (~$0.42)
+20 nombres sin texto (ya en borrador: 0, desconocidos previos: 287)
+  primera respuesta (muestra): {"Ancient Dragon Apostle's Cookbook [1]":"UNKNOWN","Ancient Dragon Apostle's Cookbook [2]":"UNKNOWN","Ancient Dragon Apostle's Cookbook [3]":"UNKNOWN","Ancient Dragon Apostle's Cookbook [4]":"UNKNOWN","Ancient Dragon Florissax":"UNKNOWN","Ancient Dragon Knight's Cookbook [1]":"UNKNOWN","Ancient Dragon Knight's Cookbook [2]":"UNKNOWN","Antiquity Scholar's Cookbook [1]":"UNKNOWN","Antiquity Scholar's Cookbook [2]":"UNKNOWN","Armorer's Cookbook (5)":"UNKNOWN","Armorer's Cookbook [1]":"UNKNOWN","Armorer's Cookbook [2]":"UNKNOWN","Armorer's Cookbook [3]":"UNKNOWN","Armorer's Cookbook [4]":"UNKNOWN"
+  20/20 · ~$0.025
+borradores nuevos 0, desconocidos 287 → data/locations_draft.json (~$0.03)
 objetos: 4184; con texto manual 0, de la wiki 3765, borrador IA 0, sin texto 419; cambian 0
 289 lugares; objetos con texto de ubicación 3765, con lugar 2254, con lugar concreto (no solo región) 1868
 data/items.json y data/places.json regenerados
