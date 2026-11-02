@@ -6,7 +6,7 @@ import fs from "node:fs"; import path from "node:path"; import { fileURLToPath }
 import { ask, cost } from "./anthropic.mjs";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const arg = (k, d) => { const i = process.argv.indexOf(k); return i > 0 ? process.argv[i + 1] : d; };
-const model = arg("--model", "claude-sonnet-5-5"), limit = +arg("--limit", "9999"), batch = +arg("--batch", "20");
+const model = arg("--model", "claude-opus-5-5"), limit = +arg("--limit", "9999"), batch = +arg("--batch", "20");
 const store = JSON.parse(fs.readFileSync(path.join(ROOT, "data/locations.json"), "utf8"));
 const DB = JSON.parse(fs.readFileSync(path.join(ROOT, "data/items.json"), "utf8")).items;
 const kindOf = {}; for (const e of Object.values(DB)) kindOf[e.n] = kindOf[e.n] || `${e.k}${e.s ? " / " + e.s : ""}${e.c ? " (" + e.c + ")" : ""}`;
@@ -14,7 +14,7 @@ const draftPath = path.join(ROOT, "data/locations_draft.json");
 const draft = fs.existsSync(draftPath) ? JSON.parse(fs.readFileSync(draftPath, "utf8")) : { entries: {}, unknown: [] };
 const todo = (store.missing || []).filter(n => !store.entries[n] && !draft.entries[n]).slice(0, limit);
 console.log(`${todo.length} nombres sin texto (ya en borrador: ${Object.keys(draft.entries).length}, desconocidos previos: ${draft.unknown.length})`);
-const SYS = `You write short "where to find" notes for Elden Ring items (base game and Shadow of the Erdtree), in English, like the Acquisition section of a wiki. Rules: 1-2 sentences per item, concrete (area, merchant, boss, chest, quest step), no spoilers of story twists, no markdown. If you are not confident the information is correct, answer exactly UNKNOWN for that item: a wrong location is worse than none. Reply with a JSON object mapping each item name to its text or UNKNOWN, nothing else.`;
+const SYS = `You write short "where to find" notes for Elden Ring items (base game and Shadow of the Erdtree), in English, like the Acquisition section of a wiki. You know the game well: give your best recollection for every item (area, merchant, boss, chest, quest step), 1-2 sentences, no markdown, no story spoilers. These notes are published as unverified drafts, so a reasonable recollection is wanted; append " (unsure)" to the text when you are not certain of the details, and answer exactly UNKNOWN only when you do not recognise the item at all. Reply with a JSON object mapping each item name (exactly as given) to its text or UNKNOWN, nothing else.`;
 let total = 0, done = 0;
 for (let i = 0; i < todo.length; i += batch) {
   const names = todo.slice(i, i + batch);
