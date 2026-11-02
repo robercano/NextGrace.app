@@ -225,13 +225,8 @@ details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font
 <body>
 
 <div class="top">
-  <div class="topi">
-    <h1>Next Grace</h1>
-    <select id="charSel" hidden aria-label="Personaje"></select>
-    <button class="btn acct" id="acct" hidden title="Cuenta" data-i18n-title="Cuenta"></button>
-    <button class="btn menub" id="menuBtn" aria-expanded="false" aria-controls="menu" title="Menú" data-i18n-title="Menú"><span></span><span></span><span></span></button>
-  </div>
-  <div class="modes" id="modes" hidden><button class="who" id="who" title="Cambiar de personaje" data-i18n-title="Cambiar de personaje"></button><div class="modec"><a class="mode" aria-current="true" href="./" data-i18n="Ficha">Ficha</a><a class="mode" href="map.html" data-i18n="Mapa">Mapa</a></div></div>
+  <select id="charSel" hidden aria-label="Personaje"></select>
+  <div id="shell"></div>
   <div class="tabs" role="tablist" id="tabs" hidden>
     <button class="tab" role="tab" data-t="status" aria-selected="true" data-i18n="Estado">Estado</button>
     <button class="tab" role="tab" data-t="equip" aria-selected="false" data-i18n="Equipo">Equipo</button>
@@ -243,16 +238,6 @@ details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font
 </div>
 
   <!-- drawer: file, Steam Cloud, language and the character switch live here so the header stays one short row on a phone -->
-<div class="menuback" id="menuBack" hidden></div>
-<nav class="menu" id="menu" hidden aria-label="Menú">
-  <div class="menusec" id="menuChars" hidden><div class="menuh" data-i18n="Personaje">Personaje</div><div class="chars" id="chars"></div></div>
-  <div class="menusec"><div class="menuh" data-i18n="Partida">Partida</div>
-    <label class="mitem" for="file" id="barOpen" hidden><b data-i18n="Abrir otro .sl2">Abrir otro .sl2</b><span class="help" data-i18n="Carga una partida más reciente">Carga una partida más reciente</span></label>
-    <a class="mitem" id="barSteam" href="https://store.steampowered.com/account/remotestorageapp/?appid=1245620" target="_blank" rel="noopener" hidden><b>Steam Cloud</b><span class="help" data-i18n="Descargar la partida de Steam Cloud">Descargar la partida de Steam Cloud</span></a>
-  </div>
-  <div class="menusec"><div class="menuh" data-i18n="Idioma">Idioma</div><button class="mitem" data-lang-toggle><b>English</b></button></div>
-  <div class="menusec"><a class="mitem" href="about.html"><b data-i18n="Créditos y licencias">Créditos y licencias</b></a><a class="mitem" href="privacy.html"><b data-i18n="Política de privacidad">Política de privacidad</b></a></div>
-</nav>
 
 <main>
   <section id="dropSec">
@@ -358,6 +343,7 @@ details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font
 <script src="src/glossary.js"></script>
 <script src="src/marks.js"></script>
 <script src="src/cloud.js"></script>
+<script src="src/shell.js"></script>
 <script src="src/app.js"></script>
 </body>
 </html>

@@ -64,13 +64,8 @@ async function main(DB, FLAGS, REQS){
   // ---- tabs ----------------------------------------------------------------
   let TAB = "status";
   function showTab(t) { TAB = t; for (const b of document.querySelectorAll(".tab")) b.setAttribute("aria-selected", b.dataset.t === t); for (const s of document.querySelectorAll(".screen")) s.setAttribute("aria-hidden", s.id !== "s-" + t); try { localStorage.setItem("tl.tab", t); } catch (e) {} if (location.hash !== "#" + t) history.replaceState(null, "", "#" + t); }
-  // header drawer (hamburger): file, Steam Cloud, language, characters
-  const menuOpen = on => { $("#menu").hidden = !on; $("#menuBack").hidden = !on; $("#menuBtn").setAttribute("aria-expanded", on); };
-  $("#menuBtn").addEventListener("click", () => menuOpen($("#menu").hidden));
-  $("#menuBack").addEventListener("click", () => menuOpen(false));
-  $("#who").addEventListener("click", () => menuOpen(true));
-  $("#menu").addEventListener("click", e => { if (e.target.closest("[data-slot], #barOpen, a")) menuOpen(false); });
-  document.addEventListener("keydown", e => { if (e.key === "Escape") menuOpen(false); });
+  // shared header (src/shell.js): account button → account sheet, drawer → pick(); the sheet sets its own tabs below it
+  Shell.mount({ current: "sheet", openFile: true, onPick: slot => { if (SAVE) pick(SAVE.chars.filter(c => !c.error), slot); }, onAccount: openAcct });
   $("#tabs").addEventListener("click", e => { const b = e.target.closest(".tab"); if (b) { showTab(b.dataset.t); if (b.dataset.t === "advice" && CUR) renderAdvice(CUR); } });
   window.addEventListener("hashchange", () => { const t = location.hash.slice(1); if (document.getElementById("s-" + t)) showTab(t); });
 
@@ -393,13 +388,10 @@ async function main(DB, FLAGS, REQS){
     sel.innerHTML = chars.map(c => `<option value="${c.slot}">${esc(c.name || "Slot " + (c.slot + 1))} · ${c.level}</option>`).join("");
     sel.hidden = true;
     sel.onchange = () => pick(chars, sel.value);
-    const cs = $("#chars"); $("#menuChars").hidden = chars.length < 2;
-    cs.innerHTML = chars.map(c => `<button data-slot="${c.slot}" aria-pressed="false"><b>${esc(c.name || "Slot " + (c.slot + 1))}</b><span>${T("Nv {0}", c.level)} · ${esc(c.className)}</span></button>`).join("");
-    cs.onclick = e => { const b = e.target.closest("[data-slot]"); if (b) pick(chars, b.dataset.slot); };
     const bad = save.chars.filter(c => c.error);
     $("#msg").innerHTML = bad.length ? `<span class="err">${T("No se pudo leer {0} slot(s): {1}", bad.length, esc(bad[0].error))}</span>` : "";
     if (!chars.length) { $("#msg").innerHTML = `<span class="err">${T("No hay personajes legibles en este archivo.")}</span>`; return; }
-    $("#app").hidden = false; $("#dropSec").hidden = true; $("#barOpen").hidden = false; $("#barSteam").hidden = false; $("#modes").hidden = false; $("#tabs").hidden = false; let t0 = location.hash.slice(1); try { t0 = t0 || localStorage.getItem("tl.tab") || "status"; } catch (e) {} showTab(document.getElementById("s-" + t0) ? t0 : "status");
+    $("#app").hidden = false; $("#dropSec").hidden = true; Shell.showSaveItems(true); $("#tabs").hidden = false; let t0 = location.hash.slice(1); try { t0 = t0 || localStorage.getItem("tl.tab") || "status"; } catch (e) {} showTab(document.getElementById("s-" + t0) ? t0 : "status");
     $("#foot").textContent = `${name} · ${when}`;
     let cur = null; try { cur = localStorage.getItem("tl.cur"); } catch (e) {}
     pick(chars, chars.some(c => String(c.slot) === cur) ? +cur : chars[0].slot); // keep the character you were looking at (same as the map)
@@ -407,8 +399,7 @@ async function main(DB, FLAGS, REQS){
   function pick(chars, slot) {
     const c = chars.find(x => x.slot == slot); if (!c) return;
     $("#charSel").value = slot; try { localStorage.setItem("tl.cur", String(slot)); } catch (e) {}
-    const who = $("#who"); if (who) who.innerHTML = `${esc(c.name || "Slot " + (c.slot + 1))}<small>${T("Nv {0}", c.level)}${chars.length > 1 ? " ▾" : ""}</small>`;
-    for (const b of document.querySelectorAll("#chars [data-slot]")) b.setAttribute("aria-pressed", b.dataset.slot == slot);
+    Shell.setChars(chars.map(x => ({ slot: x.slot, name: x.name, level: x.level, className: x.className })), slot);
     group = "Armas"; limit = 250; $("#q").value = ""; chips();
     renderChar(c);
     cloudSync(c); autoAdvice(c);
@@ -560,12 +551,7 @@ async function main(DB, FLAGS, REQS){
     const before = Marks.all(ck).length;
     Cloud.syncMarks(ck).then(r => { if (r && !r.error && Marks.all(ck).length !== before && CUR === c) renderProgress(c); });
   }
-  function renderAcct() {
-    const b = $("#acct"); if (!b) return; const u = Cloud.user();
-    b.hidden = !Cloud.available();
-    if (u) { b.className = "btn acct"; b.innerHTML = `${u.avatar ? `<img src="${esc(u.avatar)}" alt="">` : ""}<span>${esc(u.name || "Steam")}</span>`; }
-    else { b.className = "btn acct out"; b.textContent = T("Entrar"); }
-  }
+  function renderAcct() { Shell.setUser(Cloud.user(), Cloud.available()); }
   function sheet(html) { let s = $("#sheet"); if (!s) { s = document.createElement("div"); s.id = "sheet"; s.className = "sheet frame"; document.body.appendChild(s); } s.innerHTML = html + `<div style="text-align:right;margin-top:10px"><button class="btn" id="sheetClose">${T("Cerrar")}</button></div>`; s.hidden = false; $("#sheetClose").onclick = () => { s.hidden = true; }; return s; }
   async function openAcct() {
     const u = Cloud.user();
