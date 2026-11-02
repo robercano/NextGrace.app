@@ -1,4 +1,5 @@
-# Experiments with the Claude API (secret ANTHROPIC_API_KEY in the GitHub repo: Settings → Secrets and variables → Actions).
+# Experiments with the Claude API. Location drafts: only the ones the model did not mark "(unsure)" reach the site
+# (tools/apply_locations.py --include-unsure publishes the rest; see data/locations_draft.json for manual review). (secret ANTHROPIC_API_KEY in the GitHub repo: Settings → Secrets and variables → Actions).
 #  - advice:    report for the characters in tools/lab/summaries/ with several models and prompt variants → tools/lab/results/<date>/
 #  - locations: where-to-find DRAFTS for the items the wiki has no text for → data/locations_draft.json (+ items.json, places.json)
 name: lab

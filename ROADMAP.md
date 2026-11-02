@@ -94,7 +94,7 @@ Rob still has to: create the Steam Web API key (`STEAM_API_KEY`) and `ADMIN_EMAI
 - [ ] Map: more coordinates (only 17 of 35 main bosses have a pin; via community markers); per-item icons on community markers; boss-type filter visible in the UI (today only through the hash).
 - [ ] Missing icons (name aliases) until the game-extracted pack replaces them.
 - [ ] Account management: let a user withdraw an approved marker of their own.
-- [ ] Location gaps: 287 names without text after the second run (mostly goods: golden runes, pots, altered armor, DLC stubs); fill through monthly runs and `data/overrides/locations.json`.
+- [ ] Location gaps: 287 names without text after the wiki runs; Claude drafts exist for 275 of them in `data/locations_draft.json` but 263 are marked "(unsure)" and are vague or wrong (e.g. Dragon Cult Prayerbook "possibly Fort Faroth"), so only the 12 sure ones are published; review the rest by hand into `data/overrides/locations.json`. Names without text after that (mostly goods: golden runes, pots, altered armor, DLC stubs); fill through monthly runs and `data/overrides/locations.json`.
 - [ ] Python tools (`tools/*.py`): docstrings and log messages are still in Spanish; translate when touched.
 - [ ] Optional: self-host the fonts (today they load from Google Fonts, which the privacy policy mentions).
 - [ ] Public: OAuth of our own if an MCP is exposed.

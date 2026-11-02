@@ -19,11 +19,14 @@ import wikilib as W
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry", action="store_true")
+    ap.add_argument("--include-unsure", action="store_true", help="también los borradores que el modelo marcó '(unsure)' (por defecto se omiten: son vagos o erróneos)")
     a = ap.parse_args()
     data = W.load_json("data/items.json")
     db = data["items"]
     store = (W.load_json("data/locations.json") or {}).get("entries", {})
     draft = (W.load_json("data/locations_draft.json") or {}).get("entries", {})
+    if not a.include_unsure:
+        draft = {k: v for k, v in draft.items() if "(unsure)" not in v.get("text", "")}
     over = W.load_json("data/overrides/locations.json") or {}
     over = {k: v for k, v in over.items() if not k.startswith("_") and isinstance(v, str) and v.strip()}
     n_over = n_wiki = n_draft = n_none = n_changed = 0
