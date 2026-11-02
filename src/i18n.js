@@ -161,6 +161,7 @@
     "{0} iconos en el bucket. Elige la carpeta icons/ generada por tools/extract_icons_game.py (o la de fondos del mapa) y se subirán uno a uno; los que ya existan se sobrescriben.": "{0} icons in the bucket. Pick the icons/ folder produced by tools/extract_icons_game.py (or the map backgrounds) and they are uploaded one by one; existing ones are overwritten.",
     "Subir carpeta de iconos": "Upload icons folder", "Subir fondos del mapa": "Upload map backgrounds", "Subidos {0} de {1}…": "Uploaded {0} of {1}…", "Subiendo {0} ficheros…": "Uploading {0} files…", "Listo: {0} subidos, {1} con error.": "Done: {0} uploaded, {1} failed.",
     "Menú": "Menu", "Personaje": "Character", "Partida": "Save", "Abrir otro .sl2": "Open another .sl2", "Carga una partida más reciente": "Load a newer save", "Idioma": "Language",
+    "Cambiar de personaje": "Switch character",
     "Otra opinión": "Another opinion", "Generando el informe desde otra pestaña o dispositivo… ({0} s)": "Generating the report from another tab or device… ({0} s)",
     "Este informe ya corresponde a la partida abierta; se genera solo cuando abres un save nuevo.": "This report already matches the open save; a new one is generated automatically when you open a newer save.",
     "El informe ya corresponde a esta partida: generar otro solo dará una variante y cuenta para el cupo diario. ¿Generar de todos modos?": "The report already matches this save: another run only gives a variant and counts towards the daily cap. Generate anyway?",

@@ -68,6 +68,7 @@ async function main(DB, FLAGS, REQS){
   const menuOpen = on => { $("#menu").hidden = !on; $("#menuBack").hidden = !on; $("#menuBtn").setAttribute("aria-expanded", on); };
   $("#menuBtn").addEventListener("click", () => menuOpen($("#menu").hidden));
   $("#menuBack").addEventListener("click", () => menuOpen(false));
+  $("#who").addEventListener("click", () => menuOpen(true));
   $("#menu").addEventListener("click", e => { if (e.target.closest("[data-slot], #barOpen, a")) menuOpen(false); });
   document.addEventListener("keydown", e => { if (e.key === "Escape") menuOpen(false); });
   $("#tabs").addEventListener("click", e => { const b = e.target.closest(".tab"); if (b) { showTab(b.dataset.t); if (b.dataset.t === "advice" && CUR) renderAdvice(CUR); } });
@@ -406,6 +407,7 @@ async function main(DB, FLAGS, REQS){
   function pick(chars, slot) {
     const c = chars.find(x => x.slot == slot); if (!c) return;
     $("#charSel").value = slot; try { localStorage.setItem("tl.cur", String(slot)); } catch (e) {}
+    const who = $("#who"); if (who) who.innerHTML = `${esc(c.name || "Slot " + (c.slot + 1))}<small>${T("Nv {0}", c.level)}${chars.length > 1 ? " ▾" : ""}</small>`;
     for (const b of document.querySelectorAll("#chars [data-slot]")) b.setAttribute("aria-pressed", b.dataset.slot == slot);
     group = "Armas"; limit = 250; $("#q").value = ""; chips();
     renderChar(c);
