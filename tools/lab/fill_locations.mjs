@@ -25,8 +25,13 @@ for (let i = 0; i < todo.length; i += batch) {
     const m = r.text.match(/\{[\s\S]*\}/); let obj = {};
     try { obj = m ? JSON.parse(m[0]) : {}; } catch (e) { console.log("  JSON inválido: " + r.text.slice(0, 200).replace(/\n/g, " ")); }
     if (!m) console.log(`  sin JSON (stop ${r.stop}, ${r.usage.output_tokens} tokens): ${r.text.slice(0, 200).replace(/\n/g, " ")}`);
+    if (i === 0) console.log("  primera respuesta (muestra): " + r.text.slice(0, 600).replace(/\n/g, " "));
+    // the model may normalise quotes or spacing in the keys: match names loosely
+    const norm = x => String(x).toLowerCase().replace(/[\u2018\u2019]/g, "'").replace(/\s+/g, " ").trim();
+    const byNorm = {}; for (const [k, v] of Object.entries(obj)) byNorm[norm(k)] = v;
     for (const n of names) {
-      const t = typeof obj[n] === "string" ? obj[n].trim() : "";
+      const raw = obj[n] !== undefined ? obj[n] : byNorm[norm(n)];
+      const t = typeof raw === "string" ? raw.trim() : "";
       if (!t || /^unknown$/i.test(t)) { if (!draft.unknown.includes(n)) draft.unknown.push(n); }
       else { draft.entries[n] = { text: t.slice(0, 420), model: r.model, date: new Date().toISOString().slice(0, 10) }; done++; draft.unknown = draft.unknown.filter(x => x !== n); }
     }
