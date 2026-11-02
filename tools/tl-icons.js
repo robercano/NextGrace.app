@@ -4,7 +4,7 @@
   const box = document.createElement("div");
   box.id = "tl-icons";
   box.style.cssText = "position:fixed;inset:auto 0 0 0;z-index:99999;background:#17161b;color:#e8e2d3;font:15px system-ui,sans-serif;padding:14px 16px;max-height:70vh;overflow:auto;box-shadow:0 -4px 20px #000a;border-top:2px solid #d6a93d";
-  box.innerHTML = '<b style="color:#d6a93d">Tarnished Ledger · pack de iconos</b> <button id="tl-x" style="float:right">✕</button><div id="tl-st" style="margin:8px 0">Listando ficheros…</div><div id="tl-g"></div><div id="tl-out"></div>';
+  box.innerHTML = '<b style="color:#d6a93d">Next Grace · pack de iconos</b> <button id="tl-x" style="float:right">✕</button><div id="tl-st" style="margin:8px 0">Listando ficheros…</div><div id="tl-g"></div><div id="tl-out"></div>';
   document.body.appendChild(box);
   const st = box.querySelector("#tl-st"), g = box.querySelector("#tl-g"), out = box.querySelector("#tl-out");
   box.querySelector("#tl-x").onclick = () => { stop = true; box.remove(); };

@@ -23,7 +23,7 @@ except ImportError:
     sys.exit("pip install requests")
 
 WIKI = os.environ.get("TL_WIKI", "https://eldenring.wiki.gg")
-UA = "TarnishedLedgerReqsFetch/1.0 (personal use; python-requests)"
+UA = "NextGraceReqsFetch/1.0 (personal use; python-requests)"
 DELAY = float(os.environ.get("TL_DELAY", "1.5"))
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 INFUSIONS = ["Heavy", "Keen", "Quality", "Fire", "Flame Art", "Lightning", "Sacred", "Magic", "Cold", "Poison", "Blood", "Occult"]

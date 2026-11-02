@@ -1,4 +1,6 @@
-# Tarnished Ledger — project status and roadmap
+# Next Grace — project status and roadmap
+
+Domain: **nextgrace.app** (Cloudflare Registrar; custom domain of the Worker; Email Routing `admin@nextgrace.app` → Rob's Gmail). The project was called "Tarnished Ledger" until 2 Nov 2026; the GitHub repo keeps the name TarnishedViewer.
 
 Continuity document: what exists, why it is the way it is, and what is left. Read it whole before changing anything; `README.md` covers setup and `docs/ARCHITECTURE.md` the code layout and the recipes for extending it.
 
@@ -63,7 +65,7 @@ Inventory of what the repo contains and what Rob decided about each item. Not le
 | `reqs.json`, `map.json`, new location texts | eldenring.wiki.gg: **CC BY-SA 4.0** (checked in the wiki footer; the README used to say BY-NC-SA, a mistake). The figures are facts about the game. | Attribution on the credits page with a link to the licence; those data files are CC BY-SA 4.0. Does not affect the code or the reports. |
 | `src/ersave.js`, `flags.json`, `items.json` (ids/names) | Written/extracted with SaveForge (GPL-3.0), ER-Save-Editor and EldenRing-Save-Manager as references. Leaflet BSD-2. Cinzel and EB Garamond (Google Fonts, free). | Project under **GPL-3.0** (`LICENSE`), credits to the three projects with their licences, Leaflet and fonts notices. Reading the save format by reverse engineering: risk accepted; **read-only** disclaimer (the save is never modified, the game and anti-cheat are never touched) on the start screen and on the legal page. No Elden Ring logo or typefaces. |
 | User data: SteamID, name and avatar, character summaries, markers, Cloudflare logs | Rob becomes the data controller (GDPR). The character summary is sent to Anthropic for the report (never the save or the Steam identity). | Privacy page (what, why, how long, processors: Cloudflare and Anthropic, how to delete), **account and data deletion from the site**, minimal terms for community markers + takedown contact. **No analytics** → no cookie banner (session and localStorage are strictly necessary). Contact address to be chosen by Rob (`src/site.js`). Steam login uses OpenID + the public profile, not the Web API, so no "Powered by Steam" requirement. |
-| `progression.json`, glossary, advisor reports, the name "Tarnished Ledger" | Our own / allowed by the API terms. | No change. |
+| `progression.json`, glossary, advisor reports, the name "Next Grace" | Our own / allowed by the API terms. | No change. |
 
 ### Tasks (one commit each, so they can be tested one by one)
 

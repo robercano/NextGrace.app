@@ -1,5 +1,5 @@
 /*
- * app.js — Tarnished Ledger UI (the character sheet: index.html). Plain script, no bundler.
+ * app.js — Next Grace UI (the character sheet: index.html). Plain script, no bundler.
  *
  * main(DB, FLAGS, REQS) is called from index.html once data/items.json, data/flags.json and data/reqs.json are loaded.
  * Globals it relies on (loaded before it): ERSave (src/ersave.js, save parser), Rules (src/rules.js, game rules),

@@ -15,7 +15,7 @@ except ImportError:
     sys.exit("pip install requests pillow")
 
 WIKI = os.environ.get("TL_WIKI", "https://eldenring.wiki.gg")
-UA = "TarnishedLedgerIconFetch/3.0 (personal icon pack; python-requests)"
+UA = "NextGraceIconFetch/3.0 (personal icon pack; python-requests)"
 DELAY = float(os.environ.get("TL_DELAY", "1.5"))
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 ICONS = os.path.join(ROOT, "icons")

@@ -1,6 +1,6 @@
 # Architecture
 
-How Tarnished Ledger is put together and how to extend it. Read this before touching the code; `ROADMAP.md` has the history and the open items, `README.md` the setup.
+How Next Grace (nextgrace.app, formerly Tarnished Ledger) is put together and how to extend it. Read this before touching the code; `ROADMAP.md` has the history and the open items, `README.md` the setup.
 
 ## In one paragraph
 

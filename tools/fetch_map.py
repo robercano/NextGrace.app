@@ -16,7 +16,7 @@ except ImportError:
     sys.exit("pip install requests")
 
 WIKI = os.environ.get("TL_WIKI", "https://eldenring.wiki.gg")
-UA = "TarnishedLedgerMapFetch/1.0 (personal use; python-requests)"
+UA = "NextGraceMapFetch/1.0 (personal use; python-requests)"
 DELAY = float(os.environ.get("TL_DELAY", "2.0"))
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 

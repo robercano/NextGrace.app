@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-fetch_icons.py — descarga el pack de iconos para Tarnished Ledger desde eldenring.wiki.gg (API MediaWiki).
+fetch_icons.py — descarga el pack de iconos para Next Grace desde eldenring.wiki.gg (API MediaWiki).
 
 Lista todos los ficheros "ER Icon <grupo> <nombre>.png" de la wiki, los descarga (miniatura 64 px),
 los convierte a WebP y los guarda como icons/<slug>.webp (el mismo nombre que usa la página).
@@ -23,7 +23,7 @@ except ImportError:
     sys.exit("Instala las dependencias: pip install requests pillow")
 
 WIKI = os.environ.get("TL_WIKI", "https://eldenring.wiki.gg")
-UA = "TarnishedLedgerIconFetch/2.0 (personal icon pack; python-requests)"
+UA = "NextGraceIconFetch/2.0 (personal icon pack; python-requests)"
 DELAY = float(os.environ.get("TL_DELAY", "2.0"))
 NAME_RE = re.compile(r"^ER Icon ([^ ]+) (.+)\.(png|webp|jpe?g)$", re.I)
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
