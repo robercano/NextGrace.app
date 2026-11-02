@@ -53,8 +53,8 @@ button{cursor:pointer}
 .btn{background:transparent;border:1px solid var(--line-2);color:var(--fg);padding:5px 12px;font-family:var(--display);font-size:.78rem;letter-spacing:.06em;text-decoration:none;white-space:nowrap}
 .btn:hover{border-color:var(--gold);color:var(--gold-2)}
 .btn.primary{border-color:var(--gold);color:var(--gold-2)}
-.modes{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:8px;padding:6px max(14px,env(safe-area-inset-right,0px)) 0 max(14px,env(safe-area-inset-left,0px));border-top:1px solid #1e1b17}
-.modec{display:flex;justify-content:center}
+.modes{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px;padding:6px max(14px,env(safe-area-inset-right,0px)) 0 max(14px,env(safe-area-inset-left,0px));border-top:1px solid #1e1b17}
+.modec{display:flex;justify-content:flex-end}
 /* the character on screen, always visible next to Sheet/Map; tapping opens the drawer to switch */
 .who{justify-self:start;align-self:center;background:transparent;border:0;padding:2px 0;font:inherit;color:var(--gold-2);font-family:var(--display);font-size:.78rem;font-weight:600;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;cursor:pointer;text-align:left}
 .who small{color:var(--muted);font-family:var(--body);font-size:.8rem;font-weight:400;letter-spacing:0;margin-left:4px}
@@ -265,7 +265,7 @@ details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font
     <button class="btn acct" id="acct" hidden title="Cuenta" data-i18n-title="Cuenta"></button>
     <button class="btn menub" id="menuBtn" aria-expanded="false" aria-controls="menu" title="Menú" data-i18n-title="Menú"><span></span><span></span><span></span></button>
   </div>
-  <div class="modes" id="modes" hidden><button class="who" id="who" title="Cambiar de personaje" data-i18n-title="Cambiar de personaje"></button><div class="modec"><a class="mode" aria-current="true" href="./" data-i18n="Ficha">Ficha</a><a class="mode" href="map.html" data-i18n="Mapa">Mapa</a></div><span></span></div>
+  <div class="modes" id="modes" hidden><button class="who" id="who" title="Cambiar de personaje" data-i18n-title="Cambiar de personaje"></button><div class="modec"><a class="mode" aria-current="true" href="./" data-i18n="Ficha">Ficha</a><a class="mode" href="map.html" data-i18n="Mapa">Mapa</a></div></div>
   <div class="tabs" role="tablist" id="tabs" hidden>
     <button class="tab" role="tab" data-t="status" aria-selected="true" data-i18n="Estado">Estado</button>
     <button class="tab" role="tab" data-t="equip" aria-selected="false" data-i18n="Equipo">Equipo</button>
