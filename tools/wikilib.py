@@ -13,7 +13,7 @@ except ImportError:  # only the fetchers need it; apply_locations.py imports thi
 
 WIKI = os.environ.get("TL_WIKI", "https://eldenring.wiki.gg")
 LICENSE = "CC BY-SA 4.0"
-UA = "NextGraceFetch/2.0 (https://github.com/robercano/TarnishedViewer; python-requests)"
+UA = "NextGraceFetch/2.0 (https://github.com/robercano/NextGrace.app; python-requests)"
 DELAY = float(os.environ.get("TL_DELAY", "1.5"))
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 INFUSIONS = ["Heavy", "Keen", "Quality", "Fire", "Flame Art", "Lightning", "Sacred", "Magic", "Cold", "Poison", "Blood", "Occult"]

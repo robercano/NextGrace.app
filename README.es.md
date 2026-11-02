@@ -1,6 +1,6 @@
 # Next Grace (resumen en español)
 
-**https://nextgrace.app** (beta privada por ahora). Antes se llamaba "Tarnished Ledger"; el repo conserva su nombre, TarnishedViewer.
+**https://nextgrace.app** (beta privada por ahora). Antes se llamaba "Tarnished Ledger"; el repo de GitHub es robercano/NextGrace.app.
 
 Lector de partidas de Elden Ring (PC, `ER0000.sl2`) que funciona entero en el navegador: ficha del personaje, equipo, inventario, planificador de forja, progreso, mapa interactivo y un "consejero" que redacta un informe para la siguiente sesión. Pensado para consultarlo desde el móvil.
 

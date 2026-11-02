@@ -1,6 +1,6 @@
 # Next Grace
 
-**https://nextgrace.app** (private beta behind Cloudflare Access for now). Formerly "Tarnished Ledger"; the repo keeps its old name, TarnishedViewer.
+**https://nextgrace.app** (private beta behind Cloudflare Access for now). Formerly "Tarnished Ledger"; the GitHub repo is now robercano/NextGrace.app.
 
 A reader for Elden Ring PC saves (`ER0000.sl2`) that runs entirely in the browser: character status, equipment, inventory, smithing planner, progress tracker, interactive map and an AI "advisor" for your next session. Built to be used from a phone between sessions.
 

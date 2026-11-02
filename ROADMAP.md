@@ -1,6 +1,6 @@
 # Next Grace — project status and roadmap
 
-Domain: **nextgrace.app** (Cloudflare Registrar; custom domain of the Worker; Email Routing `admin@nextgrace.app` → Rob's Gmail). The project was called "Tarnished Ledger" until 2 Nov 2026; the GitHub repo keeps the name TarnishedViewer.
+Domain: **nextgrace.app** (Cloudflare Registrar; custom domain of the Worker; Email Routing `admin@nextgrace.app` → Rob's Gmail). The project was called "Tarnished Ledger" until 2 Nov 2026; the GitHub repo was renamed to NextGrace.app on 2 Nov 2026.
 
 Continuity document: what exists, why it is the way it is, and what is left. Read it whole before changing anything; `README.md` covers setup and `docs/ARCHITECTURE.md` the code layout and the recipes for extending it.
 
