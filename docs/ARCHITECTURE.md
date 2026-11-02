@@ -31,6 +31,7 @@ browser                                  Cloudflare Worker (worker/index.js)
 | `src/rules.js` | Game knowledge as pure functions: level cost, soft caps, equipment stat bonuses, "can I use this" (`canUse`), equip load, smithing-stone costs, spirit-ash levels, rune values. Each block says where its numbers come from. **If a number on screen looks wrong, start here.** |
 | `src/icons.js` | Item pictures: site icons (`icons/index.json`) plus a user-imported pack (IndexedDB). `Icons.find(item)` tries several keys (id, name slug, without affinity/level…); add a candidate there if a new naming scheme appears. |
 | `src/app.js` | All UI of the sheet. `main(DB, FLAGS, REQS)` is called once the data files are loaded. Organised by tab (see the index comment at the top). State: `SAVE` (parsed file), `CUR` (character on screen), `TAB`. |
+| `src/shell.css` | The header both pages share: title + Steam account + menu button, the drawer (characters, save, language, legal) and the Sheet/Map row with the character on screen. Tokens come from each page's `:root`. |
 | `src/i18n.js` | `T("Spanish text", …args)` returns the English translation when the language is `en`; the Spanish string is the key. `I18N.apply()` translates static markup. See *Adding a string*. |
 | `src/glossary.js` | The "i" tips: `{ w: wiki page, es, en }` per key, used by `kvr(label, value, sub, key)` in `app.js`. |
 | `src/marks.js` | Manual progress marks per character in `localStorage` (`Marks.toggle/has/all/export/import`). Synced by `cloud.js` when logged in. |

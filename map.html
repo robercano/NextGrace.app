@@ -16,30 +16,16 @@
 <meta name="twitter:card" content="summary">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="src/shell.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap">
 <style>
-:root{--bg:#0b0a0a;--panel:#121110;--panel-2:#1c1a18;--line:#3a352c;--fg:#dcd3bf;--muted:#7d7563;--accent:#c9a44a;--accent-fg:#1a1508;--ok:#7fb069;--bad:#c85a4a;--user:#5e8fd6;
+:root{--bg:#0b0a0a;--panel:#121110;--panel-2:#1c1a18;--panel-s:#1c1a18;--line:#3a352c;--line-2:#5a5240;--fg:#dcd3bf;--fg-2:#b7ad97;--muted:#7d7563;--accent:#c9a44a;--accent-fg:#1a1508;--gold:#c9a44a;--gold-2:#e2c272;--gold-dim:#8c7332;--ok:#7fb069;--bad:#c85a4a;--user:#5e8fd6;
   --display:"Cinzel",Georgia,serif;--body:"EB Garamond",Georgia,serif;color-scheme:dark}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
 [hidden]{display:none!important}
-.bar{display:flex;gap:8px;align-items:center;padding:8px max(12px,env(safe-area-inset-right,0px)) 8px max(12px,env(safe-area-inset-left,0px));background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
-.bar h1{font-family:var(--display);font-size:1rem;margin:0;flex:1;white-space:nowrap;color:var(--accent)}
-.modes{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px;padding:6px 12px 0;background:var(--panel);border-bottom:1px solid var(--line)}
-.modec{display:flex;justify-content:flex-end}
-/* same chip as the sheet: the character on screen; tapping shows the other characters of the save */
-.who{justify-self:start;align-self:center;background:transparent;border:0;padding:2px 0;font:inherit;color:var(--accent);font-family:var(--display);font-size:.78rem;font-weight:600;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;cursor:pointer;text-align:left}
-.who small{color:var(--muted);font-family:var(--body);font-size:.8rem;font-weight:400;letter-spacing:0;margin-left:4px}
-.whopop{position:absolute;z-index:900;left:12px;background:var(--bg);border:1px solid var(--line);padding:6px;display:flex;flex-direction:column;gap:4px;min-width:200px}
-.whopop button{background:var(--panel);border:1px solid var(--line);padding:6px 10px;text-align:left;font:inherit;color:var(--fg);display:flex;gap:8px;align-items:baseline;cursor:pointer}
-.whopop button[aria-pressed=true]{border-color:var(--accent)}
-.whopop b{font-family:var(--display);font-size:.85rem;color:var(--fg)}
-.whopop span{color:var(--muted);font-size:.82rem}
-.mode{font-family:var(--display);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:6px 18px;border:1px solid var(--line);border-bottom:0}
-.mode:first-child{border-radius:3px 0 0 0}.mode:last-child{border-radius:0 3px 0 0;border-left:0}
-.mode[aria-current=true]{color:var(--accent);background:#d6a93d14;border-color:#8c7332}
-.mode:last-child[aria-current=true]{border-left:1px solid #8c7332}.mode[aria-current=true]+.mode{border-left:0}
+.top{position:static}
 .btn,select,input{font:inherit;color:inherit;background:var(--panel-2);border:1px solid var(--line);border-radius:0;padding:6px 10px}
 .btn{font-family:var(--display);font-size:.78rem;letter-spacing:.06em}
 .btn{cursor:pointer;text-decoration:none}
@@ -89,11 +75,25 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
 </style>
 </head>
 <body>
-<div class="bar">
-  <h1>Next Grace</h1>
-  <select id="charSel" aria-label="Personaje" hidden></select>
+<div class="top">
+  <div class="topi">
+    <h1>Next Grace</h1>
+    <button class="btn acct" id="acct" hidden title="Cuenta" data-i18n-title="Cuenta"></button>
+    <button class="btn menub" id="menuBtn" aria-expanded="false" aria-controls="menu" title="Menú" data-i18n-title="Menú"><span></span><span></span><span></span></button>
+  </div>
+  <div class="modes"><button class="who" id="who" title="Cambiar de personaje" data-i18n-title="Cambiar de personaje"></button><div class="modec"><a class="mode" href="./" data-i18n="Ficha">Ficha</a><a class="mode" aria-current="true" href="map.html" data-i18n="Mapa">Mapa</a></div></div>
 </div>
-<div class="modes"><button class="who" id="who"></button><div class="modec"><a class="mode" href="./" data-i18n="Ficha">Ficha</a><a class="mode" aria-current="true" href="map.html" data-i18n="Mapa">Mapa</a></div></div>
+<div class="menuback" id="menuBack" hidden></div>
+<nav class="menu" id="menu" hidden aria-label="Menú">
+  <div class="menusec" id="menuChars" hidden><div class="menuh" data-i18n="Personaje">Personaje</div><div class="chars" id="chars"></div></div>
+  <div class="menusec"><div class="menuh" data-i18n="Partida">Partida</div>
+    <a class="mitem" href="./"><b data-i18n="Abrir otro .sl2">Abrir otro .sl2</b><span class="help" data-i18n="Desde la ficha">Desde la ficha</span></a>
+    <a class="mitem" href="https://store.steampowered.com/account/remotestorageapp/?appid=1245620" target="_blank" rel="noopener"><b>Steam Cloud</b><span class="help" data-i18n="Descargar la partida de Steam Cloud">Descargar la partida de Steam Cloud</span></a>
+  </div>
+  <div class="menusec"><div class="menuh" data-i18n="Idioma">Idioma</div><button class="mitem" data-lang-toggle><b>English</b></button></div>
+  <div class="menusec"><a class="mitem" href="about.html"><b data-i18n="Créditos y licencias">Créditos y licencias</b></a><a class="mitem" href="privacy.html"><b data-i18n="Política de privacidad">Política de privacidad</b></a></div>
+</nav>
+<select id="charSel" aria-label="Personaje" hidden></select>
 <div class="sels">
   <select id="layerSel" aria-label="Capa">
     <option value="tlb" data-i18n="Tierras Intermedias">Tierras Intermedias</option>
@@ -168,15 +168,21 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   const chars = (last && last.chars || []).filter(c => !c.error);
   const sel = $("#charSel");
   if (chars.length) { sel.innerHTML = chars.map((c, i) => `<option value="${i}">${esc(c.name)} · ${c.level}</option>`).join(""); } // kept hidden: the "who" chip drives it
-  // character picker under the chip (the sheet uses its drawer for this)
-  $("#who").addEventListener("click", e => {
-    let pop = $(".whopop"); if (pop) { pop.remove(); return; } if (chars.length < 2) return;
-    pop = document.createElement("div"); pop.className = "whopop"; const r = e.currentTarget.getBoundingClientRect(); pop.style.top = (r.bottom + 4 + window.scrollY) + "px";
-    pop.innerHTML = chars.map((c, i) => `<button data-i="${i}" aria-pressed="${c === CUR}"><b>${esc(c.name)}</b><span>${T("Nv {0}", c.level)} · ${esc(c.className || "")}</span></button>`).join("");
-    pop.onclick = ev => { const b = ev.target.closest("[data-i]"); if (!b) return; sel.value = b.dataset.i; sel.onchange(); pop.remove(); };
-    document.body.appendChild(pop);
-    setTimeout(() => document.addEventListener("click", function off(ev) { if (!pop.contains(ev.target) && ev.target !== $("#who")) { pop.remove(); document.removeEventListener("click", off); } }), 0);
-  });
+  // header drawer, same as the sheet: characters, save, language, legal
+  const menuOpen = on => { $("#menu").hidden = !on; $("#menuBack").hidden = !on; $("#menuBtn").setAttribute("aria-expanded", on); };
+  $("#menuBtn").addEventListener("click", () => menuOpen($("#menu").hidden));
+  $("#menuBack").addEventListener("click", () => menuOpen(false));
+  $("#who").addEventListener("click", () => menuOpen(true));
+  document.addEventListener("keydown", e => { if (e.key === "Escape") menuOpen(false); });
+  $("#menuChars").hidden = chars.length < 2;
+  $("#chars").innerHTML = chars.map((c, i) => `<button data-i="${i}" aria-pressed="false"><b>${esc(c.name || "")}</b><span>${T("Nv {0}", c.level)} · ${esc(c.className || "")}</span></button>`).join("");
+  $("#chars").onclick = e => { const b = e.target.closest("[data-i]"); if (!b) return; sel.value = b.dataset.i; sel.onchange(); menuOpen(false); };
+  // Steam account indicator (the full account sheet lives on the sheet page)
+  const renderAcct = () => { const b = $("#acct"), u = Cloud.user(); b.hidden = !Cloud.available(); if (u) { b.className = "btn acct"; b.innerHTML = `${u.avatar ? `<img src="${esc(u.avatar)}" alt="">` : ""}<span>${esc(u.name || "Steam")}</span>`; } else { b.className = "btn acct out"; b.textContent = T("Entrar"); } };
+  renderAcct();
+  $("#acct").onclick = () => { if (!Cloud.user()) { Cloud.login(); return; } const u = Cloud.user(); let sh = $("#acctSheet"); if (!sh) { sh = document.createElement("div"); sh.id = "acctSheet"; sh.className = "sheet"; document.body.appendChild(sh); }
+    sh.innerHTML = `<h3>${T("Cuenta")}</h3><div class="row"><div class="n">${u.avatar ? `<img src="${esc(u.avatar)}" alt="" style="width:28px;height:28px;vertical-align:middle;margin-right:8px">` : ""}<b>${esc(u.name || "")}</b>${Cloud.isAdmin() ? ` <span class="muted small">· ${T("moderador")}</span>` : ""}</div><button class="btn" id="acctOut">${T("Salir")}</button></div><p class="muted small" style="margin:6px 0 0"><a href="./" style="color:var(--accent)">${T("Marcas, resumen, moderación y borrado de cuenta: en la ficha")}</a></p><div class="row" style="justify-content:flex-end"><button class="btn" id="acctClose">${T("Cerrar")}</button></div>`;
+    sh.hidden = false; $("#acctClose").onclick = () => { sh.hidden = true; }; $("#acctOut").onclick = async () => { await Cloud.logout(); renderAcct(); sh.hidden = true; }; };
   let curSlot = null; try { curSlot = localStorage.getItem("tl.cur"); } catch (e) {}
   let CUR = chars.find(c => String(c.slot) === curSlot) || chars[0] || null;
   if (CUR) sel.value = String(chars.indexOf(CUR));
@@ -245,7 +251,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
 
   let q = hashQ;
   function render() {
-    { const w = $("#who"); if (w) w.innerHTML = CUR ? `${esc(CUR.name || "")}<small>${T("Nv {0}", CUR.level)}${chars.length > 1 ? " ▾" : ""}</small>` : ""; }
+    { const w = $("#who"); if (w) w.innerHTML = CUR ? `${esc(CUR.name || "")}<small>${T("Nv {0}", CUR.level)}${chars.length > 1 ? " ▾" : ""}</small>` : ""; for (const b of document.querySelectorAll("#chars [data-i]")) b.setAttribute("aria-pressed", chars[+b.dataset.i] === CUR); }
     for (const k in layers) layers[k].clearLayers();
     const layer = $("#layerSel").value;
     const have = CUR ? haveSet(CUR) : null;

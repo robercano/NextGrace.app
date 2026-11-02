@@ -1,0 +1,43 @@
+/* shell.css — the header shared by the sheet (index.html) and the map (map.html): title + Steam account + menu button, the
+   drawer (characters, save, language, legal links) and the Sheet/Map row with the character on screen. Tokens come from each
+   page's :root (--gold, --gold-2, --gold-dim, --line, --line-2, --panel-s, --fg, --fg-2, --muted, --bg, --display, --body). */
+.topi .btn{background:transparent;border:1px solid var(--line-2);color:var(--fg);padding:5px 12px;font-family:var(--display);font-size:.78rem;letter-spacing:.06em;text-decoration:none;white-space:nowrap}
+.topi .btn:hover{border-color:var(--gold);color:var(--gold-2)}
+.topi .btn.primary{border-color:var(--gold);color:var(--gold-2)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:linear-gradient(#0f0e0d,#0b0a0acc);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.topi{display:flex;align-items:center;gap:10px;padding:8px max(14px,env(safe-area-inset-right,0px)) 6px max(14px,env(safe-area-inset-left,0px))}
+.topi h1{font-size:.95rem;color:var(--gold);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topi select{background:var(--panel-s);border:1px solid var(--line);padding:4px 8px;max-width:40vw;font-size:.9rem}
+.modes{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px;padding:6px max(14px,env(safe-area-inset-right,0px)) 0 max(14px,env(safe-area-inset-left,0px));border-top:1px solid #1e1b17}
+.modec{display:flex;justify-content:flex-end}
+/* the character on screen, always visible next to Sheet/Map; tapping opens the drawer to switch */
+.who{justify-self:start;align-self:center;background:transparent;border:0;padding:2px 0;font:inherit;color:var(--gold-2);font-family:var(--display);font-size:.78rem;font-weight:600;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;cursor:pointer;text-align:left}
+.who small{color:var(--muted);font-family:var(--body);font-size:.8rem;font-weight:400;letter-spacing:0;margin-left:4px}
+.mode{font-family:var(--display);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:6px 18px;border:1px solid var(--line);border-bottom:0}
+.mode:first-child{border-radius:3px 0 0 0}.mode:last-child{border-radius:0 3px 0 0;border-left:0}
+.mode[aria-current=true]{color:var(--gold-2);background:#c9a44a14;border-color:var(--gold-dim)}
+/* the selected tab owns the divider on both sides, so "Mapa" shows the same gold edge as "Ficha" */
+.mode:last-child[aria-current=true]{border-left:1px solid var(--gold-dim)}.mode[aria-current=true]+.mode{border-left:0}
+.btn.acct{display:flex;align-items:center;gap:6px;padding:3px 10px 3px 4px}
+.btn.acct img{width:22px;height:22px;border:1px solid var(--line-2)}
+.btn.acct.out{padding:5px 12px}
+.btn.lang{padding:5px 8px;font-size:.7rem;letter-spacing:.1em}
+.btn.menub{display:flex;flex-direction:column;gap:4px;justify-content:center;padding:8px 9px;border-color:var(--line)}
+.btn.menub span{display:block;width:18px;height:2px;background:var(--gold)}
+.btn.menub[aria-expanded=true]{border-color:var(--gold)}
+.menuback{position:fixed;inset:0;background:#000a;z-index:40}
+.menu{position:fixed;top:0;right:0;bottom:0;width:min(86vw,340px);background:var(--bg);border-left:1px solid var(--gold-dim);z-index:41;overflow:auto;padding:calc(10px + env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) 14px;display:flex;flex-direction:column;gap:14px}
+.menusec{display:flex;flex-direction:column;gap:6px}
+.menuh{font-family:var(--display);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);border-bottom:1px solid var(--line);padding-bottom:4px}
+.mitem{display:flex;flex-direction:column;gap:2px;background:var(--panel-s);border:1px solid var(--line);padding:8px 12px;text-decoration:none;color:var(--fg);text-align:left;font:inherit;cursor:pointer}
+.mitem b{font-family:var(--display);font-weight:600;font-size:.85rem;letter-spacing:.04em;color:var(--fg-2)}
+.mitem .help{font-size:.82rem}
+.menu .chars{flex-direction:column;padding:0;border:0;overflow:visible}
+.menu .chars button{max-width:none}
+.chars{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:6px max(14px,env(safe-area-inset-right,0px)) 4px max(14px,env(safe-area-inset-left,0px));border-top:1px solid #1e1b17}
+.chars::-webkit-scrollbar{display:none}
+.chars button{flex:1 0 auto;background:var(--panel-s);border:1px solid var(--line);padding:6px 12px;text-align:left;display:flex;align-items:baseline;gap:8px;min-width:0;max-width:60vw}
+.chars button[aria-pressed=true]{border-color:var(--gold);background:#c9a44a14}
+.chars b{font-family:var(--display);font-weight:600;font-size:.9rem;color:var(--fg-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chars button[aria-pressed=true] b{color:var(--gold-2)}
+.chars span{color:var(--muted);font-size:.82rem;white-space:nowrap}
