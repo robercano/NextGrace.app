@@ -10,10 +10,15 @@ import { handler, requireUser, json, bad, sha256, advisorEnabled } from "../../_
 // Limits that bound what the Claude key can cost (see docs/ARCHITECTURE.md → "Advisor access"): per character, per user, and for
 // everybody together per day. Admins skip the per-user and global caps. 5.x models think by default and thinking counts
 // toward max_tokens; the report itself is ~800 tokens.
-const COOLDOWN_H = 1, DAILY_CAP = 5, GLOBAL_DAILY_CAP = 60, MAX_TOKENS = 8000;
+// Lab of 2 Nov 2026 (tools/lab/results/2026-11-02): Opus 5.5 finishes in 2.5-4.3k output tokens and writes clearly better
+// reports; Sonnet 5.5 spends 8k+ tokens thinking and often returns nothing. Hence Opus by default and a per-model budget.
+const COOLDOWN_H = 1, DAILY_CAP = 5, GLOBAL_DAILY_CAP = 60;
+const MAX_TOKENS_BY_MODEL = { "claude-opus-5-5": 8000, "claude-sonnet-5-5": 16000 }, MAX_TOKENS_DEFAULT = 12000;
+const maxTokensFor = model => MAX_TOKENS_BY_MODEL[model] || MAX_TOKENS_DEFAULT;
+const MAX_TOKENS = MAX_TOKENS_DEFAULT; // reported in ADVICE_LIMITS
 export const ADVICE_LIMITS = { cooldownH: COOLDOWN_H, dailyCap: DAILY_CAP, globalDailyCap: GLOBAL_DAILY_CAP, maxTokens: MAX_TOKENS };
-const DEFAULT_MODEL = "claude-sonnet-5-5";
-const PROMPT_VERSION = 2; // bump when SYSTEM/buildContext change: the cached report is then considered stale
+const DEFAULT_MODEL = "claude-opus-5-5";
+const PROMPT_VERSION = 3; // 3: "Hoy en 1 hora" section + compact weapon list for big inventories // bump when SYSTEM/buildContext change: the cached report is then considered stale
 const JOB_TTL_S = 240; // a job older than this is assumed dead (Worker evicted)
 
 const hashOf = async (summary, lang) => (await sha256((summary || "") + "|" + lang + "|p" + PROMPT_VERSION)).slice(0, 16);
@@ -49,7 +54,16 @@ export function buildContext(row, S, FLAGS, PROG) {
   const byRegion = {}; for (const b of bosses) { (byRegion[b.r] = byRegion[b.r] || []).push(b); }
   const graceByRegion = {}; for (const g of FLAGS.graces) { const o = graceByRegion[g.region] = graceByRegion[g.region] || { done: 0, total: 0 }; o.total++; if (gv.has(g.id)) o.done++; }
   const lastGrace = FLAGS.graces.find(g => g.id === S.lastGrace);
-  const weapons = (S.weapons || []).slice().sort((a, b) => b.lvl - a.lvl);
+  // Big inventories (a finished character owns 450 weapons) would cost 35k+ input tokens: keep what matters for advice —
+  // upgraded, equipped or usable-and-scaling-with-the-build weapons — and summarise the rest by count.
+  const all = (S.weapons || []).slice().sort((a, b) => b.lvl - a.lvl);
+  let weapons = all, omitted = 0;
+  if (all.length > 80) {
+    const top = Object.entries(S.stats || {}).filter(([k]) => ["strength", "dexterity", "intelligence", "faith", "arcane"].includes(k)).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k]) => ({ strength: "str", dexterity: "dex", intelligence: "int", faith: "fai", arcane: "arc" })[k]);
+    const eqNames = new Set([].concat((S.equipped || {}).rh || [], (S.equipped || {}).lh || []).filter(Boolean).map(n => n.replace(/\s*\+\d+$/, "")));
+    const good = w => w.lvl > 0 || eqNames.has(w.n) || (w.use === "ok" && w.sc && top.some(k => /^[SAB]$/.test(w.sc[k] || "")));
+    weapons = all.filter(good).slice(0, 120); omitted = all.length - weapons.length;
+  }
   const ST = { str: "FUE", dex: "DES", int: "INT", fai: "FE", arc: "ARC" };
   const fmtW = w => `${w.n}${w.inf ? " (" + w.inf + ")" : ""} +${w.lvl}/${w.max}${w.stored ? " [cofre]" : ""}${w.req ? " {req " + Object.entries(w.req).filter(([, v]) => v).map(([k, v]) => ST[k] + v).join("/") + (w.sc ? "; esc " + Object.entries(w.sc).map(([k, v]) => ST[k] + ":" + v).join("/") : "") + "; " + (w.use === "ok" ? "usable" : w.use === "boost" ? "usable solo gracias a " + (w.via || "un bonus de equipo") : w.use === "2h" ? "solo a dos manos" : "NO usable, faltan " + (w.miss || "")) + "}" : ""}`;
   const lines = [];
@@ -59,7 +73,7 @@ export function buildContext(row, S, FLAGS, PROG) {
   if (lastGrace) lines.push(`Última gracia de descanso: ${lastGrace.name} (${lastGrace.region}).`);
   const E = S.equipped || {}; const PH = new Set(["Unarmed", "Head", "Body", "Arms", "Legs"]); for (const k of ["rh", "lh", "talismans"]) E[k] = (E[k] || []).filter(x => x && !PH.has(x)); for (const k of ["head", "chest", "arms", "legs"]) if (PH.has(E[k])) E[k] = null;
   lines.push(`Equipado: mano derecha ${(E.rh || []).filter(Boolean).join(" / ") || "-"}; mano izquierda ${(E.lh || []).filter(Boolean).join(" / ") || "-"}; armadura ${[E.head, E.chest, E.arms, E.legs].filter(Boolean).join(", ") || "-"}; talismanes ${(E.talismans || []).filter(Boolean).join(", ") || "-"}; hechizos memorizados ${(S.spells || []).join(", ") || "-"}.`);
-  lines.push(`\n# Armas en inventario (${weapons.length}): ${weapons.map(fmtW).join("; ")}`);
+  lines.push(`\n# Armas en inventario (${all.length}${omitted ? `, se listan ${weapons.length}: las mejoradas, equipadas o usables con buen escalado; ${omitted} más sin mejorar omitidas` : ""}): ${weapons.map(fmtW).join("; ")}`);
   lines.push(`# Piedras de forja: ${Object.entries(S.stones || {}).map(([k, v]) => k.replace("Smithing Stone", "SS") + " ×" + v).join(", ") || "ninguna"}`);
   lines.push(`# Talismanes (${(S.talismans || []).length}): ${(S.talismans || []).join(", ")}`);
   lines.push(`# Hechizos/encantamientos que posee (${(S.spellsOwned || []).length}): ${(S.spellsOwned || []).join(", ")}`);
@@ -78,13 +92,13 @@ export const SYSTEM_EN = `You are a veteran Elden Ring advisor (base game and Sh
 - Base every piece of advice on the data you were given: quote levels, stones and bosses as they appear. Don't invent items the character doesn't have, and don't claim where they are unless it follows from the data.
 - Each weapon carries in braces its real requirements, its scaling (letters) and whether the character can use it now ("usable", "two-handed only" or "NOT usable, missing STR+N…"): don't recommend NOT usable weapons unless you propose raising exactly those attributes; if a weapon is "usable only thanks to" a talisman or helm, say so (it depends on keeping it equipped), and prefer weapons that scale with the character's high attributes; if an upgrade isn't possible with the current stones, say which stone is missing and where it's usually found or which bell bearing unlocks it.
 - No story spoilers; naming areas, bosses and items is fine.
-- Use exactly these sections (## headings): "Where you are", "What to level and why" (attributes and weapons, 3 weapons at most), "Next steps" (3–5, in order), "Challenges within reach" (bosses and optional areas reasonable for the level), "Things you may have missed" (pending items or graces in areas already explored), and close with a "Note" line reminding this is guidance only.
+- Use exactly these sections (## headings): "Where you are", "What to level and why" (attributes and weapons, 3 weapons at most), "Next steps" (3–5, in order), "Challenges within reach" (bosses and optional areas reasonable for the level), "Things you may have missed" (pending items or graces in areas already explored), "Today in one hour" (what to do if the next session is only one hour long: one goal, the route, what to bring), and close with a "Note" line reminding this is guidance only.
 - Be direct and concise: about 350–500 words. No introduction or sign-off.`;
 export const SYSTEM = `Eres un consejero veterano de Elden Ring (juego base y Shadow of the Erdtree). Recibes el estado real de un personaje leído de su partida (atributos, equipo, inventario, piedras, jefes y gracias) y una tabla orientativa de progresión. Escribe en español, en markdown, un informe breve y concreto para la PRÓXIMA sesión de juego. Reglas:
 - Basa cada consejo en los datos recibidos: cita niveles, piedras y jefes tal como aparecen. No inventes objetos que el personaje no tiene ni afirmes dónde está si no se deduce de los datos.
 - Cada arma lleva entre llaves sus requisitos reales, su escalado (letras) y si el personaje puede usarla ahora ("usable", "solo a dos manos" o "NO usable, faltan FUE+N…"): no recomiendes armas NO usables salvo que propongas subir justo esos atributos; si una arma es "usable solo gracias a" un talismán o casco, dilo (depende de llevarlo equipado), y prioriza las que escalen con los atributos altos del personaje; si una mejora no es posible con las piedras actuales, di qué piedra falta y dónde suele conseguirse o qué bell bearing la desbloquea.
 - No reveles tramas ni giros de historia; sí puedes nombrar zonas, jefes y objetos.
-- Usa exactamente estas secciones (## títulos): "Dónde estás", "Qué subir y por qué" (atributos y armas, máximo 3 armas), "Siguientes pasos" (3-5, ordenados), "Retos a tu alcance" (jefes y zonas opcionales razonables para el nivel), "Cosas que se te pueden haber pasado" (objetos o gracias pendientes en zonas ya recorridas), y cierra con una línea "Aviso" recordando que es orientativo.
+- Usa exactamente estas secciones (## títulos): "Dónde estás", "Qué subir y por qué" (atributos y armas, máximo 3 armas), "Siguientes pasos" (3-5, ordenados), "Retos a tu alcance" (jefes y zonas opcionales razonables para el nivel), "Cosas que se te pueden haber pasado" (objetos o gracias pendientes en zonas ya recorridas), "Hoy en 1 hora" (qué hacer si la próxima sesión dura solo una hora: un objetivo, la ruta y qué llevar), y cierra con una línea "Aviso" recordando que es orientativo.
 - Sé directo y conciso: unas 350-500 palabras. Sin introducción ni despedida.`;
 
 // Streams the model's answer (SSE) so neither leg of the connection sits idle; onBeat is called as deltas arrive.
@@ -96,7 +110,7 @@ async function generate(context, row, S, onBeat, lang) {
   if (!context.env.ANTHROPIC_API_KEY) throw bad("advisor not configured (ANTHROPIC_API_KEY)", 503);
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST", headers: { "content-type": "application/json", "x-api-key": context.env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({ model, max_tokens: MAX_TOKENS, stream: true, system: lang === "en" ? SYSTEM_EN : SYSTEM, messages: [{ role: "user", content: ctx }] }),
+    body: JSON.stringify({ model, max_tokens: maxTokensFor(model), stream: true, system: lang === "en" ? SYSTEM_EN : SYSTEM, messages: [{ role: "user", content: ctx }] }),
   });
   if (!r.ok) { const data = await r.json().catch(() => ({})); throw bad("model error: " + (data.error && data.error.message || r.status), 502); }
   let text = "", usage = { input_tokens: null, output_tokens: null }, stop = null, buf = "";

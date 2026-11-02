@@ -3,7 +3,7 @@ export async function ask({ model, system, user, maxTokens = 8000, temperature }
   const key = process.env.ANTHROPIC_API_KEY; if (!key) throw new Error("ANTHROPIC_API_KEY is not set");
   const t0 = Date.now();
   const body = { model, max_tokens: maxTokens, system, messages: [{ role: "user", content: user }] };
-  if (temperature !== undefined) body.temperature = temperature;
+  if (temperature !== undefined && !/claude-(sonnet|opus|haiku)-5/.test(model)) body.temperature = temperature; // 5.x models reject it
   const r = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" }, body: JSON.stringify(body) });
   const d = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(`model error ${r.status}: ${d.error && d.error.message || JSON.stringify(d).slice(0, 200)}`);

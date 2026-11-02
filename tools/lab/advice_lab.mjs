@@ -14,7 +14,7 @@ const FLAGS = JSON.parse(fs.readFileSync(path.join(ROOT, "data/flags.json"), "ut
 const base = lang === "en" ? SYSTEM_EN : SYSTEM;
 const VARIANTS = {
   A: base,
-  B: base.replace(lang === "en" ? '"Things you may have missed"' : '"Cosas que se te pueden haber pasado"', lang === "en" ? '"Things you may have missed", "Today in one hour" (what to do if the next session is only one hour long: one goal, the route, what to bring)' : '"Cosas que se te pueden haber pasado", "Hoy en 1 hora" (qué hacer si la próxima sesión dura solo una hora: un objetivo, la ruta y qué llevar)'),
+  B: base, // since PROMPT_VERSION 3 the site's prompt already carries "Hoy en 1 hora" (B = A); kept so old result tables still read
   C: (lang === "en" ? SYSTEM_EN : SYSTEM).replace(/Use exactly these sections[\s\S]*?Note" line[^\n]*\n|Usa exactamente estas secciones[\s\S]*?línea "Aviso"[^\n]*\n/, lang === "en" ? 'Structure: a one-line summary of where the character is, then "Priorities" (3 bullets, most valuable first, each with the why), then "Next session" (an ordered route of at most 5 steps), then one line "Note".\n' : 'Estructura: una línea con dónde está el personaje, luego "Prioridades" (3 viñetas, la más valiosa primero, cada una con el porqué), luego "Próxima sesión" (una ruta ordenada de 5 pasos como máximo) y una línea "Aviso".\n').replace(/350[–-]500/g, "200-280"),
 };
 const chars = [];
@@ -28,7 +28,7 @@ for (const c of chars) {
   for (const model of models) for (const v of variants) {
     const name = `${c.name}-${model}-${v}`; process.stdout.write(name + " … ");
     try {
-      const r = await ask({ model, system: VARIANTS[v], user: ctx });
+      const r = await ask({ model, system: VARIANTS[v], user: ctx, maxTokens: model.includes("sonnet") ? 16000 : 8000 });
       const words = r.text.split(/\s+/).length, c$ = cost(model, r.usage);
       fs.writeFileSync(path.join(out, name + ".md"), `<!-- model ${r.model} · variant ${v} · ${r.usage.input_tokens} in / ${r.usage.output_tokens} out · ${r.seconds} s · ~$${c$.toFixed(3)} · stop ${r.stop} -->\n\n${r.text}\n`);
       rows.push([c.name, model, v, r.usage.input_tokens, r.usage.output_tokens, r.seconds, words, c$.toFixed(3), name + ".md"]);
