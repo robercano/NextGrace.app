@@ -45,6 +45,8 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
 .tools.sub .chip{flex:none;white-space:nowrap}
 .tools.sub .chip{font-size:.62rem;padding:3px 8px;display:inline-flex;align-items:center;gap:4px;text-transform:none;letter-spacing:.04em;font-family:var(--body);font-size:.85rem}
 .tools.sub .chip svg{opacity:.9}
+.sels{display:flex;gap:8px;padding:6px max(12px,env(safe-area-inset-right,0px)) 0 max(12px,env(safe-area-inset-left,0px));background:var(--panel)}
+.sels select{flex:1;min-width:0}
 .tools{display:flex;gap:6px;flex-wrap:wrap;padding:6px max(12px,env(safe-area-inset-right,0px)) 6px max(12px,env(safe-area-inset-left,0px));background:var(--panel);border-bottom:1px solid var(--line);align-items:center}
 .chip{border:1px solid var(--line);background:transparent;border-radius:0;padding:4px 10px;font-family:var(--display);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;color:var(--fg)}
 .chip[aria-pressed=true]{background:#c9a44a14;color:var(--accent);border-color:var(--accent);font-weight:600}
@@ -84,6 +86,9 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
 <div class="bar">
   <h1>Next Grace</h1>
   <select id="charSel" aria-label="Personaje" hidden></select>
+</div>
+<div class="modes"><span class="who" id="who"></span><div class="modec"><a class="mode" href="./" data-i18n="Ficha">Ficha</a><a class="mode" aria-current="true" href="map.html" data-i18n="Mapa">Mapa</a></div></div>
+<div class="sels">
   <select id="layerSel" aria-label="Capa">
     <option value="tlb" data-i18n="Tierras Intermedias">Tierras Intermedias</option>
     <option value="gugr" data-i18n="Subsuelo">Subsuelo</option>
@@ -94,9 +99,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
     <option value="todo" data-i18n="Pendiente">Pendiente</option>
     <option value="done" data-i18n="Hecho">Hecho</option>
   </select>
-  <button class="btn" data-lang-toggle style="margin-left:auto;padding:5px 8px;font-size:.7rem;letter-spacing:.1em">EN</button>
 </div>
-<div class="modes"><span class="who" id="who"></span><div class="modec"><a class="mode" href="./" data-i18n="Ficha">Ficha</a><a class="mode" aria-current="true" href="map.html" data-i18n="Mapa">Mapa</a></div></div>
 <div class="tools">
   <input id="q" type="search" placeholder="Buscar lugar, gracia u objeto…" data-i18n-ph="Buscar lugar, gracia u objeto…" autocomplete="off">
   <button class="chip" data-l="grace" aria-pressed="true"><i style="background:var(--ok)"></i><span data-i18n="Gracias">Gracias</span></button>
