@@ -17,12 +17,14 @@ export async function checkOwnership(env, steamid) {
   } catch (e) { return { state: "error" }; }
 }
 
-/** Re-checks and stores the result unless the user was approved/denied by hand. Returns the user's new advisor state. */
+/** Re-checks and stores the result in users.owns; users.advisor follows it unless a moderator decided (manual/denied) or a request
+ *  is pending. Returns the user's new advisor state. */
 export async function refreshOwnership(env, user) {
-  if (user.advisor === "manual" || user.advisor === "denied" || user.advisor === "requested") return user.advisor;
   const r = await checkOwnership(env, user.steamid);
   // never downgrade a confirmed owner because of a transient failure
-  const state = (r.state === "error" || r.state === "unavailable") && user.advisor === "owner" ? "owner" : r.state;
-  await env.DB.prepare("UPDATE users SET advisor = ?, advisor_checked_at = datetime('now') WHERE steamid = ?").bind(state, user.steamid).run();
-  return state;
+  const owns = (r.state === "error" || r.state === "unavailable") && (user.owns === "owner" || user.advisor === "owner") ? "owner" : r.state;
+  const keep = user.advisor === "manual" || user.advisor === "denied" || user.advisor === "requested";
+  await env.DB.prepare(keep ? "UPDATE users SET owns = ?, advisor_checked_at = datetime('now') WHERE steamid = ?" : "UPDATE users SET owns = ?, advisor = ?, advisor_checked_at = datetime('now') WHERE steamid = ?").bind(...(keep ? [owns, user.steamid] : [owns, owns, user.steamid])).run();
+  user.owns = owns; if (!keep) user.advisor = owns;
+  return user.advisor;
 }

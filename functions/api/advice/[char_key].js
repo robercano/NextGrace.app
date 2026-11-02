@@ -127,7 +127,7 @@ async function usageAll(context) {
 
 export const onRequestGet = handler(async context => {
   const u = await requireUser(context); const ck = decode(context.params.char_key);
-  if (!advisorEnabled(u)) return json({ enabled: false, advisor: u.advisor, configured: !!(context.env.ANTHROPIC_API_KEY || context.env.ADVICE_MOCK) });
+  if (!advisorEnabled(u, context.env)) return json({ enabled: false, advisor: u.advisor, configured: !!(context.env.ANTHROPIC_API_KEY || context.env.ADVICE_MOCK) });
   const row = await own(context, u, ck);
   const lang = new URL(context.request.url).searchParams.get("lang") === "en" ? "en" : "es";
   const a = await context.env.DB.prepare("SELECT text, model, hash, created_at FROM advice WHERE char_key = ?").bind(ck).first();
@@ -142,7 +142,7 @@ export const onRequestGet = handler(async context => {
 
 export const onRequestPost = handler(async context => {
   const u = await requireUser(context); const ck = decode(context.params.char_key);
-  if (!advisorEnabled(u)) return bad("advisor not enabled for this account", 403);
+  if (!advisorEnabled(u, context.env)) return bad("advisor not enabled for this account", 403);
   const row = await own(context, u, ck);
   let S; try { S = JSON.parse(row.summary || "{}"); } catch (e) { S = {}; }
   if (!S.weapons) return bad("summary too old: open the save again while logged in", 409);

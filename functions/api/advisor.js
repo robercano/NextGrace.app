@@ -2,11 +2,11 @@
 // GET  /api/advisor                         → { state, enabled, checkedAt, contact, requestedAt, configured }
 // POST /api/advisor { action: "check" }     → re-check ownership with the Steam Web API (at most once a minute per user)
 // POST /api/advisor { action: "request", contact, note } → ask for manual activation (profile private / false negative)
-import { handler, requireUser, readJson, json, bad, advisorEnabled } from "../_lib.js";
+import { handler, requireUser, readJson, json, bad, advisorEnabled, advisorMode } from "../_lib.js";
 import { refreshOwnership } from "../_steam.js";
 import { notifyAdmin } from "../_mail.js";
 
-const view = (u, env) => ({ state: u.role === "admin" ? "admin" : u.advisor, enabled: advisorEnabled(u), checkedAt: u.advisor_checked_at || null, contact: u.contact || null, requestedAt: u.advisor_requested_at || null, configured: !!env.STEAM_API_KEY });
+const view = (u, env) => ({ mode: advisorMode(env), state: u.role === "admin" ? "admin" : u.advisor, owns: u.owns || null, enabled: advisorEnabled(u, env), checkedAt: u.advisor_checked_at || null, contact: u.contact || null, requestedAt: u.advisor_requested_at || null, configured: !!env.STEAM_API_KEY });
 
 export const onRequestGet = handler(async context => {
   const u = await requireUser(context);
@@ -23,12 +23,12 @@ export const onRequestPost = handler(async context => {
     return json(view(u, context.env));
   }
   if (b.action === "request") {
-    if (advisorEnabled(u)) return json(view(u, context.env));
+    if (advisorEnabled(u, context.env)) return json(view(u, context.env));
     const contact = String(b.contact || "").trim().slice(0, 120), note = String(b.note || "").trim().slice(0, 600);
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact)) return bad("a valid e-mail address is required");
     await context.env.DB.prepare("UPDATE users SET advisor = 'requested', contact = ?, advisor_note = ?, advisor_requested_at = datetime('now') WHERE steamid = ?").bind(contact, note || null, u.steamid).run();
     u.advisor = "requested"; u.contact = contact; u.advisor_requested_at = new Date().toISOString().slice(0, 19).replace("T", " ");
-    await notifyAdmin(context.env, "Next Grace: advisor activation request", `Steam: ${u.name || "?"} (${u.steamid})\nhttps://steamcommunity.com/profiles/${u.steamid}\nContact: ${contact}\nPrevious state: ${b.previous || "?"}\n\n${note || "(no note)"}\n\nReview it in the account sheet → Moderation.`);
+    await notifyAdmin(context.env, "Next Grace: advisor activation request", `Steam: ${u.name || "?"} (${u.steamid})\nhttps://steamcommunity.com/profiles/${u.steamid}\nContact: ${contact}\nSteam library check: ${u.owns || "?"}\n\n${note || "(no note)"}\n\nReview it in the account sheet → Moderation.`);
     return json(view(u, context.env));
   }
   return bad("bad action");

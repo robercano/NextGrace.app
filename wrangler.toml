@@ -18,6 +18,8 @@ database_id = "1e0ef758-2fc0-4a75-af7e-38ee24d69475"
 [vars]
 # SteamID64 de los moderadores, separados por comas
 ADMIN_STEAMIDS = "REPLACE_WITH_YOUR_STEAMID64"
+# Consejero: "closed" = beta cerrada (solo cuentas aprobadas a mano por un moderador); "owners" = además toda cuenta con Elden Ring en Steam
+ADVISOR_MODE = "closed"
 
 # Correo saliente del Worker (avisos de solicitudes de activación del consejero). Destino: secreto ADMIN_EMAIL, que debe ser
 # una dirección verificada en Email Routing del dominio. Sin binding o sin secreto no se envía nada (functions/_mail.js).
