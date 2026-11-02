@@ -16,12 +16,26 @@ export function randomToken(bytes = 32) {
   const a = new Uint8Array(bytes); crypto.getRandomValues(a); return [...a].map(x => x.toString(16).padStart(2, "0")).join("");
 }
 
+// Columns added after the first schema (db/migrations/003_advisor_access.sql): created on the fly so a deploy never
+// depends on someone running a migration by hand. Runs once per isolate.
+let schemaReady = null;
+export function ensureSchema(env) {
+  if (!env.DB) return Promise.resolve();
+  return schemaReady = schemaReady || (async () => {
+    const cols = [["advisor", "TEXT NOT NULL DEFAULT 'unknown'"], ["advisor_checked_at", "TEXT"], ["contact", "TEXT"], ["advisor_note", "TEXT"], ["advisor_requested_at", "TEXT"]];
+    for (const [c, t] of cols) { try { await env.DB.prepare(`ALTER TABLE users ADD COLUMN ${c} ${t}`).run(); } catch (e) { if (!/duplicate column/i.test(String(e && e.message))) { schemaReady = null; throw e; } } }
+  })();
+}
+/** May this user spend the advisor (Claude) key? Owners of the game, manually approved users and admins. */
+export const advisorEnabled = u => !!u && (u.role === "admin" || u.advisor === "owner" || u.advisor === "manual");
+
 // Returns the user row for the session cookie, or null.
 export async function getUser(context) {
   const { request, env } = context;
   const tok = cookies(request).tl_session; if (!tok || !env.DB) return null;
+  await ensureSchema(env);
   const id = await sha256(tok);
-  const row = await env.DB.prepare("SELECT u.steamid, u.name, u.avatar, u.role FROM sessions s JOIN users u ON u.steamid = s.steamid WHERE s.id = ? AND s.expires_at > datetime('now')").bind(id).first();
+  const row = await env.DB.prepare("SELECT u.steamid, u.name, u.avatar, u.role, u.advisor, u.advisor_checked_at, u.contact, u.advisor_requested_at, u.created_at FROM sessions s JOIN users u ON u.steamid = s.steamid WHERE s.id = ? AND s.expires_at > datetime('now')").bind(id).first();
   if (!row) return null;
   const admins = (env.ADMIN_STEAMIDS || "").split(",").map(s => s.trim()).filter(Boolean);
   if (admins.includes(row.steamid)) row.role = "admin";

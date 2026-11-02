@@ -1,5 +1,6 @@
 // GET /api/auth/callback → verify Steam OpenID response, create session, fetch public profile (name, avatar).
-import { handler, bad, sha256, randomToken, setCookie } from "../../_lib.js";
+import { handler, bad, sha256, randomToken, setCookie, ensureSchema } from "../../_lib.js";
+import { refreshOwnership } from "../../_steam.js";
 export const onRequestGet = handler(async ({ request, env }) => {
   const url = new URL(request.url);
   const q = url.searchParams;
@@ -17,6 +18,8 @@ export const onRequestGet = handler(async ({ request, env }) => {
   let name = null, avatar = null;
   try { const px = await (await fetch(`https://steamcommunity.com/profiles/${steamid}/?xml=1`)).text(); name = (px.match(/<steamID><!\[CDATA\[(.*?)\]\]><\/steamID>/) || [])[1] || null; avatar = (px.match(/<avatarMedium><!\[CDATA\[(.*?)\]\]><\/avatarMedium>/) || [])[1] || null; } catch (e) {}
   await env.DB.prepare("INSERT INTO users (steamid, name, avatar) VALUES (?, ?, ?) ON CONFLICT(steamid) DO UPDATE SET name = COALESCE(excluded.name, name), avatar = COALESCE(excluded.avatar, avatar), last_seen = datetime('now')").bind(steamid, name, avatar).run();
+  // advisor access: ask Steam whether the account owns the game (skipped for manual decisions; see functions/_steam.js)
+  try { await ensureSchema(env); const cur = await env.DB.prepare("SELECT steamid, advisor FROM users WHERE steamid = ?").bind(steamid).first(); if (cur) await refreshOwnership(env, cur); } catch (e) { console.error("ownership", e); }
   const tok = randomToken(), id = await sha256(tok), days = 30;
   await env.DB.prepare("INSERT INTO sessions (id, steamid, expires_at) VALUES (?, ?, datetime('now', ?))").bind(id, steamid, `+${days} days`).run();
   await env.DB.prepare("DELETE FROM sessions WHERE expires_at < datetime('now')").run();

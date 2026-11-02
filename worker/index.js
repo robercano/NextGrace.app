@@ -7,6 +7,8 @@ import * as marks from "../functions/api/marks/[char_key].js";
 import * as markers from "../functions/api/markers/index.js";
 import * as marker from "../functions/api/markers/[id].js";
 import * as adminMarkers from "../functions/api/admin/markers.js";
+import * as advisor from "../functions/api/advisor.js";
+import * as adminAdvisor from "../functions/api/admin/advisor.js";
 import * as authSteam from "../functions/api/auth/steam.js";
 import * as authCallback from "../functions/api/auth/callback.js";
 import * as authLogout from "../functions/api/auth/logout.js";
@@ -22,6 +24,8 @@ const ROUTES = [
   ["/api/markers", markers],
   ["/api/markers/:id", marker],
   ["/api/admin/markers", adminMarkers],
+  ["/api/advisor", advisor],
+  ["/api/admin/advisor", adminAdvisor],
   ["/api/auth/steam", authSteam],
   ["/api/auth/callback", authCallback],
   ["/api/auth/logout", authLogout],

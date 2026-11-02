@@ -5,9 +5,13 @@
 //
 // The report is produced by Claude from the character summary stored in the account (never the save file),
 // the progress flags resolved to names, and a curated progression table (data/progression.json).
-import { handler, requireUser, json, bad, sha256 } from "../../_lib.js";
+import { handler, requireUser, json, bad, sha256, advisorEnabled } from "../../_lib.js";
 
-const COOLDOWN_H = 1, DAILY_CAP = 5, MAX_TOKENS = 12000; // los modelos 5.x piensan por defecto y el razonamiento cuenta en max_tokens
+// Limits that bound what the Claude key can cost (see docs/ARCHITECTURE.md → "Advisor access"): per character, per user, and for
+// everybody together per day. Admins skip the per-user and global caps. 5.x models think by default and thinking counts
+// toward max_tokens; the report itself is ~800 tokens.
+const COOLDOWN_H = 1, DAILY_CAP = 5, GLOBAL_DAILY_CAP = 60, MAX_TOKENS = 8000;
+export const ADVICE_LIMITS = { cooldownH: COOLDOWN_H, dailyCap: DAILY_CAP, globalDailyCap: GLOBAL_DAILY_CAP, maxTokens: MAX_TOKENS };
 const DEFAULT_MODEL = "claude-sonnet-5-5";
 const PROMPT_VERSION = 2; // bump when SYSTEM/buildContext change: the cached report is then considered stale
 const JOB_TTL_S = 240; // a job older than this is assumed dead (Worker evicted)
@@ -116,9 +120,15 @@ async function usage(context, steamid) {
   const row = await context.env.DB.prepare("SELECT COUNT(*) AS n FROM advice_log WHERE steamid = ? AND created_at > datetime('now', '-1 day')").bind(steamid).first();
   return row ? row.n : 0;
 }
+async function usageAll(context) {
+  const row = await context.env.DB.prepare("SELECT COUNT(*) AS n FROM advice_log WHERE created_at > datetime('now', '-1 day')").first();
+  return row ? row.n : 0;
+}
 
 export const onRequestGet = handler(async context => {
-  const u = await requireUser(context); const ck = decode(context.params.char_key); const row = await own(context, u, ck);
+  const u = await requireUser(context); const ck = decode(context.params.char_key);
+  if (!advisorEnabled(u)) return json({ enabled: false, advisor: u.advisor, configured: !!(context.env.ANTHROPIC_API_KEY || context.env.ADVICE_MOCK) });
+  const row = await own(context, u, ck);
   const lang = new URL(context.request.url).searchParams.get("lang") === "en" ? "en" : "es";
   const a = await context.env.DB.prepare("SELECT text, model, hash, created_at FROM advice WHERE char_key = ?").bind(ck).first();
   const hash = await hashOf(row.summary, lang);
@@ -126,11 +136,14 @@ export const onRequestGet = handler(async context => {
   const stale = !a || a.hash !== hash;
   const cool = a ? Math.max(0, COOLDOWN_H * 3600 - (Date.now() - Date.parse(a.created_at + "Z")) / 1000) : 0;
   const running = await runningJob(context, ck);
-  return json({ advice: a ? { text: a.text, model: a.model, created_at: a.created_at } : null, stale, running, cooldown: Math.round(cool), used, cap: DAILY_CAP, configured: !!(context.env.ANTHROPIC_API_KEY || context.env.ADVICE_MOCK) });
+  const globalUsed = u.role === "admin" ? 0 : await usageAll(context);
+  return json({ enabled: true, advice: a ? { text: a.text, model: a.model, created_at: a.created_at } : null, stale, running, cooldown: Math.round(cool), used, cap: DAILY_CAP, globalFull: globalUsed >= GLOBAL_DAILY_CAP, configured: !!(context.env.ANTHROPIC_API_KEY || context.env.ADVICE_MOCK) });
 });
 
 export const onRequestPost = handler(async context => {
-  const u = await requireUser(context); const ck = decode(context.params.char_key); const row = await own(context, u, ck);
+  const u = await requireUser(context); const ck = decode(context.params.char_key);
+  if (!advisorEnabled(u)) return bad("advisor not enabled for this account", 403);
+  const row = await own(context, u, ck);
   let S; try { S = JSON.parse(row.summary || "{}"); } catch (e) { S = {}; }
   if (!S.weapons) return bad("summary too old: open the save again while logged in", 409);
   let body = {}; try { body = await context.request.json(); } catch (e) {}
@@ -143,6 +156,7 @@ export const onRequestPost = handler(async context => {
   if (a && (Date.now() - Date.parse(a.created_at + "Z")) < COOLDOWN_H * 3600e3 && u.role !== "admin") return bad(`wait ${COOLDOWN_H} h between reports`, 429);
   const used = await usage(context, u.steamid);
   if (used >= DAILY_CAP && u.role !== "admin") return bad("daily cap reached", 429);
+  if (u.role !== "admin" && (await usageAll(context)) >= GLOBAL_DAILY_CAP) return bad("global daily cap reached", 429);
   // Long job (30-120 s): answer as a newline-delimited stream with heartbeats so proxies and mobile browsers keep the connection; last line is the result.
   const { readable, writable } = new TransformStream(); const w = writable.getWriter(), enc = new TextEncoder();
   const send = obj => w.write(enc.encode(JSON.stringify(obj) + "\n")).catch(() => {});

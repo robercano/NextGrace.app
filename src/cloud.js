@@ -76,6 +76,12 @@
       return last || { error: "la conexión se cortó antes de recibir el informe" };
     },
     async review(id, action) { return api("/admin/markers", { method: "POST", body: { id, action } }); },
+    // Advisor access (who may spend the Claude key): state from the Steam ownership check or a moderator's decision
+    async advisor() { return api("/advisor"); },
+    async advisorCheck() { return api("/advisor", { method: "POST", body: { action: "check" } }); },
+    async advisorRequest(contact, note, previous) { return api("/advisor", { method: "POST", body: { action: "request", contact, note, previous } }); },
+    async adminAdvisor() { return api("/admin/advisor"); },
+    async adminAdvisorReview(steamid, action, note) { return api("/admin/advisor", { method: "POST", body: { steamid, action, note } }); },
   };
   root.Cloud = Cloud;
 })(typeof self !== "undefined" ? self : this);

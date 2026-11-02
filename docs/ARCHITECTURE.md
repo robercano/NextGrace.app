@@ -62,7 +62,23 @@ The sheet and the map share state only through `localStorage`: `tl.last` (slimme
 | `GET/POST /api/advice/:char_key` | `advice/[char_key].js` | advisor report: cached by hash(summary + lang + PROMPT_VERSION); POST streams ndjson (`{beat}`, `{progress}`, then `{advice}` or `{error}`); one job per character (`advice_jobs`) |
 | `GET /api/history/:char_key` | `history/[char_key].js` | snapshots for the session diary |
 
+`GET/POST /api/advisor` and `GET/POST /api/admin/advisor` (`advisor.js`, `admin/advisor.js`) manage **advisor access** (below).
+
 `functions/_lib.js` has `handler` (error wrapper), `json/bad`, `getUser/requireUser`, cookies and hashing. The schema is in `db/schema.sql` (+ `db/migrations/`); `history` and `advice_jobs` are created lazily by the Worker. A character belongs to the Steam account whose id is in the save (`char_key = <steamid>:<slot>`), so only that account can upload or read it.
+
+### Advisor access (who may spend the Claude key)
+
+Signing in with Steam is free, so a session alone must not be enough to spend the site's Anthropic key. `users.advisor` holds the state:
+
+| state | meaning |
+|---|---|
+| `owner` | the Steam Web API (`IPlayerService/GetOwnedGames`, secret `STEAM_API_KEY`) says the account owns Elden Ring → enabled |
+| `private` | the account's "game details" are not public, so Steam answers nothing → the tab explains how to make them public, with a re-check button and a manual request |
+| `none` | public list without the game → same screen, different wording |
+| `requested` / `manual` / `denied` | manual activation flow: the user leaves an e-mail (`users.contact`) and a note, a mail goes to `ADMIN_EMAIL` (binding `EMAIL`, Email Routing), moderators approve or deny from the account sheet |
+| `unknown` / `unavailable` / `error` | not checked yet / no API key / Steam down → re-checked on the next `GET /api/advisor` |
+
+`advisorEnabled(user)` (`_lib.js`) is the single gate used by `/api/advice`; admins always pass. The check runs at login (`auth/callback.js`) and on demand (`functions/_steam.js`). On top of that, `advice/[char_key].js` bounds the cost: 1 h between reports per character, `DAILY_CAP` per user, `GLOBAL_DAILY_CAP` for everybody, `MAX_TOKENS`, and `characters.js` sanitizes the uploaded summary (array and string caps, 64 KB) so a fabricated character cannot inflate the prompt. Outside the code: a monthly spend limit in the Anthropic console and a Cloudflare rate-limiting rule on `/api/advice*` are the backstops.
 
 ## Data files (`data/`)
 
