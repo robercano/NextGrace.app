@@ -81,6 +81,9 @@
     async advisorCheck() { return api("/advisor", { method: "POST", body: { action: "check" } }); },
     async advisorRequest(contact, note, previous) { return api("/advisor", { method: "POST", body: { action: "request", contact, note, previous } }); },
     async adminAdvisor() { return api("/admin/advisor"); },
+    // Icon pack → R2 (admin). name = "<file>.webp" or "map/<file>.webp"
+    async adminIcons() { return api("/admin/icons"); },
+    async adminIconPut(name, blob) { const r = await fetch("/api/admin/icons/" + name.split("/").map(encodeURIComponent).join("/"), { method: "PUT", credentials: "same-origin", headers: { "content-type": blob.type || "application/octet-stream" }, body: blob }); let d = null; try { d = await r.json(); } catch (e) {} return r.ok ? d : { error: (d && d.error) || r.statusText, status: r.status }; },
     async adminAdvisorReview(steamid, action, note) { return api("/admin/advisor", { method: "POST", body: { steamid, action, note } }); },
   };
   root.Cloud = Cloud;

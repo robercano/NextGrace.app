@@ -34,7 +34,12 @@ Tools (free, from the modding community; download them from their GitHub pages):
 ## Checking
 
 Open the inventory: icons are looked up by item id first, so these replace the wiki ones without touching anything else.
-Once they look right, the name-based `.webp` files (the wiki ones) can be deleted from the folder.
+
+## Publishing (R2, outside the repo)
+
+1. Cloudflare dashboard → R2 → *Create bucket* → `nextgrace-assets`. Then enable the `[[r2_buckets]]` lines in `wrangler.toml` (push → deploy).
+2. On the site, signed in as a moderator: account sheet → *Server icons (R2)* → *Upload icons folder* and pick the `icons/` folder the script wrote (the browser uploads them one by one, about 3000 files in a few minutes); *Upload map backgrounds* for `icons/map/*.webp`.
+3. `/icons/*` is then served from the bucket (`functions/_icons.js`), the static files only as a fallback, and `icons/index.json` is built from the bucket. After that the `icons/` folder can leave the repo and its history (ROADMAP, public beta task 10).
 
 ## If something doesn't match
 

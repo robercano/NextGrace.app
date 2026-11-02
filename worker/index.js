@@ -9,6 +9,8 @@ import * as marker from "../functions/api/markers/[id].js";
 import * as adminMarkers from "../functions/api/admin/markers.js";
 import * as advisor from "../functions/api/advisor.js";
 import * as adminAdvisor from "../functions/api/admin/advisor.js";
+import * as adminIcons from "../functions/api/admin/icons.js";
+import { serveIcon, iconsEnabled } from "../functions/_icons.js";
 import * as authSteam from "../functions/api/auth/steam.js";
 import * as authCallback from "../functions/api/auth/callback.js";
 import * as authLogout from "../functions/api/auth/logout.js";
@@ -26,6 +28,9 @@ const ROUTES = [
   ["/api/admin/markers", adminMarkers],
   ["/api/advisor", advisor],
   ["/api/admin/advisor", adminAdvisor],
+  ["/api/admin/icons", adminIcons],
+  ["/api/admin/icons/:name", adminIcons],
+  ["/api/admin/icons/map/:name", adminIcons],
   ["/api/auth/steam", authSteam],
   ["/api/auth/callback", authCallback],
   ["/api/auth/logout", authLogout],
@@ -58,6 +63,8 @@ export default {
       if (!fn) return new Response(JSON.stringify({ error: "method not allowed" }), { status: 405, headers: { "content-type": "application/json", allow: Object.keys(METHOD).filter(k => m.mod[METHOD[k]]).join(", ") } });
       return fn({ request, env, params: m.params, waitUntil: ctx.waitUntil.bind(ctx), passThroughOnException: ctx.passThroughOnException.bind(ctx), data: {}, next: () => env.ASSETS.fetch(request) });
     }
+    // item icons and map backgrounds: from the R2 bucket when it is configured (functions/_icons.js), else from the assets
+    if ((url.pathname.startsWith("/icons/") || url.pathname === "/icons/index.json") && iconsEnabled(env) && (request.method === "GET" || request.method === "HEAD")) return serveIcon(request, env, url);
     // html_handling = "none" keeps exact paths (map.html, icons.html); only map "/" (and "dir/") to index.html here.
     if (url.pathname.endsWith("/")) { url.pathname += "index.html"; return env.ASSETS.fetch(new Request(url, request)); }
     return env.ASSETS.fetch(request);

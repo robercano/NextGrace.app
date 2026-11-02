@@ -79,7 +79,7 @@ Inventory of what the repo contains and what Rob decided about each item. Not le
 6. [x] Privacy page (ES/EN) and community-marker terms (`privacy.html`); contact in `src/site.js`.
 7. [x] Account and data deletion (`DELETE /api/me`: users, sessions, characters + history, marks, advice, advice_log; approved markers re-attributed to the placeholder user `deleted`, pending ones removed) from the account sheet.
 8. [x] "Powered by Steam": not required (OpenID + public profile only); Valve trademark cited on the credits page.
-9. [ ] Own icons: first run of `extract_icons_game.py` with Rob's game files (adjust the `.layout` parser if needed) → private assets repo → R2 bucket → the Worker serves `/icons/` from R2 → remove `icons/` from the repo.
+9. [ ] Own icons: first run of `extract_icons_game.py` with Rob's game files (adjust the `.layout` parser if needed) → R2 bucket `nextgrace-assets` (create it, then enable the binding in `wrangler.toml`) → upload from the account sheet (done: `functions/_icons.js`, `api/admin/icons.js`, `run_worker_first`) → remove `icons/` from the repo and its history.
 10. [ ] Open the repo: purge the art from the history (`git filter-repo`), check that the workflows still refuse with art, remove Cloudflare Access.
 11. [x] All Markdown in English (`README.md`, `ROADMAP.md`, `docs/ARCHITECTURE.md`, `tools/EXTRACT.md`, `icons/README.md`; Spanish summary in `README.es.md`).
 12. [x] Code structure pass for maintainers: `src/rules.js` (pure game rules, sources noted), `src/icons.js`, section index in `app.js`, file headers, `docs/ARCHITECTURE.md` with recipes.

@@ -8,6 +8,8 @@ compatibility_date = "2024-09-23"
 directory = "."
 binding = "ASSETS"
 html_handling = "none"          # rutas exactas (map.html, icons.html); "/" sigue sirviendo index.html
+# /icons/* pasa por el Worker aunque exista el fichero como asset: así R2 gana sobre los iconos antiguos y el index.json se genera del bucket
+run_worker_first = ["/icons/*"]
 # ficheros que no se publican como assets: ver .assetsignore
 
 [[d1_databases]]
@@ -25,3 +27,9 @@ ADVISOR_MODE = "closed"
 # una dirección verificada en Email Routing del dominio. Sin binding o sin secreto no se envía nada (functions/_mail.js).
 [[send_email]]
 name = "EMAIL"
+
+# Iconos y fondos del mapa desde R2 (arte extraído de la copia del juego; nunca en el repo). Crea el bucket "nextgrace-assets"
+# en el panel (R2 → Create bucket) ANTES de activar estas líneas: un binding a un bucket que no existe hace fallar el deploy.
+# [[r2_buckets]]
+# binding = "ICONS"
+# bucket_name = "nextgrace-assets"

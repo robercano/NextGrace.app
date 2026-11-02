@@ -568,7 +568,8 @@ async function main(DB, FLAGS, REQS){
     const s = sheet(`<h3>${T("Cuenta")}</h3><div class="row"><div class="n">${u.avatar ? `<img src="${esc(u.avatar)}" alt="" style="width:28px;height:28px;vertical-align:middle;margin-right:8px">` : ""}<b>${esc(u.name || "")}</b> <span class="help">· ${u.role === "admin" ? T("moderador") : T("jugador")}</span></div><button class="btn" id="doLogout">${T("Salir")}</button></div>
       <div class="row"><div class="n">${T("Marcas de este personaje")}${CUR ? ` (${Marks.all(Marks.charKey(CUR)).length})` : ""}</div><button class="btn" id="doSync" ${CUR ? "" : "disabled"}>${T("Sincronizar ahora")}</button></div>
       <div class="row"><div class="n">${T("Resumen de personajes de la partida abierta")}</div><button class="btn" id="doPush" ${SAVE ? "" : "disabled"}>${T("Guardar en la cuenta")}</button></div>
-      ${Cloud.isAdmin() ? `<h3 style="margin-top:14px">${T("Moderación")}</h3><div id="modq" class="help">${T("Cargando propuestas…")}</div><h3 style="margin-top:14px">${T("Consejero: solicitudes y gasto")}</h3><div id="modadv" class="help">${T("Cargando…")}</div>` : ""}
+      ${Cloud.isAdmin() ? `<h3 style="margin-top:14px">${T("Moderación")}</h3><div id="modq" class="help">${T("Cargando propuestas…")}</div><h3 style="margin-top:14px">${T("Consejero: solicitudes y gasto")}</h3><div id="modadv" class="help">${T("Cargando…")}</div>
+      <h3 style="margin-top:14px">${T("Iconos del servidor (R2)")}</h3><div id="modicons" class="help">${T("Cargando…")}</div>` : ""}
       <h3 style="margin-top:14px">${T("Privacidad")}</h3>
       <div class="row"><div class="n help">${T("Borra tu usuario, personajes, marcas e informes del servidor. Tus marcadores ya publicados en el mapa de la comunidad se conservan de forma anónima.")} <a href="privacy.html">${T("Política de privacidad")}</a></div><button class="btn" id="doDelete">${T("Borrar cuenta")}</button></div>`);
     $("#doDelete").onclick = async () => {
@@ -580,7 +581,25 @@ async function main(DB, FLAGS, REQS){
     $("#doLogout").onclick = async () => { await Cloud.logout(); synced = new Set(); ADV.gate = null; renderAcct(); s.hidden = true; };
     $("#doSync").onclick = async () => { if (!CUR) return; synced.delete(Marks.charKey(CUR)); const r = await Cloud.syncMarks(Marks.charKey(CUR)); synced.add(Marks.charKey(CUR)); renderProgress(CUR); note(r && r.error ? T("Error: {0}", r.error) : T("Marcas sincronizadas.")); s.hidden = true; };
     $("#doPush").onclick = async () => { if (!SAVE) return; const r = await Cloud.pushCharacters(SAVE.chars); note(r && r.error ? T("Error: {0}", r.error) : T("Resumen guardado.")); s.hidden = true; };
-    if (Cloud.isAdmin()) { renderModQueue(); renderAdvisorAdmin(); }
+    if (Cloud.isAdmin()) { renderModQueue(); renderAdvisorAdmin(); renderIconsAdmin(); }
+  }
+  // Moderator: upload the icon pack extracted from the game (tools/EXTRACT.md) into the R2 bucket, file by file from the browser.
+  async function renderIconsAdmin() {
+    const box = $("#modicons"); if (!box) return; const d = await Cloud.adminIcons(); if (!box.isConnected) return;
+    if (d.error) { box.textContent = d.error; return; }
+    if (!d.enabled) { box.innerHTML = `<p class="help" style="margin:0">${T("El bucket R2 no está configurado todavía (binding ICONS en wrangler.toml).")}</p>`; return; }
+    box.innerHTML = `<p class="help" style="margin:0 0 6px">${T("{0} iconos en el bucket. Elige la carpeta icons/ generada por tools/extract_icons_game.py (o la de fondos del mapa) y se subirán uno a uno; los que ya existan se sobrescriben.", d.count)}</p>
+      <div class="row"><label class="btn" for="r2files">${T("Subir carpeta de iconos")}</label><input id="r2files" type="file" webkitdirectory multiple hidden><label class="btn" for="r2map">${T("Subir fondos del mapa")}</label><input id="r2map" type="file" multiple accept=".webp,.png,.jpg" hidden></div><p class="help" id="r2st" style="margin:6px 0 0"></p>`;
+    const upload = async (files, prefix) => {
+      const st = $("#r2st"); const list = files.filter(f => /\.(webp|png|jpe?g|svg)$/i.test(f.name)); let done = 0, failed = [];
+      const next = async () => { for (;;) { const f = list.shift(); if (!f) return; const r = await Cloud.adminIconPut(prefix + f.name, f); if (r.error) failed.push(f.name + ": " + r.error); done++; if (done % 10 === 0 || !list.length) st.textContent = T("Subidos {0} de {1}…", done, done + list.length); } };
+      st.textContent = T("Subiendo {0} ficheros…", list.length);
+      await Promise.all(Array.from({ length: 6 }, next));
+      st.textContent = T("Listo: {0} subidos, {1} con error.", done - failed.length, failed.length) + (failed.length ? " " + failed.slice(0, 5).join(" · ") : "");
+      Icons.reload && Icons.reload();
+    };
+    $("#r2files").onchange = e => upload(Array.from(e.target.files), "");
+    $("#r2map").onchange = e => upload(Array.from(e.target.files), "map/");
   }
   async function renderAdvisorAdmin() {
     const box = $("#modadv"); if (!box) return; const d = await Cloud.adminAdvisor(); if (!box.isConnected) return;
