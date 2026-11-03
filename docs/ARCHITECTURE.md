@@ -124,6 +124,6 @@ To test with a logged-in user, insert a row in the local `users` table and one i
 
 ## Things to know before going public
 
-- `icons/` and `icons/map/` are FromSoftware art: never in a public repo or its history. The icon workflows refuse to run on a public repo. With the `ICONS` R2 binding (`wrangler.toml`, `run_worker_first = ["/icons/*"]`) the Worker serves `/icons/*` from the bucket (`functions/_icons.js`, index built from the listing, static files as fallback); moderators upload the pack extracted from the game from the account sheet (`PUT /api/admin/icons/<name>`), see `tools/EXTRACT.md`.
+- `icons/` and `icons/map/` are FromSoftware art: never in a public repo or its history. The icon workflows refuse to run on a public repo. With the `ICONS` R2 binding (`wrangler.toml`, `run_worker_first = ["/icons/*"]`) the Worker serves `/icons/*` from the bucket (`functions/_icons.js`: edge cache first, then the bucket, then the static files — `x-source: edge|r2|assets`; index built from the listing); moderators upload the pack extracted from the game from the account sheet (`PUT /api/admin/icons/<name>`), see `tools/EXTRACT.md`.
 - Nothing in the save is uploaded; `Cloud.summarize` is the complete list of what leaves the browser.
 - Licences and attributions are in `about.html` and `README.md`; the privacy policy in `privacy.html`; the contact address in `src/site.js`.

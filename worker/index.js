@@ -64,7 +64,7 @@ export default {
       return fn({ request, env, params: m.params, waitUntil: ctx.waitUntil.bind(ctx), passThroughOnException: ctx.passThroughOnException.bind(ctx), data: {}, next: () => env.ASSETS.fetch(request) });
     }
     // item icons and map backgrounds: from the R2 bucket when it is configured (functions/_icons.js), else from the assets
-    if ((url.pathname.startsWith("/icons/") || url.pathname === "/icons/index.json") && iconsEnabled(env) && (request.method === "GET" || request.method === "HEAD")) return serveIcon(request, env, url);
+    if ((url.pathname.startsWith("/icons/") || url.pathname === "/icons/index.json") && iconsEnabled(env) && (request.method === "GET" || request.method === "HEAD")) return serveIcon(request, env, url, ctx);
     // html_handling = "none" keeps exact paths (map.html, icons.html); only map "/" (and "dir/") to index.html here.
     if (url.pathname.endsWith("/")) { url.pathname += "index.html"; return env.ASSETS.fetch(new Request(url, request)); }
     return env.ASSETS.fetch(request);
