@@ -59,3 +59,10 @@ CREATE TABLE IF NOT EXISTS advice_log (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS advice_log_user ON advice_log(steamid, created_at);
+
+-- Steam OpenID: verified response nonces, so a return URL opened twice (installed app + browser) still signs in. Created on the fly by the Worker too.
+CREATE TABLE IF NOT EXISTS openid_nonces (
+  nonce TEXT PRIMARY KEY,
+  steamid TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
