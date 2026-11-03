@@ -29,7 +29,7 @@ ADVISOR_MODE = "closed"
 name = "EMAIL"
 
 # Iconos y fondos del mapa desde R2 (arte extraído de la copia del juego; nunca en el repo). Crea el bucket "nextgrace-assets"
-# en el panel (R2 → Create bucket) ANTES de activar estas líneas: un binding a un bucket que no existe hace fallar el deploy.
-# [[r2_buckets]]
-# binding = "ICONS"
-# bucket_name = "nextgrace-assets"
+# en el panel (R2 → Create bucket) antes de declarar este binding: un binding a un bucket que no existe hace fallar el deploy. El repo privado nextgrace-assets lo rellena (workflow sync-r2).
+[[r2_buckets]]
+binding = "ICONS"
+bucket_name = "nextgrace-assets"
