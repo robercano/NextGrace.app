@@ -4,9 +4,11 @@
 .topi .btn{background:transparent;border:1px solid var(--line-2);color:var(--fg);padding:5px 12px;font-family:var(--display);font-size:.78rem;letter-spacing:.06em;text-decoration:none;white-space:nowrap}
 .topi .btn:hover{border-color:var(--gold);color:var(--gold-2)}
 .topi .btn.primary{border-color:var(--gold);color:var(--gold-2)}
-.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:linear-gradient(#0f0e0d,#0b0a0acc);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+/* self-contained: the header sets its own type so it looks the same whatever each page's body defaults are */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:linear-gradient(#0f0e0d,#0b0a0acc);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);font:17px/1.35 var(--body);color:var(--fg)}
+.menu{font:17px/1.35 var(--body)}
 .topi{display:flex;align-items:center;gap:10px;padding:8px max(14px,env(safe-area-inset-right,0px)) 6px max(14px,env(safe-area-inset-left,0px))}
-.topi h1{font-size:.95rem;color:var(--gold);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topi h1{font:600 .95rem/1.2 var(--display);letter-spacing:.04em;margin:0;color:var(--gold);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .topi select{background:var(--panel-s);border:1px solid var(--line);padding:4px 8px;max-width:40vw;font-size:.9rem}
 .modes{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px;padding:6px max(14px,env(safe-area-inset-right,0px)) 0 max(14px,env(safe-area-inset-left,0px));border-top:1px solid #1e1b17}
 .modec{display:flex;justify-content:flex-end}
