@@ -73,14 +73,20 @@ def load_params(params_dir):
             header = next(rd)
             cols = {h.strip().lower(): i for i, h in enumerate(header)}
             id_col = cols.get("id", 0)
-            icon_col = next((i for h, i in cols.items() if h.replace("_", "") == "iconid"), None)
+            norm = {h.replace("_", ""): i for h, i in cols.items()}
+            # armor (EquipParamProtector) has one icon per body type: iconIdM / iconIdF; everything else a single iconId
+            icon_cols = [norm[k] for k in ("iconid", "iconidm", "iconidf") if k in norm]
             name_col = cols.get("name")
-            if icon_col is None:
-                print(f"  {base}: sin columna iconId (cabecera: {header[:6]}…)"); continue
+            if not icon_cols:
+                print(f"  {base}: sin columna iconId/iconIdM (cabecera: {header[:6]}…)"); continue
             n = 0
             for r in rd:
                 try:
-                    pid, icon = int(r[id_col]), int(r[icon_col])
+                    pid = int(r[id_col]); icon = 0
+                    for c in icon_cols:
+                        icon = int(r[c])
+                        if icon > 0:
+                            break
                 except (ValueError, IndexError):
                     continue
                 if icon <= 0:
