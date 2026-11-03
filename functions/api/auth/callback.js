@@ -10,9 +10,16 @@ export const onRequestGet = handler(async ({ request, env }) => {
   if (!m) return bad("bad claimed id", 400);
   // verify with Steam (check_authentication)
   const v = new URLSearchParams(); for (const [k, val] of q) if (k.startsWith("openid.")) v.set(k, val); v.set("openid.mode", "check_authentication");
-  const r = await fetch("https://steamcommunity.com/openid/login", { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: v.toString() });
-  const txt = await r.text();
-  if (!/is_valid\s*:\s*true/.test(txt)) return bad("steam verification failed", 401);
+  // Steam's check_authentication answers "ns:...\nis_valid:true"; a transient 5xx or an empty body gets one retry, and the
+  // error carries what Steam said so a failure can be diagnosed from the browser.
+  let txt = "", status = 0;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try { const r = await fetch("https://steamcommunity.com/openid/login", { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded", accept: "text/plain" }, body: v.toString() }); status = r.status; txt = await r.text(); } catch (e) { txt = "fetch error: " + (e && e.message); status = 0; }
+    if (/is_valid\s*:\s*true/.test(txt)) break;
+    if (attempt === 0 && (status >= 500 || status === 0 || status === 429)) { await new Promise(res => setTimeout(res, 800)); continue; }
+    break;
+  }
+  if (!/is_valid\s*:\s*true/.test(txt)) return bad(`steam verification failed (steam answered ${status}: ${txt.replace(/\s+/g, " ").slice(0, 160)})`, 401);
   const steamid = m[1];
   // public profile (XML endpoint, no API key needed)
   let name = null, avatar = null;
