@@ -50,7 +50,7 @@ button{cursor:pointer}
 .frame::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
 
 /* top bar + tabs */
-.tabs{display:flex;overflow-x:auto;scrollbar-width:none;gap:0;padding:0 max(8px,env(safe-area-inset-right,0px)) 0 max(8px,env(safe-area-inset-left,0px))}
+.tabs{display:flex;overflow-x:auto;scrollbar-width:none;gap:0;border-bottom:1px solid var(--line);padding:0 max(8px,env(safe-area-inset-right,0px)) 0 max(8px,env(safe-area-inset-left,0px))}
 .tabs::-webkit-scrollbar{display:none}
 .tab{flex:1 0 auto;background:none;border:0;border-bottom:2px solid transparent;color:var(--fg-2);font-family:var(--display);font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;padding:9px 12px 8px;white-space:nowrap}
 .tab[aria-selected=true]{color:var(--gold-2);border-bottom-color:var(--gold)}

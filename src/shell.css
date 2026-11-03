@@ -5,12 +5,12 @@
 .topi .btn:hover{border-color:var(--gold);color:var(--gold-2)}
 .topi .btn.primary{border-color:var(--gold);color:var(--gold-2)}
 /* self-contained: the header sets its own type so it looks the same whatever each page's body defaults are */
-.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:linear-gradient(#0f0e0d,#0b0a0acc);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);font:17px/1.35 var(--body);color:var(--fg)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:linear-gradient(#0f0e0d,#0b0a0acc);backdrop-filter:blur(6px);font:17px/1.35 var(--body);color:var(--fg)}
 .menu{font:17px/1.35 var(--body)}
 .topi{display:flex;align-items:center;gap:10px;padding:8px max(14px,env(safe-area-inset-right,0px)) 6px max(14px,env(safe-area-inset-left,0px))}
 .topi h1{font:600 .95rem/1.2 var(--display);letter-spacing:.04em;margin:0;color:var(--gold);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .topi select{background:var(--panel-s);border:1px solid var(--line);padding:4px 8px;max-width:40vw;font-size:.9rem}
-.modes{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px;padding:6px max(14px,env(safe-area-inset-right,0px)) 0 max(14px,env(safe-area-inset-left,0px));border-top:1px solid #1e1b17}
+.modes{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px;padding:6px max(14px,env(safe-area-inset-right,0px)) 0 max(14px,env(safe-area-inset-left,0px));border-top:1px solid #1e1b17;border-bottom:1px solid var(--line)}
 .modec{display:flex;justify-content:flex-end}
 /* the character on screen, always visible next to Sheet/Map; tapping opens the drawer to switch */
 .who{justify-self:start;align-self:center;background:transparent;border:0;padding:2px 0;font:inherit;color:var(--gold-2);font-family:var(--display);font-size:.78rem;font-weight:600;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;cursor:pointer;text-align:left}
