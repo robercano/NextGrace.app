@@ -1,0 +1,13 @@
+# Fails if game art is committed: icons/ and the map backgrounds must only live in the private assets repo / R2.
+name: guard
+on: [push, pull_request]
+jobs:
+  no-art:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: No images under icons/
+        run: |
+          bad=$(git ls-files 'icons/**' 'undefined/**' | grep -Ei '\.(webp|png|jpe?g|gif|bmp|dds|tga)$' || true)
+          if [ -n "$bad" ]; then echo "::error::game art committed:"; echo "$bad"; exit 1; fi
+          echo "ok"

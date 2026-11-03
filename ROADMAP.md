@@ -79,12 +79,12 @@ Inventory of what the repo contains and what Rob decided about each item. Not le
 6. [x] Privacy page (ES/EN) and community-marker terms (`privacy.html`); contact in `src/site.js`.
 7. [x] Account and data deletion (`DELETE /api/me`: users, sessions, characters + history, marks, advice, advice_log; approved markers re-attributed to the placeholder user `deleted`, pending ones removed) from the account sheet.
 8. [x] "Powered by Steam": not required (OpenID + public profile only); Valve trademark cited on the credits page.
-9. [ ] Own icons: first run of `extract_icons_game.py` with Rob's game files (adjust the `.layout` parser if needed) → R2 bucket `nextgrace-assets` (create it, then enable the binding in `wrangler.toml`) → upload from the account sheet (done: `functions/_icons.js`, `api/admin/icons.js`, `run_worker_first`) → remove `icons/` from the repo and its history.
-10. [ ] Open the repo: purge the art from the history (`git filter-repo`), check that the workflows still refuse with art, remove Cloudflare Access.
+9. [x] Own icons: extracted with `extract_icons_game.py` from Rob's game files (6,838 icons) → private repo `nextgrace-assets` (workflow `sync-r2`) → R2 bucket `nextgrace-assets` → served by the Worker (`functions/_icons.js`, edge cache in front; `api/admin/icons.js` for one-off uploads).
+10. [x] Art purged from the whole history (`git filter-repo`, 2026-11-03: `icons/*.webp`, `icons/map/`, stray screenshots), icon workflows removed, `.gitignore` + `guard` workflow against images in `icons/`. Still to do: remove Cloudflare Access to open the site.
 11. [x] All Markdown in English (`README.md`, `ROADMAP.md`, `docs/ARCHITECTURE.md`, `tools/EXTRACT.md`, `icons/README.md`; Spanish summary in `README.es.md`).
 12. [x] Code structure pass for maintainers: `src/rules.js` (pure game rules, sources noted), `src/icons.js`, section index in `app.js`, file headers, `docs/ARCHITECTURE.md` with recipes.
 
-Rob still has to: create the Steam Web API key (`STEAM_API_KEY`) and `ADMIN_EMAIL` secrets, set the Anthropic spend limit and the Cloudflare rate-limiting rule, run the icon extraction on his PC (task 9), and give the go for opening the repo (task 10). Contact address: done (`admin@nextgrace.app`).
+Rob still has to: set the Anthropic spend limit and the Cloudflare rate-limiting rule on `/api/advice*`, turn on Hotlink Protection, and remove Cloudflare Access when opening. Secrets, contact address, icons: done.
 
 ## Pending / ideas
 

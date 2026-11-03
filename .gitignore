@@ -4,7 +4,10 @@ saves/
 er-icons.zip
 /missing.txt
 __pycache__/
-# descomenta para no subir el pack de iconos al repo
-# icons/*.webp
+# game art: never in the repo (served from R2, see icons/README.md)
+icons/*.webp
+icons/*.png
+icons/map/
+undefined/
 .wrangler/
 node_modules/

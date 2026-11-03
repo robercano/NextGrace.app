@@ -1,6 +1,6 @@
 # Next Grace
 
-**https://nextgrace.app** (private beta behind Cloudflare Access for now). Formerly "Tarnished Ledger"; the GitHub repo is now robercano/NextGrace.app.
+**https://nextgrace.app** (private beta behind Cloudflare Access for now). Formerly "Tarnished Ledger".
 
 A reader for Elden Ring PC saves (`ER0000.sl2`) that runs entirely in the browser: character status, equipment, inventory, smithing planner, progress tracker, interactive map and an AI "advisor" for your next session. Built to be used from a phone between sessions.
 
@@ -25,7 +25,7 @@ worker/index.js       Worker entry: /api/* → functions, everything else → st
 db/schema.sql         D1 schema (+ db/migrations/)
 wrangler.toml         Worker config (assets, D1 binding `DB`, var `ADMIN_STEAMIDS`); .assetsignore keeps code and docs out
 data/                 game data (see docs/ARCHITECTURE.md): items, flags, requirements, locations, map, progression
-icons/                icon pack (see icons/README.md) + index.json — game art, private repo only
+icons/                no art here: served from R2 (see icons/README.md)
 tools/                scripts that build data/ (wiki fetchers, extractors) and the icon tools
 sw.js, manifest.*     PWA: "add to home screen", works offline
 ```
@@ -67,7 +67,7 @@ Enable it:
 
 ## Map
 
-`map.html` uses the markers of the [eldenring.wiki.gg](https://eldenring.wiki.gg) interactive map (`tools/fetch_map.py` → `data/map.json`, CC BY-SA 4.0) and places every item you are missing at the place named in its location text (`tools/build_places.py` → `data/places.json`). Markers you add are kept in your browser and, when signed in, sent to the community map (visible to everyone once a moderator approves them). The map backgrounds (`icons/map/*.webp`) are game art: private repo only.
+`map.html` uses the markers of the [eldenring.wiki.gg](https://eldenring.wiki.gg) interactive map (`tools/fetch_map.py` → `data/map.json`, CC BY-SA 4.0) and places every item you are missing at the place named in its location text (`tools/build_places.py` → `data/places.json`). Markers you add are kept in your browser and, when signed in, sent to the community map (visible to everyone once a moderator approves them). The map backgrounds (`icons/map/*.webp`) are game art, served from R2 like the icons (never committed).
 
 ## Game data from the wiki
 
@@ -75,7 +75,7 @@ Enable it:
 
 ## Icons
 
-See `icons/README.md`. The page looks first for `icons/index.json` (pack committed to the repo) and then for the pack loaded with the *Load icons* button (kept in the browser's IndexedDB). For a public deployment the plan is to extract the icons from your own copy of the game (`tools/EXTRACT.md`) and serve them from outside the repo.
+See `icons/README.md`. The pictures are extracted from the owner's copy of the game (`tools/EXTRACT.md`), kept in the private repo `nextgrace-assets` and served by the Worker from the R2 bucket (`icons/index.json` is built from the bucket). The page can also use a pack loaded with the *Load icons* button (kept in the browser's IndexedDB).
 
 ## Language
 
