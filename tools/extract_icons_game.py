@@ -94,7 +94,7 @@ def load_params(params_dir):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--menu", required=True)
-    ap.add_argument("--params", required=True)
+    ap.add_argument("--params", help="carpeta con los CSV de Smithbox; sin ella el script solo informa de los sprites de los .layout")
     ap.add_argument("--out", default=os.path.join(ROOT, "icons"))
     ap.add_argument("--size", type=int, default=64)
     ap.add_argument("--dry", action="store_true")
@@ -106,7 +106,15 @@ def main():
     icons = {k: v for k, v in sprites.items() if re.search(r"ItemIcon", k, re.I)}
     print(f"{len(sprites)} sprites en los layouts, {len(icons)} de objetos; {len(atlases)} atlas encontrados")
     if not icons:
-        print("No encuentro sprites 'ItemIcon' en los .layout. Mira tools/EXTRACT.md (paso WitchyBND) y revisa que la carpeta tenga los .layout XML."); return
+        layouts = glob.glob(os.path.join(a.menu, "**", "*.layout"), recursive=True) + glob.glob(os.path.join(a.menu, "**", "*.xml"), recursive=True)
+        print(f"No encuentro sprites 'ItemIcon' en los .layout ({len(layouts)} ficheros .layout/.xml vistos). Mira tools/EXTRACT.md (paso WitchyBND) y revisa que la carpeta tenga los .layout XML.")
+        for path in layouts[:2]:
+            print(f"--- muestra de {os.path.basename(path)}:"); print(open(path, encoding="utf-8", errors="replace").read(600))
+        return
+    sample = sorted(icons)[:5]
+    print("ejemplos de sprites:", ", ".join(f"{k} → {icons[k][0]} {icons[k][1:]}" for k in sample))
+    if not a.params:
+        print("Sin --params: solo el inventario de sprites. Exporta los params desde Smithbox (tools/EXTRACT.md, paso 4) y vuelve a ejecutar con --params y --dry."); return
     rows = load_params(a.params)
     print(f"{len(rows)} objetos con iconId en los params")
     # iconId -> sprite key (acepta MENU_ItemIcon_00123, ItemIcon_123, etc.)
