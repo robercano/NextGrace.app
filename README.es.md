@@ -12,4 +12,4 @@ La documentación completa está en inglés para que el proyecto lo pueda usar m
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): cómo encaja el código y recetas para ampliarlo (añadir un texto, un dato, una pestaña, una ruta de la API, refrescar datos de la wiki).
 - [ROADMAP.md](ROADMAP.md): estado del proyecto, decisiones, formato del save y pendientes.
 
-La interfaz está en español y en inglés (botón ES/EN de la cabecera). Los nombres de objetos, jefes y lugares se mantienen en inglés, como en la wiki. Proyecto de fans sin relación con FromSoftware ni Bandai Namco; código bajo GPL-3.0, datos de la wiki bajo CC BY-SA 4.0 (ver `about.html`).
+La interfaz está en inglés por defecto y en español (opción de idioma en el menú, o `?lang=es`; se recuerda en el navegador). Los nombres de objetos, jefes y lugares se mantienen en inglés, como en la wiki. Proyecto de fans sin relación con FromSoftware ni Bandai Namco; código bajo GPL-3.0, datos de la wiki bajo CC BY-SA 4.0 (ver `about.html`).
