@@ -475,7 +475,7 @@ async function main(DB, FLAGS, REQS){
     const same = r.advice && !r.stale; // the report already matches this save: another run only gives a variant
     const canRefresh = r.configured && !busy && (Cloud.isAdmin() || (r.cooldown === 0 && r.used < r.cap));
     const why = !r.configured ? T("El consejero no está configurado en el servidor (falta la clave de la API).") : r.globalFull && !Cloud.isAdmin() ? T("El consejero ha agotado el cupo compartido de hoy; vuelve mañana.") : r.cooldown > 0 && !Cloud.isAdmin() ? T("Podrás pedir otro informe en {0} h.", Math.ceil(r.cooldown / 3600)) : r.used >= r.cap && !Cloud.isAdmin() ? T("Has llegado al máximo diario de informes.") : r.stale && r.advice && !busy ? T("Has abierto una partida más reciente que la de este informe.") : "";
-    const status = mine ? ADV.status : r.running ? T("Generando el informe desde otra pestaña o dispositivo… ({0} s)", r.running.seconds) : "";
+    const status = mine ? ADV.status : r.running ? T("El informe se está generando en el servidor (lo pidió otra pestaña, otro dispositivo o esta página antes de recargarse)… {0} s", r.running.seconds) : "";
     el.innerHTML = `<div class="advh"><span class="help">${r.advice ? `${T("Generado el {0}", when)}${r.stale ? T(" · desactualizado") : ""}` : T("Todavía no hay informe para este personaje.")}${T(" · {0}/{1} hoy", r.used, r.cap)}</span><button class="btn primary" id="advRefresh" ${canRefresh ? "" : "disabled"}>${busy ? T("Generando…") : !r.advice ? T("Generar informe") : same ? T("Otra opinión") : T("Actualizar")}</button></div>
       ${status ? `<p class="help" id="advStatus">${esc(status)}</p>` : ""}
       ${why ? `<p class="help">${esc(why)}</p>` : ""}

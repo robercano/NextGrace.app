@@ -163,7 +163,7 @@
     "Menú": "Menu", "Personaje": "Character", "Partida": "Save", "Abrir otro .sl2": "Open another .sl2", "Carga una partida más reciente": "Load a newer save", "Idioma": "Language",
     "Cambiar de personaje": "Switch character",
     "Desde la ficha": "From the sheet", "Marcas, resumen, moderación y borrado de cuenta: en la ficha": "Marks, summary, moderation and account deletion: on the sheet",
-    "Otra opinión": "Another opinion", "Generando el informe desde otra pestaña o dispositivo… ({0} s)": "Generating the report from another tab or device… ({0} s)",
+    "Otra opinión": "Another opinion", "El informe se está generando en el servidor (lo pidió otra pestaña, otro dispositivo o esta página antes de recargarse)… {0} s": "The report is being generated on the server (requested by another tab, another device or this page before it reloaded)… {0} s",
     "Este informe ya corresponde a la partida abierta; se genera solo cuando abres un save nuevo.": "This report already matches the open save; a new one is generated automatically when you open a newer save.",
     "El informe ya corresponde a esta partida: generar otro solo dará una variante y cuenta para el cupo diario. ¿Generar de todos modos?": "The report already matches this save: another run only gives a variant and counts towards the daily cap. Generate anyway?",
     "Generando el informe del consejero en segundo plano…": "Generating the advisor's report in the background…", "Informe del consejero listo.": "Advisor's report ready.",
