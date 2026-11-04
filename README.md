@@ -6,7 +6,7 @@ A reader for Elden Ring PC saves (`ER0000.sl2`) that runs entirely in the browse
 
 The save is parsed in the browser and **never uploaded, never modified**. Optionally you can sign in with Steam to keep your manual marks and a per-character summary in your account (Cloudflare D1), propose markers to the community map (moderated) and get the advisor's report.
 
-Interface in English (default) and Spanish (language item in the menu, or `?lang=es`; remembered in the browser). Item, boss and place names stay in English, as on the wiki.
+Interface in English and Spanish: Spanish browsers get Spanish, everyone else English; the language item in the menu (or `?lang=`) overrides it and is remembered in the browser. Item, boss and place names stay in English, as on the wiki.
 
 *¿Prefieres leerlo en español? Hay un resumen en [README.es.md](README.es.md).*
 

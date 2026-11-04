@@ -1,5 +1,5 @@
 /* i18n.js — UI language. Source strings are Spanish (the keys); EN is the translation table.
- * T("texto") / T("texto {0}", x). Missing keys fall back to Spanish. Language: ?lang=, then localStorage tl.lang, else English.
+ * T("texto") / T("texto {0}", x). Missing keys fall back to Spanish. Language: ?lang=, then localStorage tl.lang, then the browser (es → Spanish, else English).
  * Static markup: elements with data-i18n (text), data-i18n-ph (placeholder), data-i18n-title (title) are translated by I18N.apply().
  */
 (function (root) {
@@ -196,9 +196,9 @@
     // place kinds (map)
     "Gracias": "Graces", "Iglesias": "Churches", "Catacumbas": "Catacombs", "Cuevas": "Caves", "Túneles": "Tunnels", "Mazmorras": "Dungeons", "Ruinas": "Ruins", "Fuertes": "Forts", "Torres": "Towers", "Evergaols": "Evergaols", "Pueblos": "Villages", "Puntos de interés": "Points of interest", "Mercaderes": "Merchants", "Cuerpos de agua": "Bodies of water", "Grietas": "Rifts", "Minas": "Mines",
   };
-  // Default is English; Spanish only when chosen (?lang=es or the toggle, remembered in localStorage).
+  // ?lang= wins, then the choice remembered in localStorage, then the browser language: Spanish browsers get Spanish, everyone else English.
   let lang = "en";
-  try { const q = new URLSearchParams(location.search).get("lang"); if (q === "en" || q === "es") { lang = q; localStorage.setItem("tl.lang", q); } else { const s = localStorage.getItem("tl.lang"); lang = s === "en" || s === "es" ? s : "en"; } } catch (e) {}
+  try { const q = new URLSearchParams(location.search).get("lang"); if (q === "en" || q === "es") { lang = q; localStorage.setItem("tl.lang", q); } else { const s = localStorage.getItem("tl.lang"); lang = s === "en" || s === "es" ? s : (navigator.language || "en").toLowerCase().startsWith("es") ? "es" : "en"; } } catch (e) {}
   const fmt = (s, a) => a.length ? s.replace(/\{(\d)\}/g, (m, i) => a[+i] === undefined ? "" : a[+i]) : s;
   const T = (s, ...a) => fmt(lang === "en" && EN[s] !== undefined && EN[s] !== "" ? EN[s] : s, a);
   const I18N = {
