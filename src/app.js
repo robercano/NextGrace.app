@@ -440,7 +440,7 @@ async function main(DB, FLAGS, REQS){
     }
     close(); return out.join("");
   }
-  const ADV = { busy: false, key: null, status: "", err: null, linker: null, queue: [], gate: null };
+  const ADV = { busy: false, key: null, status: "", err: null, linker: null, queue: [], gate: null, follow: null }; // follow: char whose server-side job this page is watching
   // Turn known place / boss / grace names inside the report into links to the map (longest names first).
   async function reportLinker() {
     if (ADV.linker) return ADV.linker;
@@ -471,11 +471,15 @@ async function main(DB, FLAGS, REQS){
     if (r.enabled === false) { renderAdvisorGate(c, el); return; }
     if (r.globalFull && !Cloud.isAdmin()) r.cooldown = r.cooldown || 1; // the shared daily budget is spent: no button today
     const mine = ADV.busy && ADV.key === ck, busy = mine || !!r.running;
+    // We were watching a job started elsewhere and it is gone without a fresh report: the Worker that ran it died (the browser
+    // that started it went away mid-stream). Take over: start a new run from this page.
+    if (ADV.follow === ck && !r.running && !mine) { ADV.follow = null; if (r.stale && r.configured && (Cloud.isAdmin() || (r.cooldown === 0 && r.used < r.cap))) { note(T("La generación anterior se interrumpió; se vuelve a pedir el informe."), true); generateAdvice(c, { auto: true }); return; } }
+    if (r.running && !mine) ADV.follow = ck;
     const when = r.advice ? new Date(r.advice.created_at.replace(" ", "T") + "Z").toLocaleString(I18N.locale(), { dateStyle: "medium", timeStyle: "short" }) : null;
     const same = r.advice && !r.stale; // the report already matches this save: another run only gives a variant
     const canRefresh = r.configured && !busy && (Cloud.isAdmin() || (r.cooldown === 0 && r.used < r.cap));
     const why = !r.configured ? T("El consejero no está configurado en el servidor (falta la clave de la API).") : r.globalFull && !Cloud.isAdmin() ? T("El consejero ha agotado el cupo compartido de hoy; vuelve mañana.") : r.cooldown > 0 && !Cloud.isAdmin() ? T("Podrás pedir otro informe en {0} h.", Math.ceil(r.cooldown / 3600)) : r.used >= r.cap && !Cloud.isAdmin() ? T("Has llegado al máximo diario de informes.") : r.stale && r.advice && !busy ? T("Has abierto una partida más reciente que la de este informe.") : "";
-    const status = mine ? ADV.status : r.running ? T("El informe se está generando en el servidor (lo pidió otra pestaña, otro dispositivo o esta página antes de recargarse)… {0} s", r.running.seconds) : "";
+    const status = mine ? ADV.status : r.running ? T("El informe se está generando en el servidor (lo pidió otra pestaña, otro dispositivo o esta página antes de recargarse)… {0} s", r.running.seconds) + (r.running.progress ? " · " + T("{0} caracteres escritos", r.running.progress) : "") : "";
     el.innerHTML = `<div class="advh"><span class="help">${r.advice ? `${T("Generado el {0}", when)}${r.stale ? T(" · desactualizado") : ""}` : T("Todavía no hay informe para este personaje.")}${T(" · {0}/{1} hoy", r.used, r.cap)}</span><button class="btn primary" id="advRefresh" ${canRefresh ? "" : "disabled"}>${busy ? T("Generando…") : !r.advice ? T("Generar informe") : same ? T("Otra opinión") : T("Actualizar")}</button></div>
       ${status ? `<p class="help" id="advStatus">${esc(status)}</p>` : ""}
       ${why ? `<p class="help">${esc(why)}</p>` : ""}

@@ -60,7 +60,7 @@ The sheet and the map share state only through `localStorage`: `tl.last` (slimme
 | `PUT /api/characters` | `characters.js` | upsert summaries (+ a `history` snapshot per distinct playtime) |
 | `GET/PUT /api/marks/:char_key` | `marks/[char_key].js` | manual marks sync |
 | `GET/POST /api/markers`, `DELETE /api/markers/:id`, `GET/POST /api/admin/markers` | `markers/*`, `admin/markers.js` | community markers with moderation (`pending/approved/rejected`) |
-| `GET/POST /api/advice/:char_key` | `advice/[char_key].js` | advisor report: cached by hash(summary + lang + PROMPT_VERSION); POST streams ndjson (`{beat}`, `{progress}`, then `{advice}` or `{error}`); one job per character (`advice_jobs`) |
+| `GET/POST /api/advice/:char_key` | `advice/[char_key].js` | advisor report: cached by hash(summary + lang + PROMPT_VERSION); POST streams ndjson (`{beat}`, `{progress}`, then `{advice}` or `{error}`); one job per character (`advice_jobs`, heartbeat `beat_at` every 10 s: a job silent for 40 s is dead — the Worker died with the browser that started it — and the page watching it starts a new run) |
 | `GET /api/history/:char_key` | `history/[char_key].js` | snapshots for the session diary |
 
 `GET/POST /api/advisor` and `GET/POST /api/admin/advisor` (`advisor.js`, `admin/advisor.js`) manage **advisor access** (below).

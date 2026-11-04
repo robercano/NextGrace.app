@@ -19,19 +19,27 @@ const MAX_TOKENS = MAX_TOKENS_DEFAULT; // reported in ADVICE_LIMITS
 export const ADVICE_LIMITS = { cooldownH: COOLDOWN_H, dailyCap: DAILY_CAP, globalDailyCap: GLOBAL_DAILY_CAP, maxTokens: MAX_TOKENS };
 const DEFAULT_MODEL = "claude-opus-5-5";
 const PROMPT_VERSION = 3; // 3: "Hoy en 1 hora" section + compact weapon list for big inventories // bump when SYSTEM/buildContext change: the cached report is then considered stale
-const JOB_TTL_S = 240; // a job older than this is assumed dead (Worker evicted)
+const JOB_TTL_S = 240; // a job older than this is assumed dead whatever it says
+const JOB_DEAD_S = 40; // a job that has not written its heartbeat (beat_at, every 10 s) for this long is dead: the Worker that ran it was
+// evicted (it happens when the browser that started it goes away mid-stream). Other tabs then stop waiting and the one that
+// is looking at the report starts a new run.
 
 const hashOf = async (summary, lang) => (await sha256((summary || "") + "|" + lang + "|p" + PROMPT_VERSION)).slice(0, 16);
+let jobsReady = false;
 async function jobs(context) {
+  if (jobsReady) return;
   await context.env.DB.prepare("CREATE TABLE IF NOT EXISTS advice_jobs (char_key TEXT PRIMARY KEY, hash TEXT, lang TEXT, started_at TEXT NOT NULL)").run();
+  for (const col of ["beat_at TEXT", "progress INTEGER"]) { try { await context.env.DB.prepare(`ALTER TABLE advice_jobs ADD COLUMN ${col}`).run(); } catch (e) {} }
+  jobsReady = true;
 }
 async function runningJob(context, ck) {
   await jobs(context);
-  const j = await context.env.DB.prepare("SELECT hash, lang, started_at FROM advice_jobs WHERE char_key = ?").bind(ck).first();
+  const j = await context.env.DB.prepare("SELECT hash, lang, started_at, beat_at, progress FROM advice_jobs WHERE char_key = ?").bind(ck).first();
   if (!j) return null;
   const sec = Math.round((Date.now() - Date.parse(j.started_at + "Z")) / 1000);
-  if (sec > JOB_TTL_S) { await context.env.DB.prepare("DELETE FROM advice_jobs WHERE char_key = ?").bind(ck).run(); return null; }
-  return { seconds: Math.max(0, sec), lang: j.lang };
+  const idle = Math.round((Date.now() - Date.parse((j.beat_at || j.started_at) + "Z")) / 1000);
+  if (sec > JOB_TTL_S || idle > JOB_DEAD_S) { await context.env.DB.prepare("DELETE FROM advice_jobs WHERE char_key = ?").bind(ck).run(); return null; }
+  return { seconds: Math.max(0, sec), lang: j.lang, progress: j.progress || 0 };
 }
 
 async function asset(context, path) {
@@ -174,11 +182,13 @@ export const onRequestPost = handler(async context => {
   // Long job (30-120 s): answer as a newline-delimited stream with heartbeats so proxies and mobile browsers keep the connection; last line is the result.
   const { readable, writable } = new TransformStream(); const w = writable.getWriter(), enc = new TextEncoder();
   const send = obj => w.write(enc.encode(JSON.stringify(obj) + "\n")).catch(() => {});
-  await context.env.DB.prepare("INSERT INTO advice_jobs (char_key, hash, lang, started_at) VALUES (?, ?, ?, datetime('now')) ON CONFLICT(char_key) DO UPDATE SET hash = excluded.hash, lang = excluded.lang, started_at = datetime('now')").bind(ck, hash, lang).run();
+  await context.env.DB.prepare("INSERT INTO advice_jobs (char_key, hash, lang, started_at, beat_at, progress) VALUES (?, ?, ?, datetime('now'), datetime('now'), 0) ON CONFLICT(char_key) DO UPDATE SET hash = excluded.hash, lang = excluded.lang, started_at = datetime('now'), beat_at = datetime('now'), progress = 0").bind(ck, hash, lang).run();
   const job = (async () => {
-    let beat = Date.now(); const hb = setInterval(() => send({ beat: Math.round((Date.now() - beat) / 1000) }), 4000);
+    let beat = Date.now(), last = 0; const hb = setInterval(() => send({ beat: Math.round((Date.now() - beat) / 1000) }), 4000);
+    // heartbeat in D1 so other tabs can tell a live job from a dead one (JOB_DEAD_S)
+    const db = setInterval(() => { context.env.DB.prepare("UPDATE advice_jobs SET beat_at = datetime('now'), progress = ? WHERE char_key = ?").bind(last, ck).run().catch(() => {}); }, 10000);
     try {
-      let last = 0; const g = await generate(context, row, S, n => { if (n - last > 400) { last = n; send({ progress: n }); } }, lang);
+      const g = await generate(context, row, S, n => { if (n - last > 400) { last = n; send({ progress: n }); } }, lang);
       await context.env.DB.batch([
         context.env.DB.prepare("INSERT INTO advice (char_key, hash, model, text, created_at) VALUES (?, ?, ?, ?, datetime('now')) ON CONFLICT(char_key) DO UPDATE SET hash = excluded.hash, model = excluded.model, text = excluded.text, created_at = datetime('now')").bind(ck, hash, g.model, g.text),
         context.env.DB.prepare("INSERT INTO advice_log (steamid, char_key, model, in_tokens, out_tokens) VALUES (?, ?, ?, ?, ?)").bind(u.steamid, ck, g.model, g.usage ? g.usage.input_tokens : null, g.usage ? g.usage.output_tokens : null),
@@ -187,7 +197,7 @@ export const onRequestPost = handler(async context => {
     } catch (e) {
       let msg = e && e.message || String(e); if (e instanceof Response) { try { msg = (await e.json()).error || msg; } catch (x) { msg = e.statusText || msg; } }
       await send({ error: msg });
-    } finally { clearInterval(hb); try { await context.env.DB.prepare("DELETE FROM advice_jobs WHERE char_key = ?").bind(ck).run(); } catch (e) {} try { await w.close(); } catch (e) {} }
+    } finally { clearInterval(hb); clearInterval(db); try { await context.env.DB.prepare("DELETE FROM advice_jobs WHERE char_key = ?").bind(ck).run(); } catch (e) {} try { await w.close(); } catch (e) {} }
   })();
   if (context.waitUntil) context.waitUntil(job);
   return new Response(readable, { headers: { "content-type": "application/x-ndjson; charset=utf-8", "cache-control": "no-store", "x-accel-buffering": "no" } });
