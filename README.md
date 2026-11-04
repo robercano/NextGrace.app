@@ -23,7 +23,7 @@ src/glossary.js       the "i" tips                   src/site.js   contact addre
 functions/api/        the API (Pages-Functions style handlers): Steam OpenID, characters, marks, markers, advisor, history
 worker/index.js       Worker entry: /api/* → functions, everything else → static assets
 db/schema.sql         D1 schema (+ db/migrations/)
-wrangler.toml         Worker config (assets, D1 binding `DB`, var `ADMIN_STEAMIDS`); .assetsignore keeps code and docs out
+wrangler.toml         Worker config (assets, D1 binding `DB`, R2 `ICONS`, vars); .assetsignore keeps code and docs out
 data/                 game data (see docs/ARCHITECTURE.md): items, flags, requirements, locations, map, progression
 icons/                no art here: served from R2 (see icons/README.md)
 tools/                scripts that build data/ (wiki fetchers, extractors) and the icon tools
@@ -38,7 +38,7 @@ The site is deployed as a **Cloudflare Worker with static assets** (`wrangler.to
 
 1. **Create the database**: Cloudflare dashboard → *Storage & Databases → D1 SQL Database → Create* → name `tarnished-ledger`. In the *Console* tab paste `db/schema.sql` and run it.
 2. **Put its id in `wrangler.toml`**: the database page shows *Database ID* (a UUID); replace `REPLACE_WITH_D1_DATABASE_ID`. Bindings live in `wrangler.toml` (not in the dashboard): every deploy applies them.
-3. **Moderators**: `ADMIN_STEAMIDS` in `wrangler.toml` (SteamID64, comma-separated). Their markers are published directly and they see the queue under *Account → Moderation*.
+3. **Moderators**: secret `ADMIN_STEAMIDS` (*Worker → Settings → Variables and secrets*; SteamID64, comma-separated). Their markers are published directly and they see the queue under *Account → Moderation*.
 4. **Deploy**: push to `main` (Workers Builds runs `npx wrangler deploy`) or run `npx wrangler deploy` locally. Check `https://<worker>.workers.dev/api/health` → `{"ok":true,"db":true,"admins":true,…}`.
 5. **Private preview** (optional): *Zero Trust → Access → Applications → Add → Self-hosted* with your e-mail and a one-time PIN. Steam login is independent of Access; remove the Access application to open the site.
 
@@ -61,7 +61,7 @@ Without the API any static server works (`python -m http.server 8080`). When you
 
 Enable it:
 1. Run `db/migrations/002_advice.sql` in the D1 *Console* (the full `schema.sql` includes it too).
-2. *Worker → Settings → Variables and secrets → Add → Secret*: `ANTHROPIC_API_KEY` with a key from [console.anthropic.com](https://console.anthropic.com/). Optional: variable `ADVICE_MODEL` (default `claude-opus-5-5`; Sonnet 5.5 needs a 16k token budget and often returns nothing, see `tools/lab/results`).
+2. *Worker → Settings → Variables and secrets → Add → Secret*: `ANTHROPIC_API_KEY` with a key from [console.anthropic.com](https://console.anthropic.com/). Optional: variable `ADVICE_MODEL` (default `claude-opus-5-5`; Sonnet 5.5 needs a 16k token budget and often returns nothing; compare models with `tools/lab/advice_lab.mjs`).
 3. **Who may use it**: only Steam accounts that own Elden Ring (checked at login with the Steam Web API) or accounts a moderator activates by hand. Create a key at https://steamcommunity.com/dev/apikey (domain: your site) and add it as the secret `STEAM_API_KEY`; without it everybody gets the manual-request screen. Optional secret `ADMIN_EMAIL` (a verified Email Routing destination) to be e-mailed about activation requests (binding `EMAIL` in `wrangler.toml`). Caps: 1 h per character, 5 reports/day per user, 60/day for everybody (`functions/api/advice/[char_key].js`). Set a monthly spend limit in the Anthropic console and a rate-limiting rule on `/api/advice*` in Cloudflare as backstops.
 4. Locally, `npx wrangler dev --var ADVICE_MOCK:1` returns a fake report with the context that would be sent to the model (field `ctx`), handy to review the prompt without spending.
 

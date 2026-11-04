@@ -1,5 +1,6 @@
 // advice_lab.mjs — generates the advisor's report for the characters in tools/lab/summaries/*.json with several models and prompt
-// variants, to compare them side by side. Writes tools/lab/results/<date>/<char>-<model>-<variant>.md and an index README.md.
+// variants, to compare them side by side. Writes tools/lab/results/<date>/<char>-<model>-<variant>.md and an index README.md
+// (summaries and results are gitignored: personal game data; make a summary with summarize_save.mjs).
 //   ANTHROPIC_API_KEY=… node tools/lab/advice_lab.mjs [--models claude-sonnet-5-5,claude-opus-5-5] [--variants A,B,C] [--lang es] [--chars Arcano]
 // Variants: A = the prompt the site uses today; B = A + a "Hoy en 1 hora" section (a concrete plan for a one-hour session);
 //           C = compact (≈250 words, priorities first). Add more below.

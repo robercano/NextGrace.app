@@ -48,7 +48,7 @@ The sheet and the map share state only through `localStorage`: `tl.last` (slimme
 
 ## Back end (Cloudflare Worker)
 
-`wrangler.toml` declares the Worker (`main = worker/index.js`), the static assets (`[assets]`, with `.assetsignore` excluding code and docs), the D1 binding `DB` and the var `ADMIN_STEAMIDS`. Secrets (`ANTHROPIC_API_KEY`) are set in the dashboard. Pushes to `main` deploy automatically (Workers Builds).
+`wrangler.toml` declares the Worker (`main = worker/index.js`), the static assets (`[assets]`, with `.assetsignore` excluding code and docs), the D1 binding `DB`, the R2 binding `ICONS` and the vars (`ADVISOR_MODE`). Secrets (`ANTHROPIC_API_KEY`, `STEAM_API_KEY`, `ADMIN_EMAIL`, `ADMIN_STEAMIDS` — the moderators' SteamID64s) are set in the dashboard. Pushes to `main` deploy automatically (Workers Builds).
 
 `worker/index.js` maps routes to modules written in the Pages Functions style (`onRequestGet/Post/Put/Delete(context)` with `context.env`, `context.params`), so they could move back to Pages unchanged:
 

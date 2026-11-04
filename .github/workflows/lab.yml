@@ -1,6 +1,7 @@
 # Experiments with the Claude API. Location drafts: only the ones the model did not mark "(unsure)" reach the site
 # (tools/apply_locations.py --include-unsure publishes the rest; see data/locations_draft.json for manual review). (secret ANTHROPIC_API_KEY in the GitHub repo: Settings → Secrets and variables → Actions).
-#  - advice:    report for the characters in tools/lab/summaries/ with several models and prompt variants → tools/lab/results/<date>/
+#  - advice:    report for the characters in tools/lab/summaries/ with several models and prompt variants → results uploaded as a
+#               workflow artifact (summaries are personal game data, gitignored: the advice lab is mostly run locally)
 #  - locations: where-to-find DRAFTS for the items the wiki has no text for → data/locations_draft.json (+ items.json, places.json)
 name: lab
 on:
@@ -40,6 +41,13 @@ jobs:
       - name: Advisor lab
         if: ${{ github.event.inputs.what == 'advice' || github.event.inputs.what == 'both' }}
         run: node tools/lab/advice_lab.mjs --models "${{ github.event.inputs.models }}" --variants "${{ github.event.inputs.variants }}" --lang "${{ github.event.inputs.lang }}" --chars "${{ github.event.inputs.chars }}" | tee tools/lab/advice_lab_log.txt
+      - name: Upload advisor reports
+        if: ${{ github.event.inputs.what == 'advice' || github.event.inputs.what == 'both' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: advice-lab
+          path: tools/lab/results
+          if-no-files-found: ignore
       - name: Location drafts
         if: ${{ github.event.inputs.what == 'locations' || github.event.inputs.what == 'both' }}
         run: |
@@ -50,7 +58,7 @@ jobs:
         run: |
           git config user.name "lab-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add tools/lab data/locations_draft.json data/items.json data/places.json 2>/dev/null || true
+          git add tools/lab/fill_locations_log.txt data/locations_draft.json data/items.json data/places.json 2>/dev/null || true
           if git diff --cached --quiet; then echo "Sin cambios"; exit 0; fi
           git commit -m "lab: ${{ github.event.inputs.what }}"
           for i in 1 2 3 4 5; do
