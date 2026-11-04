@@ -30,6 +30,7 @@
 }
 *{box-sizing:border-box}
 html,body{min-height:100%}
+html{scrollbar-gutter:stable}/* the scrollbar appears only on long tabs: reserve its space so the header and tabs never shift */
 body{margin:0;background:var(--bg) radial-gradient(ellipse at 50% 0%,#1c1813 0%,#0b0a0a 60%);color:var(--fg);font-family:var(--body);font-size:17px;line-height:1.35;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 [hidden]{display:none!important}
 a{color:inherit}
