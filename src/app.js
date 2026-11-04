@@ -211,7 +211,8 @@ async function main(DB, FLAGS, REQS){
     const Q = c.enriched.quick, P = c.enriched.pouch;
     $("#eqQuick").innerHTML = Array.from({ length: Math.max(3, Q.length) }, (_, i) => slot(Q[i], T("Rápido {0}", i + 1))).join("") + Array.from({ length: Math.max(6, P.length) }, (_, i) => slot(P[i], T("Bolsa {0}", i + 1))).join("");
     const Sp = c.enriched.spells, phys = c.physick.map(id => { const e = DB.items[id]; return e ? { id, name: e.n, display: e.n, kind: e.k, cat: e.c, sub: e.s || "" } : null; });
-    $("#eqSpells").innerHTML = Sp.map((s, i) => slot(s, T("Hechizo {0}", i + 1))).join("") + phys.map((p, i) => slot(p, T("Físico {0}", i + 1))).join("");
+    $("#eqSpells").innerHTML = Sp.map((s, i) => slot(s, T("Hechizo {0}", i + 1))).join("");
+    $("#eqPhysick").innerHTML = phys.map((p, i) => slot(p, T("Lágrima {0}", i + 1))).join(""); // the two crystal tears mixed in the Flask of Wondrous Physick
     $("#eqDetail").innerHTML = `<div class="d help">${T("Toca un hueco para ver el objeto.")}</div>`;
   }
   document.addEventListener("click", e => { const s = e.target.closest(".slot[data-item], .cell[data-item]"); if (!s) return; const d = JSON.parse(s.dataset.item); const box = s.classList.contains("slot") ? $("#eqDetail") : $("#invDetail");
