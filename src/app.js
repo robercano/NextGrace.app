@@ -452,9 +452,19 @@ async function main(DB, FLAGS, REQS){
     } catch (e) {}
     for (const b of FLAGS.bosses) if (!target.has(b.name)) target.set(b.name, { focus: b.name });
     for (const g of FLAGS.graces) if (!target.has(g.name)) target.set(g.name, { focus: g.name });
+    // Short boss names as the report writes them ("Godrick", "Rennala", "Radahn"): the part before a comma / " the " / " of ",
+    // plus a few last-word names. First boss in game order wins when two share a short name (Radahn, Astel, Loretta…).
+    const LAST = ["Makar", "Niall", "Placidusax", "Fortissax", "Gaius", "Radahn"];
+    for (const b of FLAGS.bosses) {
+      const al = new Set(); const m = b.name.match(/^([A-Z][\w'-]+)(?:,| the | of )/); if (m) al.add(m[1]);
+      const w = b.name.split(" ").pop(); if (LAST.includes(w)) al.add(w);
+      for (const a of al) if (a.length > 3 && !target.has(a) && !["Soldier", "Beastman", "Beastmen", "Kindred"].includes(a)) target.set(a, { focus: b.name });
+    }
     const uniq = [...target.keys()].filter(n => n.length > 3).sort((a, b) => b.length - a.length);
     const re = new RegExp("(?<![\\w'])(" + uniq.map(n => esc(n).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|") + ")(?![\\w'])", "g");
-    return ADV.linker = html => html.replace(re, m => { const t = target.get(m.replace(/&amp;/g, "&")); if (!t) return m; return `<a class="ml" href="map.html#focus=${encodeURIComponent(t.focus)}${t.q ? "&q=" + encodeURIComponent(t.q) : ""}" title="${T("Ver en el mapa")}">${m}</a>`; });
+    const link = text => text.replace(re, m => { const t = target.get(m.replace(/&amp;/g, "&")); if (!t) return m; return `<a class="ml" href="map.html#focus=${encodeURIComponent(t.focus)}${t.q ? "&q=" + encodeURIComponent(t.q) : ""}" title="${T("Ver en el mapa")}">${m}</a>`; });
+    // only the text outside existing links (the model may link to the wiki itself) and outside tags
+    return ADV.linker = html => html.replace(/(<a\b[^>]*>[\s\S]*?<\/a>)|([^<]+)/g, (m, a, t) => a ? a : link(t));
   }
   const ERR_ES0 = { "summary too old: open the save again while logged in": "el resumen guardado es de una versión anterior; vuelve a abrir el .sl2 con la sesión iniciada.", "advisor not configured (ANTHROPIC_API_KEY)": "falta la clave de la API en el servidor.", "daily cap reached": "has llegado al máximo diario.", "unknown character; open the save while logged in first": "este personaje no está en tu cuenta todavía; abre el .sl2 con la sesión iniciada.", "not your character": "este personaje pertenece a otra cuenta de Steam: el consejero solo trabaja con los personajes de la cuenta con la que has entrado.", "global daily cap reached": "el consejero ha agotado el cupo compartido de hoy; vuelve mañana.", "advisor not enabled for this account": "el consejero no está activado para esta cuenta." };
   const ERR_ES = new Proxy(ERR_ES0, { get: (o, k) => o[k] ? T(o[k]) : o[k] });
@@ -486,7 +496,7 @@ async function main(DB, FLAGS, REQS){
       ${same && !busy ? `<p class="help">${T("Este informe ya corresponde a la partida abierta; se genera solo cuando abres un save nuevo.")}</p>` : ""}
       ${ADV.err && ADV.key === ck ? `<p class="err">${T("No se pudo generar el informe: {0}", esc(ADV.err))}</p>` : ""}
       ${r.advice ? `<div class="pane frame md">${md(r.advice.text)}</div>` : ""}`;
-    if (r.advice) { const link = await reportLinker(); const box = el.querySelector(".md"); if (box && CUR === c) { for (const n of [...box.querySelectorAll("h2, p, li")]) { if (!n.querySelector("a")) n.innerHTML = link(n.innerHTML); } } }
+    if (r.advice) { const link = await reportLinker(); const box = el.querySelector(".md"); if (box && CUR === c) { for (const n of [...box.querySelectorAll("h2, p, li")]) n.innerHTML = link(n.innerHTML); } }
     if (r.running && !mine) setTimeout(() => { if (CUR === c && TAB === "advice" && !(ADV.busy && ADV.key === ck)) renderAdvice(c); }, 5000); // follow a job started elsewhere
     $("#advRefresh").onclick = () => {
       if (same && !confirm(T("El informe ya corresponde a esta partida: generar otro solo dará una variante y cuenta para el cupo diario. ¿Generar de todos modos?"))) return;
