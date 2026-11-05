@@ -14,7 +14,7 @@
  * Conventions: every user-visible string is Spanish wrapped in T() (English in src/i18n.js); HTML is built with template
  * strings and esc() for any value that comes from the save; CUR is the character on screen, SAVE the parsed file.
  */
-async function main(DB, FLAGS, REQS){
+async function main(DB, FLAGS, REQS, UNOBT){
   // ---- state & helpers ---------------------------------------------------------
   const $ = s => document.querySelector(s);
   I18N.apply();
@@ -61,6 +61,17 @@ async function main(DB, FLAGS, REQS){
     if (!c.missing) { const have = new Set(c.all.map(baseKey)); c.missing = CATALOG.filter(i => !have.has(baseKey(i))); }
     return c.missing;
   }
+  // Items this playthrough can no longer obtain (data/unobtainable.json: closed quests, exclusive choices): id → why
+  const BY_NAME = new Map(); for (const [id, e] of Object.entries(DB.items)) if (!BY_NAME.has(e.n)) BY_NAME.set(e.n, +id);
+  const goneFor = c => c.gone || new Map();
+  function computeGone(c, flag) { // called while the save's event flags are still in memory (they are dropped after the progress is computed)
+    const gone = new Map(); if (!UNOBT || !UNOBT.rules) return gone;
+    const bossByName = new Map(FLAGS.bosses.map(b => [b.name, b.id])), haveNames = new Set(c.all.map(i => i.name));
+    const holds = w => w.boss ? !!flag(bossByName.get(w.boss)) : w.owns ? haveNames.has(w.owns) : w.flag ? !!flag(w.flag) : false;
+    for (const r of UNOBT.rules) if (holds(r.when || {})) for (const n of r.items) { const id = BY_NAME.get(n); if (id && !haveNames.has(n)) gone.set(id, r.why && (r.why[I18N.lang] || r.why.es) || ""); }
+    return gone;
+  }
+  let hideGone = false; try { hideGone = localStorage.getItem("tl.hideGone") === "1"; } catch (e) {}
 
   // ---- tabs ----------------------------------------------------------------
   let TAB = "status";
@@ -218,7 +229,7 @@ async function main(DB, FLAGS, REQS){
   }
   document.addEventListener("click", e => { const s = e.target.closest(".slot[data-item], .cell[data-item]"); if (!s) return; const d = JSON.parse(s.dataset.item); const box = s.classList.contains("slot") ? $("#eqDetail") : $("#invDetail");
     for (const x of s.parentElement.querySelectorAll(".sel")) x.classList.remove("sel"); s.classList.add("sel");
-    box.innerHTML = `${d.i ? `<img src="${d.i}" alt="">` : ""}<div><div class="t">${esc(d.n)}</div><div class="d">${esc(d.d || "")}</div>${d.r ? d.r.split("\n").map(l => `<div class="d" style="color:var(--gold-2)">${esc(l)}</div>`).join("") : ""}${d.l ? `<div class="d">${esc(d.l)}</div>` : ""}<a class="wl" href="${WIKI}${encodeURIComponent(d.w.replace(/ /g, "_"))}" target="_blank" rel="noopener">${T("Ver en la wiki")}</a></div>`; });
+    box.innerHTML = `${d.i ? `<img src="${d.i}" alt="">` : ""}<div><div class="t">${esc(d.n)}</div><div class="d">${esc(d.d || "")}</div>${d.r ? d.r.split("\n").map(l => `<div class="d" style="color:var(--gold-2)">${esc(l)}</div>`).join("") : ""}${d.g ? `<div class="d" style="color:var(--bad)">${esc(d.g)}</div>` : ""}${d.l ? `<div class="d">${esc(d.l)}</div>` : ""}<a class="wl" href="${WIKI}${encodeURIComponent(d.w.replace(/ /g, "_"))}" target="_blank" rel="noopener">${T("Ver en la wiki")}</a></div>`; });
 
   // ---- forge ----------------------------------------------------------------
   function renderForge(c) {
@@ -350,17 +361,20 @@ async function main(DB, FLAGS, REQS){
     const c = CUR; if (!c) return;
     const q = ($("#q").value || "").trim().toLowerCase();
     const cats = GROUPS.find(g => g[0] === group)[1];
-    const src = mode === "missing" ? missingFor(c) : c.all;
+    const src = mode === "missing" ? missingFor(c) : c.all, gone = mode === "missing" ? goneFor(c) : new Map();
     let items = src.filter(i => (!cats || cats.includes(i.cat)) && (!q || i.name.toLowerCase().includes(q) || (i.aow || "").toLowerCase().includes(q)));
+    const nGone = items.filter(i => gone.has(i.id)).length; if (hideGone) items = items.filter(i => !gone.has(i.id));
     const ORDER = ["melee_armaments", "ranged_and_catalysts", "shields", "arrows_and_bolts", "head", "chest", "arms", "legs", "talismans", "ashes_of_war", "ashes", "sorceries", "incantations", "tools", "crafting_materials", "bolstering_materials", "key_items", "info", "gestures"];
     const oi = c => { const i = ORDER.indexOf(c); return i < 0 ? 99 : i; };
     if (useFilter !== "all") items = items.filter(i => { const u = canUse(c, i); if (!u) return useFilter === "ok"; if (useFilter === "boost") return !!u.boosted; if (useFilter === "ok") return !u.boosted && (u.ok || u.twoHand); return !u.ok && !u.twoHand; });
     items = items.slice().sort((a, b) => oi(a.cat) - oi(b.cat) || a.name.localeCompare(b.name));
-    if (mode === "missing") { const tot = CATALOG.filter(i => !cats || cats.includes(i.cat)).length; $("#count").textContent = T("{0} por conseguir de {1}", items.length, tot) + (q ? T(" (filtrado)") : ""); }
+    if (mode === "missing") { const tot = CATALOG.filter(i => !cats || cats.includes(i.cat)).length; $("#count").innerHTML = esc(T("{0} por conseguir de {1}", items.length, tot) + (q ? T(" (filtrado)") : "")) + (nGone ? ` · <button class="lnk" id="goneToggle">${hideGone ? esc(T("mostrar {0} que ya no se pueden conseguir", nGone)) : esc(T("{0} ya no se pueden conseguir en esta partida (ocultar)", nGone))}</button>` : "");
+      const gt = $("#goneToggle"); if (gt) gt.onclick = () => { hideGone = !hideGone; try { localStorage.setItem("tl.hideGone", hideGone ? "1" : "0"); } catch (e) {} renderInv(); }; }
     else $("#count").textContent = T("{0} objetos", items.length);
     const cell = i => { const img = iconUrl(i); const e = DB.items[i.id] || (i.kind === "weapon" ? DB.items[i.id - (i.id % 10000)] : null) || { loc: i.loc }; const u = canUse(c, i);
       const meta = [CAT_ES[i.cat] || i.cat, subEs(i.sub), i.infusion && i.infusion !== "Standard" ? i.infusion : null, i.aow ? T("Ceniza: {0}", i.aow) : null, i.qty > 1 ? "×" + i.qty : null, i.stored ? T("en el cofre") : null, i.kind === "weapon" && i.maxLevel ? `+${i.level}/${i.maxLevel}` : null, useMeta(u)].filter(Boolean).join(" · ");
-      return `<div class="cell${i.missing ? " miss" : ""}${i.stored ? " stored" : ""}${useCls(u)}" data-item="${esc(JSON.stringify({ n: i.display, w: wikiName(i), d: meta, r: reqLine(u), l: e && e.loc ? e.loc.replace(/\s+([.,;])/g, "$1").replace(/\s{2,}/g, " ") + (e.locd ? " " + T("(borrador generado por IA, sin verificar)") : "") : "", i: img || "" }))}" role="button" tabindex="0" title="${esc(i.display)}">${img ? `<img src="${img}" alt="" loading="lazy">` : `<span class="nm">${esc(i.display)}</span>`}${i.qty > 1 ? `<span class="q">${i.qty}</span>` : ""}${i.kind === "weapon" && i.level ? `<span class="lv">+${i.level}</span>` : ""}</div>`; };
+      const g = gone.get(i.id);
+      return `<div class="cell${i.missing ? " miss" : ""}${g !== undefined ? " gone" : ""}${i.stored ? " stored" : ""}${useCls(u)}" data-item="${esc(JSON.stringify({ n: i.display, w: wikiName(i), d: meta, r: reqLine(u), g: g !== undefined ? T("Ya no se puede conseguir en esta partida.") + (g ? " " + g : "") : "", l: e && e.loc ? e.loc.replace(/\s+([.,;])/g, "$1").replace(/\s{2,}/g, " ") + (e.locd ? " " + T("(borrador generado por IA, sin verificar)") : "") : "", i: img || "" }))}" role="button" tabindex="0" title="${esc(i.display)}">${g !== undefined ? `<span class="gonetag">✕</span>` : ""}${img ? `<img src="${img}" alt="" loading="lazy">` : `<span class="nm">${esc(i.display)}</span>`}${i.qty > 1 ? `<span class="q">${i.qty}</span>` : ""}${i.kind === "weapon" && i.level ? `<span class="lv">+${i.level}</span>` : ""}</div>`; };
     $("#inv").innerHTML = items.slice(0, limit).map(cell).join("");
     const more = $("#more"); more.hidden = items.length <= limit; if (!more.hidden) more.textContent = T("Mostrar {0} más ({1} restantes)", Math.min(250, items.length - limit), items.length - limit);
     $("#invDetail").innerHTML = `<div class="d help">${T("Toca un objeto para ver el detalle.")}</div>`;
@@ -396,6 +410,7 @@ async function main(DB, FLAGS, REQS){
             { name: GR[grFlag] || T("Runa mayor (sin identificar, flag {0})", grFlag), display: GR[grFlag] || T("Runa mayor (sin identificar, flag {0})", grFlag) });
         c.progress = { graces: FLAGS.graces.filter(g => flag(g.id)).map(g => g.id), bosses: FLAGS.bosses.filter(b => flag(b.id)).map(b => b.id),
           picked: Object.entries(FLAGS.pickups || {}).filter(([, f]) => flag(f)).map(([id]) => +id), regions: Object.keys(FLAGS.mapRegions || {}).filter(k => flag(+k)).map(Number) };
+        c.gone = computeGone(c, flag);
         delete c.eventFlags;
       }
     }
@@ -657,5 +672,5 @@ async function main(DB, FLAGS, REQS){
   } catch (e) {}
 }
 
-Promise.all([fetch("data/items.json").then(r => r.json()), fetch("data/flags.json").then(r => r.json()), fetch("data/reqs.json").then(r => r.ok ? r.json() : null).catch(() => null)]).then(([db, fl, rq]) => main(db, fl, rq)).catch(e => { document.getElementById("msg").textContent = T("No se pudo cargar la base de datos de objetos: {0}", e.message); });
+Promise.all([fetch("data/items.json").then(r => r.json()), fetch("data/flags.json").then(r => r.json()), fetch("data/reqs.json").then(r => r.ok ? r.json() : null).catch(() => null), fetch("data/unobtainable.json").then(r => r.ok ? r.json() : null).catch(() => null)]).then(([db, fl, rq, un]) => main(db, fl, rq, un)).catch(e => { document.getElementById("msg").textContent = T("No se pudo cargar la base de datos de objetos: {0}", e.message); });
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});

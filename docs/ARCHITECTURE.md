@@ -92,6 +92,7 @@ Signing in with Steam is free, so a session alone must not be enough to spend th
 | `overrides/*.json` | manual corrections that always win over the wiki (`locations.json`, `reqs.json`) | by hand; applied by the same tools |
 | `map.json`, `places.json` | wiki map markers; item → place links derived from the location texts | workflow `map` (`tools/fetch_map.py`), `tools/build_places.py` |
 | `progression.json` | curated progression table for the advisor (zones, levels, stones, bell bearings) | by hand |
+| `unobtainable.json` | rules for items a playthrough can no longer obtain (`{boss}` closed after that boss, `{owns}` exclusive reward); the inventory's "No tengo" marks them (`computeGone` in `app.js`) | by hand, only documented cases |
 | `user_markers.json` | legacy static community markers | by hand (superseded by D1 `markers`) |
 
 Everything taken from eldenring.wiki.gg is CC BY-SA 4.0 (see `about.html`). `tools/wikilib.py` is the shared MediaWiki client (rate-limited, batched, with title variants and wikitext helpers). Workflow logs are committed (`tools/*_log.txt`) because Actions logs are not readable from every environment.

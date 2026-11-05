@@ -129,7 +129,9 @@ main{padding:14px max(14px,env(safe-area-inset-right,0px)) 40px max(14px,env(saf
 .cell .q{position:absolute;right:3px;bottom:1px;font-size:.72rem;color:var(--fg);font-variant-numeric:tabular-nums;text-shadow:0 0 3px #000}
 .cell .lv{position:absolute;left:3px;top:1px;font-size:.66rem;color:var(--gold-2);font-variant-numeric:tabular-nums}
 .cell.sel{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold-dim)}
-.cell.miss{border-style:dashed} /* "No tengo": every cell is a missing item, so no dimming (it made the whole tab look washed out) */
+.cell.miss{border-style:dashed}
+.cell.gone{opacity:.5}.cell.gone img{filter:grayscale(1)}.cell .gonetag{position:absolute;right:3px;top:1px;font-size:.7rem;color:var(--bad);text-shadow:0 0 3px #000}
+.cnt .lnk{background:none;border:0;padding:0;font:inherit;color:var(--gold-2);cursor:pointer;text-decoration:underline dotted} /* "No tengo": every cell is a missing item, so no dimming (it made the whole tab look washed out) */
 .cell.stored::after{content:"";position:absolute;left:3px;bottom:3px;width:6px;height:6px;background:var(--fp);border-radius:50%}
 .cnt{color:var(--muted);font-size:.85rem}
 .more{align-self:center}

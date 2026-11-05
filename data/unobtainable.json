@@ -1,0 +1,93 @@
+{
+  "_about": "Items that can no longer be obtained in a playthrough once a condition holds (closed quests, exclusive choices, areas that change). Used by the inventory's 'No tengo' mode: an item matching a rule and not owned is shown as 'ya no disponible'. Conditions: {\"boss\": \"<boss name as in flags.json>\"} = that boss is defeated; {\"owns\": \"<item name>\"} = the character owns that item (exclusive rewards). Names are the English ones from items.json. Keep rules to well-documented cases; a wrong rule hides a real pickup. Checked against a finished save: the Sellen/Jerren rewards (Shard Spiral, Glintstone Kris, Eccentric's set) are NOT exclusive, so they are not listed.",
+  "rules": [
+    {
+      "items": [
+        "Magma Shot",
+        "Serpentbone Blade",
+        "Taker's Cameo",
+        "Tonic of Forgetfulness"
+      ],
+      "when": {
+        "boss": "Rykard, Lord of Blasphemy"
+      },
+      "why": {
+        "es": "Rykard vencido: los contratos de Volcano Manor (recompensas de Tanith) se cierran.",
+        "en": "Rykard defeated: the Volcano Manor contracts (Tanith's rewards) are closed."
+      }
+    },
+    {
+      "items": [
+        "Finger Maiden Therolina Puppet",
+        "Jarwight Puppet"
+      ],
+      "when": {
+        "boss": "Astel, Naturalborn of the Void"
+      },
+      "why": {
+        "es": "Seluvis muere al avanzar la misión de Ranni; sus marionetas en venta dejan de estar disponibles.",
+        "en": "Seluvis dies as Ranni's quest advances; the puppets he sold are gone."
+      }
+    },
+    {
+      "items": [
+        "Bolt of Gransax"
+      ],
+      "when": {
+        "boss": "Maliketh, the Black Blade"
+      },
+      "why": {
+        "es": "Leyndell es ahora la Capital en Cenizas: la lanza del dragón ya no se puede coger.",
+        "en": "Leyndell is now the Ashen Capital: the dragon's spear can no longer be picked up."
+      }
+    },
+    {
+      "items": [
+        "Millicent's Prosthesis"
+      ],
+      "when": {
+        "owns": "Rotten Winged Sword Insignia"
+      },
+      "why": {
+        "es": "Elección excluyente en la misión de Millicent (te pusiste de parte de sus hermanas).",
+        "en": "Exclusive choice in Millicent's quest (you sided with her sisters)."
+      }
+    },
+    {
+      "items": [
+        "Rotten Winged Sword Insignia"
+      ],
+      "when": {
+        "owns": "Millicent's Prosthesis"
+      },
+      "why": {
+        "es": "Elección excluyente en la misión de Millicent (la ayudaste).",
+        "en": "Exclusive choice in Millicent's quest (you helped her)."
+      }
+    },
+    {
+      "items": [
+        "Shard of Alexander"
+      ],
+      "when": {
+        "owns": "Warrior Jar Shard"
+      },
+      "why": {
+        "es": "Mataste a Alexander antes de acabar su misión; el talismán completo ya no se puede conseguir.",
+        "en": "Alexander was killed before his quest ended; the full talisman is gone."
+      }
+    },
+    {
+      "items": [
+        "Warrior Jar Shard"
+      ],
+      "when": {
+        "owns": "Shard of Alexander"
+      },
+      "why": {
+        "es": "Acabaste la misión de Alexander: este fragmento solo cae si lo matas antes.",
+        "en": "Alexander's quest was completed: this shard only drops if he is killed earlier."
+      }
+    }
+  ]
+}
