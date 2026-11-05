@@ -283,8 +283,17 @@ async function main(DB, FLAGS, REQS){
         <div class="plf">${seg("todo", T("Pendientes"))}${seg("done", T("Hechos"))}${seg("all", T("Todos"))}<input id="plq" type="search" placeholder="${T("Filtrar…")}" value="${esc(PL.q)}" autocomplete="off"></div>
         <div class="list">${[...groups].map(([g, xs]) => `<div class="grp"><div class="gh">${esc(g)} <span class="muted">${xs.length}</span></div>${xs.map(row).join("")}</div>`).join("") || `<p class="help">${PL.state === "todo" ? T("Nada pendiente.") : T("Nada todavía.")}</p>`}</div></div>`;
     }
+    // Collection: how much of each collectible category this character owns (the catalog behind "No tengo" in the inventory)
+    const haveKeys = new Set(c.all.map(baseKey)), hasDLC = c.all.some(i => i.dlc && i.cat !== "info") || (c.progress.regions || []).some(k => (FLAGS.mapRegions[k] || {}).name === "Gravesite Plain"); // "About New Inventory Features" is given to everyone; Shadow Keep's map flag shows up on base-game saves
+    const COLL = [["Armas", ["melee_armaments", "ranged_and_catalysts"], "Armas"], ["Escudos", ["shields"], "Armas"], ["Armaduras", ["head", "chest", "arms", "legs"], "Armadura"], ["Talismanes", ["talismans"], "Talismanes"],
+      ["Cenizas de guerra", ["ashes_of_war"], "Cenizas"], ["Cenizas de espíritu", ["ashes"], "Cenizas"], ["Hechicerías", ["sorceries"], "Magia"], ["Encantamientos", ["incantations"], "Magia"]];
+    const collRow = ([label, cats, grp]) => { const xs = CATALOG.filter(i => cats.includes(i.cat)), base = xs.filter(i => !i.dlc), dlc = xs.filter(i => i.dlc);
+      const nb = base.filter(i => haveKeys.has(baseKey(i))).length, nd = dlc.filter(i => haveKeys.has(baseKey(i))).length; const pct = base.length ? Math.round(100 * nb / base.length) : 0;
+      return `<div class="bar g" data-coll="${esc(grp)}" title="${T("Ver los que faltan en Inventario")}"><span>${T(label)}</span><i><b style="width:${pct}%;background:${pct >= 100 ? "var(--gold)" : "var(--gold-dim, #8a7a3a)"}"></b></i><span class="num">${nb} / ${base.length}${hasDLC && dlc.length ? ` <small class="muted">+ ${T("DLC")} ${nd} / ${dlc.length}</small>` : ""}</span></div>`; };
+    const coll = `<div class="pane frame coll"><h3>${T("Colección")}</h3><div class="bars">${COLL.map(collRow).join("")}</div><p class="help">${T("Objetos únicos que existen en el juego y cuántos tiene este personaje (inventario y cofre, cualquier nivel de mejora). Toca una fila para ver los que faltan y dónde se consiguen.")}${hasDLC ? "" : " " + T("El DLC se cuenta aparte cuando la partida lo tiene.")}</p></div>`;
     el.innerHTML = `<div id="diary"></div><div class="kv tiles">${tile("graces", T("Gracias"))}${tile("main", T("Jefes principales"))}${tile("field", T("Jefes de campo"))}${tile("rem", T("Remembranzas"))}${tile("world", T("Objetos únicos"))}<div><b>${(c.progress.regions || []).length} / ${Object.keys(FLAGS.mapRegions || {}).length}</b><span>${T("Zonas de mapa")}</span></div></div>
       ${panel || `<p class="help">${T("Toca una casilla para ver la lista de pendientes y hechos.")}</p>`}
+      ${coll}
       <details><summary>${T("Marcas manuales ({0})", Marks.all(CK).length)}</summary><p class="help">${T("Lo que has marcado a mano para este personaje (lugares en el mapa, jefes, gracias, objetos). Se guarda en este navegador{0}. \"Exportar\" copia el JSON.", Cloud.user() ? T(" y en tu cuenta (sincronizado con Steam)") : T("; si entras con Steam (botón de cuenta arriba) se sincroniza entre dispositivos"))}</p><div class="list">${Marks.all(CK).map(e => `<div class="row"><div class="n">${esc(e.k)} · ${esc(markName(e))}</div><div class="q">${e.at} <button class="btn" data-unmark="${esc(e.k)}|${esc(e.id)}">${T("quitar")}</button></div></div>`).join("") || `<p class="help">${T("Ninguna todavía.")}</p>`}</div><div style="display:flex;gap:8px;margin-top:8px"><button class="btn" id="marksExport">${T("Exportar")}</button><label class="btn" for="marksImport">${T("Importar")}</label><input id="marksImport" type="file" accept=".json" hidden></div></details>`;
     renderDiary(c);
     const pq = $("#plq"); if (pq) pq.oninput = () => { PL.q = pq.value; const pos = pq.selectionStart; renderProgress(c); const n = $("#plq"); if (n) { n.focus(); n.setSelectionRange(pos, pos); } };
@@ -318,6 +327,7 @@ async function main(DB, FLAGS, REQS){
       <p class="help" style="margin:6px 0 0">${T("{0} sesiones registradas (una por cada partida con tiempo de juego distinto que abres con la sesión iniciada).", H.length)}</p></div>`;
   }
   document.addEventListener("click", e => {
+    const cr = e.target.closest("[data-coll]"); if (cr && CUR) { group = cr.dataset.coll; mode = "missing"; useFilter = "all"; limit = 250; $("#q").value = ""; chips(); modeChips(); showTab("inv"); renderInv(); window.scrollTo(0, 0); return; }
     const t = e.target.closest("[data-pl]"); if (t && CUR) { PL.view = PL.view === t.dataset.pl ? null : t.dataset.pl; PL.q = ""; renderProgress(CUR); return; }
     const s = e.target.closest("[data-pls]"); if (s && CUR) { PL.state = s.dataset.pls; renderProgress(CUR); }
   });

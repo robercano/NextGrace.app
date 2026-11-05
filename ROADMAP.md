@@ -88,6 +88,11 @@ Rob still has to: set the Anthropic spend limit and the Cloudflare rate-limiting
 
 ## Pending / ideas
 
+- Collection / checklist (decided 2026-11-05, inspired by CyberGiant's Automatic Checklist; no new tab, no checkboxes — the save decides):
+  - [x] Progress tab: "Colección" pane, one bar per collectible category (weapons, shields, armor, talismans, ashes of war, spirit ashes, sorceries, incantations) with owned / total, DLC counted apart once the save has the DLC; tapping a row opens the inventory in "No tengo" for that group.
+  - [ ] Inventory "No tengo": mark items that can no longer be obtained in this playthrough (closed quests, exclusive choices, chosen ending) as "ya no disponible" with a toggle to hide them; needs a per-item condition table (`data/unobtainable.json`: item → boss/quest flags that close it). Start with the known cases (NPC armor sets tied to quests, Volcano Manor rewards, exclusive rewards) and grow.
+  - [ ] Inventory "No tengo": collapse the big groups (armor, materials) by default and a toggle to ignore consumables.
+- [ ] DLC: Scadutree Blessing / Revered Spirit Ash levels on the sheet (they live in PlayerGameData; Elden Ring Compass reads them).
 - [ ] Advisor, paid tier / bring-your-own-key: let a user paste their own Anthropic key (kept in their browser, calling Anthropic directly) to use the advisor free of charge for the site, and/or charge for the service using the site's key. Decided as the future model if the advisor is to be monetised; not now.
 - [ ] Advisor: if it bothers that it is cut when the site is closed right away, move to a D1 queue + Worker cron. Wiki tool (check scaling/requirements before recommending weapons); maybe "what to do today in 1 hour".
 - [ ] Confirm the Great Rune id table (values other than 0, 3 and 10).
