@@ -50,7 +50,7 @@
     "Piedras de dragón": "Dragon stones", "Suben un arma al máximo (+25 o +10 sombría). Elige bien: no se compran.": "Take a weapon to max (+25, or +10 somber). Choose well: they can't be bought.",
     "Otros": "Other", "Larval Tear: redistribuir atributos con Rennala. Rune Arc: activa la runa mayor equipada.": "Larval Tear: respec with Rennala. Rune Arc: activates the equipped Great Rune.",
     // equipment
-    "Dcha {0}": "Right {0}", "Izq {0}": "Left {0}", "Flecha {0}": "Arrow {0}", "Virote {0}": "Bolt {0}", "Cabeza": "Head", "Pecho": "Chest", "Brazos": "Arms", "Piernas": "Legs", "Runa mayor": "Great Rune", "Talismán {0}": "Talisman {0}", "Rápido {0}": "Quick {0}", "Bolsa {0}": "Pouch {0}", "Hechizo {0}": "Spell {0}", "Lágrima {0}": "Tear {0}", "Frasco de Physick": "Flask of Wondrous Physick",
+    "Dcha {0}": "Right {0}", "Izq {0}": "Left {0}", "Flecha {0}": "Arrow {0}", "Virote {0}": "Bolt {0}", "Cabeza": "Head", "Pecho": "Chest", "Brazos": "Arms", "Piernas": "Legs", "Runa mayor": "Great Rune", "Talismán {0}": "Talisman {0}", "Rápido {0}": "Quick {0}", "Bolsa {0}": "Pouch {0}", "Hechizo {0}": "Spell {0}", "Lágrima {0}": "Tear {0}", "Runa mayor (sin identificar, flag {0})": "Great Rune (unidentified, flag {0})", "Frasco de Physick": "Flask of Wondrous Physick",
     "Toca un hueco para ver el objeto.": "Tap a slot to see the item.", "Toca un objeto para ver el detalle.": "Tap an item for details.",
     "Ceniza: {0}": "Ash: {0}", "Peso {0}": "Weight {0}", "en el cofre": "in the chest",
     "Armamento": "Armament", "Armadura y talismanes": "Armor & talismans", "Accesos rápidos y bolsa": "Quick items & pouch", "Hechizos y físico": "Spells & physick",

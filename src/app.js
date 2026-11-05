@@ -22,6 +22,7 @@ async function main(DB, FLAGS, REQS){
   let SAVE = null, CUR = null, FILENAME = "";
   const WIKI = "https://eldenring.wiki.gg/wiki/";
   const R = Rules.create(DB, REQS); // game rules (requirements, loads, costs…): see src/rules.js
+  const GR_ID = { 9800: 1073742015 }; // goods id of the rune each Great Rune flag stands for (191 = Godrick's …), for the picture and the wiki link
   const { wikiName, baseKey, weightOf, canUse, statBonuses, effStats, stoneCounts, costRange, levelCost, spiritInfo, gloveName, RUNE_VALUE, real } = R;
   const SOFT = R.SOFT_CAPS;
   const link = (i, text) => `<a class="wl" href="${WIKI}${encodeURIComponent(wikiName(i).replace(/ /g, "_"))}" target="_blank" rel="noopener">${text}</a>`;
@@ -376,6 +377,13 @@ async function main(DB, FLAGS, REQS){
       c.all = c.enriched.inventory.concat(c.enriched.keyItems, c.enriched.storage, c.enriched.storageKeys).filter(real);
       if (c.eventFlags) {
         const flag = ERSave.makeFlagReader(FLAGS.bst, c.eventFlags);
+        // Equipped Great Rune: event flags 9800–9807, one set at a time (found by diffing a save with and without it, 2026-11-05:
+        // 9800 = Godrick's, 9803 = none). The others are not identified yet; a character with one of them shows "unidentified".
+        const GR = { 9800: "Godrick's Great Rune", 9803: null };
+        const grFlag = [9800, 9801, 9802, 9803, 9804, 9805, 9806, 9807].find(f => flag(f));
+        c.enriched.equipped.greatRune = grFlag === undefined || GR[grFlag] === null ? null
+          : Object.assign({ kind: "goods", cat: "key_items", sub: "" }, GR[grFlag] ? (DB.items[GR_ID[grFlag]] ? { id: GR_ID[grFlag], loc: DB.items[GR_ID[grFlag]].loc } : {}) : {},
+            { name: GR[grFlag] || T("Runa mayor (sin identificar, flag {0})", grFlag), display: GR[grFlag] || T("Runa mayor (sin identificar, flag {0})", grFlag) });
         c.progress = { graces: FLAGS.graces.filter(g => flag(g.id)).map(g => g.id), bosses: FLAGS.bosses.filter(b => flag(b.id)).map(b => b.id),
           picked: Object.entries(FLAGS.pickups || {}).filter(([, f]) => flag(f)).map(([id]) => +id), regions: Object.keys(FLAGS.mapRegions || {}).filter(k => flag(+k)).map(Number) };
         delete c.eventFlags;

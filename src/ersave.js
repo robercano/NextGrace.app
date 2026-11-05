@@ -227,8 +227,9 @@
     const stoKeys = char.storage.key.map(it => Object.assign({ qty: it.qty, handle: it.handle, idx: it.idx, stored: true }, R.resolveHandle(it.handle, gm)));
     const eq = char.equipHandles;
     const h = x => (x && x !== 0xFFFFFFFF) ? R.resolveHandle(x, gm) : null;
-    // Equipped Great Rune: slot 10 of the EquippedItems id table (raw goods id 191..196 = Godrick's..Malenia's; 0xFFFFFFFF = none),
-    // per EldenRing-SaveForge spec/06-equipment.md. (PlayerGameData+0xBF was used before: wrong, it is a spirit-ash level.)
+    // Equipped Great Rune: slot 10 of the EquippedItems id table per EldenRing-SaveForge spec/06-equipment.md — but it reads
+    // 0xFFFFFFFF even with a rune equipped, so app.js overrides this from event flags 9800–9807 (see there). Kept as a fallback.
+    // (PlayerGameData+0xBF was used before: wrong, it is a spirit-ash level.)
     const GR_NAMES = { 191: "Godrick's Great Rune", 192: "Radahn's Great Rune", 193: "Morgott's Great Rune", 194: "Rykard's Great Rune", 195: "Mohg's Great Rune", 196: "Malenia's Great Rune" };
     const grId = char.equipIds && char.equipIds.greatRune; const grn = grId !== undefined && grId !== 0xFFFFFFFF && grId !== 0 ? (grId & 0x0FFFFFFF) : 0;
     const equipped = {
