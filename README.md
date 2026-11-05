@@ -65,6 +65,10 @@ Enable it:
 3. **Who may use it**: only Steam accounts that own Elden Ring (checked at login with the Steam Web API) or accounts a moderator activates by hand. Create a key at https://steamcommunity.com/dev/apikey (domain: your site) and add it as the secret `STEAM_API_KEY`; without it everybody gets the manual-request screen. Optional secret `ADMIN_EMAIL` (a verified Email Routing destination) to be e-mailed about activation requests (binding `EMAIL` in `wrangler.toml`). Caps: 1 h per character, 5 reports/day per user, 60/day for everybody (`functions/api/advice/[char_key].js`). Set a monthly spend limit in the Anthropic console and a rate-limiting rule on `/api/advice*` in Cloudflare as backstops.
 4. Locally, `npx wrangler dev --var ADVICE_MOCK:1` returns a fake report with the context that would be sent to the model (field `ctx`), handy to review the prompt without spending.
 
+## Google Drive sync (optional, moderators only during the beta)
+
+`src/drive.js`: the browser reads `ER0000.sl2` from the user's own Google Drive (OAuth scope `drive.file` + Google Picker: only the picked file), checks its `modifiedTime` every minute while the page is open and reloads the sheet when it changed; the Worker never sees the file or the token. On the PC, Google Drive for desktop syncs the save folder. Setup: a Google Cloud project with the Drive API and Picker API enabled, an OAuth client id (Web, origin `https://nextgrace.app`) and an API key, written in `src/site.js` (`SITE.google`; public identifiers, not secrets). `DRIVE_BETA` in `src/app.js` limits the menu item to moderators until the OAuth app is verified.
+
 ## Map
 
 `map.html` uses the markers of the [eldenring.wiki.gg](https://eldenring.wiki.gg) interactive map (`tools/fetch_map.py` → `data/map.json`, CC BY-SA 4.0) and places every item you are missing at the place named in its location text (`tools/build_places.py` → `data/places.json`). Markers you add are kept in your browser and, when signed in, sent to the community map (visible to everyone once a moderator approves them). The map backgrounds (`icons/map/*.webp`) are game art, served from R2 like the icons (never committed).

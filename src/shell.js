@@ -10,6 +10,7 @@
  *   Shell.setChars(chars, curSlot)   chars: [{ slot, name, level, className }] — fills the drawer and the "who" chip
  *   Shell.setUser(user, available)   user: { name, avatar } | null — the account button
  *   Shell.showSaveItems(on)          "open another save" / "Steam Cloud" items (the sheet shows them once a save is loaded)
+ *   Shell.showDrive(on)              "Google Drive" item (onDrive() when tapped)
  *   Shell.menu(open)
  * Needs T/I18N (src/i18n.js) and Cloud (src/cloud.js) loaded first.
  */
@@ -37,6 +38,7 @@
   <div class="menusec"><div class="menuh" data-i18n="Partida">Partida</div>
     ${openItem}
     <a class="mitem" id="barSteam" href="https://store.steampowered.com/account/remotestorageapp/?appid=1245620" target="_blank" rel="noopener"${o.openFile ? " hidden" : ""}><b>Steam Cloud</b><span class="help" data-i18n="Descargar la partida de Steam Cloud">Descargar la partida de Steam Cloud</span></a>
+    <button class="mitem" id="barDrive" hidden><b>Google Drive</b><span class="help" data-i18n="Sincronizar la partida desde tu Drive">Sincronizar la partida desde tu Drive</span></button>
   </div>
   <div class="menusec"><div class="menuh" data-i18n="Idioma">Idioma</div><button class="mitem" data-lang-toggle><b>English</b></button></div>
   <div class="menusec"><a class="mitem" href="about.html"><b data-i18n="Créditos y licencias">Créditos y licencias</b></a><a class="mitem" href="privacy.html"><b data-i18n="Política de privacidad">Política de privacidad</b></a></div>
@@ -58,6 +60,7 @@
     $("#menu").addEventListener("click", e => { if (e.target.closest("#barOpen, a")) menu(false); });
     $("#chars").addEventListener("click", e => { const b = e.target.closest("[data-slot]"); if (!b) return; menu(false); if (opts.onPick) opts.onPick(+b.dataset.slot); });
     document.addEventListener("keydown", e => { if (e.key === "Escape") menu(false); });
+    $("#barDrive").addEventListener("click", () => { menu(false); if (opts.onDrive) opts.onDrive(); });
     $("#acct").addEventListener("click", () => { if (!root.Cloud || !root.Cloud.user()) { if (root.Cloud) root.Cloud.login(); return; } if (opts.onAccount) opts.onAccount(); });
     if (root.I18N) { root.I18N.apply(host); root.I18N.apply($("#menu")); }
   }
@@ -78,6 +81,7 @@
   }
 
   function showSaveItems(on) { for (const id of ["barOpen", "barSteam"]) { const el = document.getElementById(id); if (el) el.hidden = !on; } }
+  function showDrive(on) { const el = document.getElementById("barDrive"); if (el) el.hidden = !on; }
 
-  root.Shell = { mount, setChars, setUser, showSaveItems, menu };
+  root.Shell = { mount, setChars, setUser, showSaveItems, showDrive, menu };
 })(typeof self !== "undefined" ? self : this);

@@ -77,7 +77,7 @@ async function main(DB, FLAGS, REQS, UNOBT){
   let TAB = "status";
   function showTab(t) { TAB = t; for (const b of document.querySelectorAll(".tab")) b.setAttribute("aria-selected", b.dataset.t === t); for (const s of document.querySelectorAll(".screen")) s.setAttribute("aria-hidden", s.id !== "s-" + t); try { localStorage.setItem("tl.tab", t); } catch (e) {} if (location.hash !== "#" + t) history.replaceState(null, "", "#" + t); }
   // shared header (src/shell.js): account button → account sheet, drawer → pick(); the sheet sets its own tabs below it
-  Shell.mount({ current: "sheet", openFile: true, onPick: slot => { if (SAVE) pick(SAVE.chars.filter(c => !c.error), slot); }, onAccount: openAcct });
+  Shell.mount({ current: "sheet", openFile: true, onPick: slot => { if (SAVE) pick(SAVE.chars.filter(c => !c.error), slot); }, onAccount: openAcct, onDrive: openDrive });
   $("#tabs").addEventListener("click", e => { const b = e.target.closest(".tab"); if (b) { showTab(b.dataset.t); if (b.dataset.t === "advice" && CUR) renderAdvice(CUR); } });
   window.addEventListener("hashchange", () => { const t = location.hash.slice(1); if (document.getElementById("s-" + t)) showTab(t); });
 
@@ -599,7 +599,44 @@ async function main(DB, FLAGS, REQS, UNOBT){
     const before = Marks.all(ck).length;
     Cloud.syncMarks(ck).then(r => { if (r && !r.error && Marks.all(ck).length !== before && CUR === c) renderProgress(c); });
   }
-  function renderAcct() { Shell.setUser(Cloud.user(), Cloud.available()); }
+  function renderAcct() { Shell.setUser(Cloud.user(), Cloud.available()); Shell.showDrive(driveAllowed()); }
+
+  // ---- Google Drive sync (src/drive.js): the browser reads the save from the user's Drive; private beta → moderators only for now
+  const DRIVE_BETA = "admins"; // "admins" | "all"
+  const driveAllowed = () => Drive.configured() && (DRIVE_BETA === "all" || Cloud.isAdmin());
+  const DRV = { timer: null, busy: false, last: "" };
+  const fmtWhen = iso => iso ? new Date(iso).toLocaleString(I18N.locale(), { dateStyle: "medium", timeStyle: "short" }) : "—";
+  async function driveSync(opts) { // opts.force: download even if modifiedTime is unchanged; opts.quiet: no "sin cambios" note
+    opts = opts || {}; if (DRV.busy || !driveAllowed() || !Drive.state()) return; DRV.busy = true;
+    try {
+      const m = await Drive.check();
+      if (!m.changed && !opts.force) { DRV.last = T("Sin cambios en Drive ({0})", fmtWhen(m.modifiedTime)); if (!opts.quiet) note(DRV.last); return; }
+      $("#msg").textContent = T("Descargando la partida de Drive ({0} MB)…", (m.size / 1048576).toFixed(1));
+      const f = await Drive.download(); loadFile(f); DRV.last = T("Partida sincronizada desde Drive ({0})", fmtWhen(m.modifiedTime)); note(DRV.last, true);
+    } catch (e) { DRV.last = T("Drive: {0}", e.message === "token" ? T("hay que volver a dar permiso (abre el menú → Google Drive)") : e.message); note(DRV.last, true); }
+    finally { DRV.busy = false; const st = $("#drvStatus"); if (st) st.textContent = DRV.last; }
+  }
+  function driveAuto() { // every minute while the page is visible, if the user asked for it and a token is at hand (no popups on their own)
+    clearInterval(DRV.timer); DRV.timer = null; const s = Drive.state(); if (!s || !s.auto || !driveAllowed()) return;
+    DRV.timer = setInterval(() => { if (document.visibilityState === "visible" && Drive.hasToken()) driveSync({ quiet: true }); }, 60e3);
+  }
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && Drive.state() && Drive.state().auto && Drive.hasToken()) driveSync({ quiet: true }); });
+  function openDrive() {
+    const s = Drive.state();
+    sheet(`<h3>Google Drive</h3><p class="help">${T("La partida se descarga de tu Drive directamente en este navegador; el servidor de Next Grace nunca la recibe. En el PC, Google Drive para escritorio (o un script) debe mantener el ER0000.sl2 en tu Drive mientras juegas. Permiso pedido: solo el archivo que elijas.")}</p>
+      ${s ? `<div class="row"><div class="n"><b>${esc(s.name)}</b><span class="help"> · ${T("última sincronización: {0}", fmtWhen(s.syncedAt))}</span></div></div>
+      <div class="row"><div class="n">${T("Comprobar cada minuto mientras la web está abierta")}</div><button class="btn" id="drvAuto" aria-pressed="${!!s.auto}">${s.auto ? T("Sí") : T("No")}</button></div>
+      <p class="help" id="drvStatus">${esc(DRV.last)}</p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn primary" id="drvSync">${T("Sincronizar ahora")}</button><button class="btn" id="drvPick">${T("Elegir otro archivo")}</button><button class="btn" id="drvOff">${T("Desconectar")}</button></div>`
+      : `<button class="btn primary" id="drvPick">${T("Conectar y elegir el ER0000.sl2")}</button>`}`);
+    const pick = async () => { try { const r = await Drive.connect(); if (r) { driveAuto(); openDrive(); driveSync({ force: true }); } } catch (e) { note(T("Drive: {0}", e.message), true); } };
+    $("#drvPick").onclick = pick;
+    if (s) {
+      $("#drvSync").onclick = () => driveSync({ force: false });
+      $("#drvAuto").onclick = () => { Drive.setAuto(!Drive.state().auto); driveAuto(); openDrive(); };
+      $("#drvOff").onclick = () => { Drive.disconnect(); driveAuto(); openDrive(); };
+    }
+  }
   function sheet(html) { let s = $("#sheet"); if (!s) { s = document.createElement("div"); s.id = "sheet"; s.className = "sheet frame"; document.body.appendChild(s); } s.innerHTML = html + `<div style="text-align:right;margin-top:10px"><button class="btn" id="sheetClose">${T("Cerrar")}</button></div>`; s.hidden = false; $("#sheetClose").onclick = () => { s.hidden = true; }; return s; }
   async function openAcct() {
     const u = Cloud.user();
@@ -658,7 +695,8 @@ async function main(DB, FLAGS, REQS, UNOBT){
     q.onclick = async e => { const b = e.target.closest("[data-rev]"); if (!b) return; const [a, id] = b.dataset.rev.split("|"); b.disabled = true; await Cloud.review(+id, a); renderModQueue(); };
   }
   $("#acct").addEventListener("click", openAcct);
-  Cloud.init().then(() => { renderAcct(); if (CUR) { cloudSync(CUR); renderDiary(CUR); autoAdvice(CUR); } if (CUR && TAB === "advice") renderAdvice(CUR); if (location.hash === "#status" && Cloud.user() && history.replaceState) { /* back from Steam login */ note(T("Sesión iniciada con Steam.")); } });
+  Cloud.init().then(() => { renderAcct(); driveAuto();
+    if (Drive.state() && driveAllowed()) { if (Drive.hasToken()) { if (Drive.state().auto) driveSync({ quiet: true }); } else { const m = $("#msg"); m.innerHTML = `<button class="lnk" id="drvGo">${T("Sincronizar la partida desde Google Drive")}</button>`; $("#drvGo").onclick = () => { m.textContent = ""; driveSync({ force: false }); }; } } /* a token needs a tap (Google's popup) */ if (CUR) { cloudSync(CUR); renderDiary(CUR); autoAdvice(CUR); } if (CUR && TAB === "advice") renderAdvice(CUR); if (location.hash === "#status" && Cloud.user() && history.replaceState) { /* back from Steam login */ note(T("Sesión iniciada con Steam.")); } });
 
   // last file, if this browser kept it
   Icons.load({ onSite: n => { $("#iconsMsg").textContent = T("{0} iconos del sitio.", n); $("#iconsBtn").textContent = T("Añadir iconos"); }, onPack: n => { $("#iconsMsg").textContent = T("{0} iconos disponibles.", n); } }).then(() => { if (CUR) renderChar(CUR); });
