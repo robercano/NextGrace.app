@@ -51,16 +51,17 @@
     const t = await getToken();
     await script("https://apis.google.com/js/api.js");
     await new Promise(ok => root.gapi.load("picker", ok));
-    const g = root.google.picker;
-    return new Promise(ok => {
+    const g = root.google && root.google.picker; if (!g) throw new Error("picker API not loaded");
+    return new Promise((ok, ko) => {
       const view = new g.DocsView(g.ViewId.DOCS).setIncludeFolders(true).setSelectFolderEnabled(false).setQuery("ER0000");
       const b = new g.PickerBuilder().addView(view).setOAuthToken(t).setTitle("ER0000.sl2").setCallback(d => {
         if (d.action === g.Action.PICKED) { const f = d.docs[0]; const s = { id: f.id, name: f.name, modifiedTime: null, auto: true }; save(s); ok(s); }
         else if (d.action === g.Action.CANCEL) ok(null);
+        else if (d.action === "error") ko(new Error("picker: " + JSON.stringify(d).slice(0, 200)));
       });
       if (cfg().apiKey) b.setDeveloperKey(cfg().apiKey);
       if (cfg().appId) b.setAppId(cfg().appId);
-      b.build().setVisible(true);
+      try { b.build().setVisible(true); } catch (e) { ko(e); }
     });
   }
 

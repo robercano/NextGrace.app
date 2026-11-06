@@ -629,7 +629,7 @@ async function main(DB, FLAGS, REQS, UNOBT){
       <p class="help" id="drvStatus">${esc(DRV.last)}</p>
       <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn primary" id="drvSync">${T("Sincronizar ahora")}</button><button class="btn" id="drvPick">${T("Elegir otro archivo")}</button><button class="btn" id="drvOff">${T("Desconectar")}</button></div>`
       : `<button class="btn primary" id="drvPick">${T("Conectar y elegir el ER0000.sl2")}</button>`}`);
-    const pick = async () => { try { const r = await Drive.connect(); if (r) { driveAuto(); openDrive(); driveSync({ force: true }); } } catch (e) { note(T("Drive: {0}", e.message), true); } };
+    const pick = async () => { const sh = $("#sheet"); if (sh) sh.hidden = true; note(T("Abriendo el selector de Google…")); try { const r = await Drive.connect(); if (r) { driveAuto(); openDrive(); driveSync({ force: true }); } else note(T("Selección cancelada.")); } catch (e) { note(T("Drive: {0}", e.message), true); } };
     $("#drvPick").onclick = pick;
     if (s) {
       $("#drvSync").onclick = () => driveSync({ force: false });
