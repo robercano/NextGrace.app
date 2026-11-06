@@ -625,7 +625,7 @@ async function main(DB, FLAGS, REQS, UNOBT){
     const s = Drive.state();
     sheet(`<h3>Google Drive</h3><p class="help">${T("La partida se descarga de tu Drive directamente en este navegador; el servidor de Next Grace nunca la recibe. En el PC, Google Drive para escritorio (o un script) debe mantener el ER0000.sl2 en tu Drive mientras juegas. Permiso pedido: solo el archivo que elijas.")}</p>
       ${s ? `<div class="row"><div class="n"><b>${esc(s.name)}</b><span class="help"> · ${T("última sincronización: {0}", fmtWhen(s.syncedAt))}</span></div></div>
-      <div class="row"><div class="n">${T("Comprobar cada minuto mientras la web está abierta")}</div><button class="btn" id="drvAuto" aria-pressed="${!!s.auto}">${s.auto ? T("Sí") : T("No")}</button></div>
+      <label class="chk"><input type="checkbox" id="drvAuto"${s.auto ? " checked" : ""}> ${T("Comprobar cada minuto mientras la web está abierta y recargar la ficha si hay una partida nueva")}</label>
       <p class="help" id="drvStatus">${esc(DRV.last)}</p>
       <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn primary" id="drvSync">${T("Sincronizar ahora")}</button><button class="btn" id="drvPick">${T("Elegir otro archivo")}</button><button class="btn" id="drvOff">${T("Desconectar")}</button></div>`
       : `<button class="btn primary" id="drvPick">${T("Conectar y elegir el ER0000.sl2")}</button>`}`);
@@ -633,7 +633,7 @@ async function main(DB, FLAGS, REQS, UNOBT){
     $("#drvPick").onclick = pick;
     if (s) {
       $("#drvSync").onclick = () => driveSync({ force: false });
-      $("#drvAuto").onclick = () => { Drive.setAuto(!Drive.state().auto); driveAuto(); openDrive(); };
+      $("#drvAuto").onchange = e => { Drive.setAuto(e.target.checked); driveAuto(); };
       $("#drvOff").onclick = () => { Drive.disconnect(); driveAuto(); openDrive(); };
     }
   }
