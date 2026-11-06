@@ -474,7 +474,7 @@ async function main(DB, FLAGS, REQS, UNOBT){
     }
     close(); return out.join("");
   }
-  const ADV = { busy: false, key: null, status: "", err: null, linker: null, queue: [], gate: null, follow: null }; // follow: char whose server-side job this page is watching
+  const ADV = { busy: false, key: null, status: "", err: null, linker: null, queue: [], gate: null, follow: null, retried: {} }; // follow: char whose server-side job this page is watching
   // Turn known place / boss / grace names inside the report into links to the map (longest names first).
   async function reportLinker() {
     if (ADV.linker) return ADV.linker;
@@ -521,6 +521,7 @@ async function main(DB, FLAGS, REQS, UNOBT){
     if (r.running && !mine) ADV.follow = ck;
     const when = r.advice ? new Date(r.advice.created_at.replace(" ", "T") + "Z").toLocaleString(I18N.locale(), { dateStyle: "medium", timeStyle: "short" }) : null;
     const same = r.advice && !r.stale; // the report already matches this save: another run only gives a variant
+    if (same && ADV.key === ck) ADV.err = null; // a fresh report makes any earlier failure moot (e.g. the stream dropped but the server finished)
     const canRefresh = r.configured && !busy && (Cloud.isAdmin() || (r.cooldown === 0 && r.used < r.cap));
     const why = !r.configured ? T("El consejero no está configurado en el servidor (falta la clave de la API).") : r.globalFull && !Cloud.isAdmin() ? T("El consejero ha agotado el cupo compartido de hoy; vuelve mañana.") : r.cooldown > 0 && !Cloud.isAdmin() ? T("Podrás pedir otro informe en {0} h.", Math.ceil(r.cooldown / 3600)) : r.used >= r.cap && !Cloud.isAdmin() ? T("Has llegado al máximo diario de informes.") : r.stale && r.advice && !busy ? T("Has abierto una partida más reciente que la de este informe.") : "";
     const status = mine ? ADV.status : r.running ? T("El informe se está generando en el servidor (lo pidió otra pestaña, otro dispositivo o esta página antes de recargarse)… {0} s", r.running.seconds) + (r.running.progress ? " · " + T("{0} caracteres escritos", r.running.progress) : "") : "";
@@ -575,7 +576,9 @@ async function main(DB, FLAGS, REQS, UNOBT){
       try { x = await Cloud.adviceRefresh(ck, o => { const sec = Math.round((Date.now() - t0) / 1000); advStatus(o.progress ? T("Claude está escribiendo el informe… ({0} s)", sec) : T("Claude está pensando… ({0} s)", sec)); }, { force: !!opts.force, auto: !!opts.auto }); } catch (e) { x = { error: String(e && e.message || e) }; }
     }
     ADV.busy = false;
-    if (x && x.error) { ADV.err = opts.auto && (x.status === 429 || x.error === "login") ? null : (ERR_ES[x.error] || x.error); }
+    const netErr = x && x.error && !x.status && /network|fetch|load failed|abort/i.test(String(x.error));
+    if (netErr && (ADV.retried[ck] || 0) < 1) { ADV.retried[ck] = 1; ADV.err = null; ADV.follow = ck; } // the stream dropped (phone changed network…): the server may still finish — follow the job instead of failing
+    else if (x && x.error) { ADV.err = opts.auto && (x.status === 429 || x.error === "login") ? null : (ERR_ES[x.error] || x.error); }
     else { ADV.err = null; if (x && x.advice && !(CUR === c && TAB === "advice")) note(T("Informe del consejero listo."), true); }
     if (CUR === c && TAB === "advice") renderAdvice(c);
     const next = ADV.queue.shift(); if (next) generateAdvice(next, { auto: true });
