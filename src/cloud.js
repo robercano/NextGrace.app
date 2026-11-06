@@ -62,6 +62,7 @@
     async history(charKey) { const r = await api("/history/" + encodeURIComponent(charKey)); return r.history || []; },
     // Advisor (server-side report cached in the account)
     async advice(charKey) { return api("/advice/" + encodeURIComponent(charKey) + "?lang=" + (root.I18N ? root.I18N.lang : "es")); },
+    async adviceContext(charKey) { return api("/advice/" + encodeURIComponent(charKey) + "?ctx=1&lang=" + (root.I18N ? root.I18N.lang : "es")); },
     // POST streams ndjson: {beat}/{progress} lines while the model works, then {advice} or {error}
     // opts: {force} regenerate even if the save is unchanged ("another opinion"); {auto} started by the app after uploading a save.
     // Non-stream answers: {advice, unchanged} (same save) or {running:{seconds}} (a job is already in progress: poll advice()).

@@ -63,7 +63,8 @@ Enable it:
 1. Run `db/migrations/002_advice.sql` in the D1 *Console* (the full `schema.sql` includes it too).
 2. *Worker → Settings → Variables and secrets → Add → Secret*: `ANTHROPIC_API_KEY` with a key from [console.anthropic.com](https://console.anthropic.com/). Optional: variable `ADVICE_MODEL` (default `claude-opus-5-5`; Sonnet 5.5 needs a 16k token budget and often returns nothing; compare models with `tools/lab/advice_lab.mjs`).
 3. **Who may use it**: only Steam accounts that own Elden Ring (checked at login with the Steam Web API) or accounts a moderator activates by hand. Create a key at https://steamcommunity.com/dev/apikey (domain: your site) and add it as the secret `STEAM_API_KEY`; without it everybody gets the manual-request screen. Optional secret `ADMIN_EMAIL` (a verified Email Routing destination) to be e-mailed about activation requests (binding `EMAIL` in `wrangler.toml`). Caps: 1 h per character, 5 reports/day per user, 60/day for everybody (`functions/api/advice/[char_key].js`). Set a monthly spend limit in the Anthropic console and a rate-limiting rule on `/api/advice*` in Cloudflare as backstops.
-4. Locally, `npx wrangler dev --var ADVICE_MOCK:1` returns a fake report with the context that would be sent to the model (field `ctx`), handy to review the prompt without spending.
+4. *Ask an AI yourself* (moderators during the beta, `ASK_BETA` in `src/app.js`): `GET /api/advice/:char_key?ctx=1` returns the advisor's context as text (no model call, no gate: the user's own data) and the sheet packs it with the current report for the user's own chat (claude.ai/new?q=… with a trimmed copy, or the clipboard with everything).
+5. Locally, `npx wrangler dev --var ADVICE_MOCK:1` returns a fake report with the context that would be sent to the model (field `ctx`), handy to review the prompt without spending.
 
 ## Google Drive sync (optional, moderators only during the beta)
 

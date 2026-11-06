@@ -149,9 +149,15 @@ async function usageAll(context) {
 
 export const onRequestGet = handler(async context => {
   const u = await requireUser(context); const ck = decode(context.params.char_key);
+  const lang = new URL(context.request.url).searchParams.get("lang") === "en" ? "en" : "es";
+  if (new URL(context.request.url).searchParams.get("ctx")) { // the context the advisor would get, as text, for "ask an AI yourself" (no model call, so no gate: it is the user's own data)
+    const row = await own(context, u, ck); const S = JSON.parse(row.summary || "{}");
+    const [FLAGS, PROG] = await Promise.all([asset(context, "/data/flags.json"), asset(context, "/data/progression.json")]);
+    const a = await context.env.DB.prepare("SELECT text, created_at FROM advice WHERE char_key = ?").bind(ck).first();
+    return json({ context: buildContext(row, S, FLAGS, PROG), advice: a ? a.text : null, adviceAt: a ? a.created_at : null });
+  }
   if (!advisorEnabled(u, context.env)) return json({ enabled: false, advisor: u.advisor, configured: !!(context.env.ANTHROPIC_API_KEY || context.env.ADVICE_MOCK) });
   const row = await own(context, u, ck);
-  const lang = new URL(context.request.url).searchParams.get("lang") === "en" ? "en" : "es";
   const a = await context.env.DB.prepare("SELECT text, model, hash, created_at FROM advice WHERE char_key = ?").bind(ck).first();
   const hash = await hashOf(row.summary, lang);
   const used = await usage(context, u.steamid);

@@ -512,7 +512,7 @@ async function main(DB, FLAGS, REQS, UNOBT){
     el.innerHTML = `<p class="help">${T("Cargando…")}</p>`;
     const r = await Cloud.advice(ck); if (CUR !== c) return;
     if (r.error) { el.innerHTML = `<div class="pane frame"><p class="help">${esc(r.status === 404 ? T("Este personaje aún no está en tu cuenta: vuelve a abrir el .sl2 con la sesión iniciada.") : (ERR_ES[r.error] || r.error))}</p></div>`; return; }
-    if (r.enabled === false) { renderAdvisorGate(c, el); return; }
+    if (r.enabled === false) { renderAdvisorGate(c, el); if (askAllowed()) el.insertAdjacentHTML("beforeend", askPane()); wireAsk(c); return; }
     if (r.globalFull && !Cloud.isAdmin()) r.cooldown = r.cooldown || 1; // the shared daily budget is spent: no button today
     const mine = ADV.busy && ADV.key === ck, busy = mine || !!r.running;
     // We were watching a job started elsewhere and it is gone without a fresh report: the Worker that ran it died (the browser
@@ -530,13 +530,41 @@ async function main(DB, FLAGS, REQS, UNOBT){
       ${why ? `<p class="help">${esc(why)}</p>` : ""}
       ${same && !busy ? `<p class="help">${T("Este informe ya corresponde a la partida abierta; se genera solo cuando abres un save nuevo.")}</p>` : ""}
       ${ADV.err && ADV.key === ck ? `<p class="err">${T("No se pudo generar el informe: {0}", esc(ADV.err))}</p>` : ""}
-      ${r.advice ? `<div class="pane frame md">${md(r.advice.text)}</div>` : ""}`;
+      ${r.advice ? `<div class="pane frame md">${md(r.advice.text)}</div>` : ""}${askAllowed() ? askPane() : ""}`;
+    wireAsk(c);
     if (r.advice) { const link = await reportLinker(); const box = el.querySelector(".md"); if (box && CUR === c) { for (const n of [...box.querySelectorAll("h2, p, li")]) n.innerHTML = link(n.innerHTML); } }
     if (r.running && !mine) setTimeout(() => { if (CUR === c && TAB === "advice" && !(ADV.busy && ADV.key === ck)) renderAdvice(c); }, 5000); // follow a job started elsewhere
     $("#advRefresh").onclick = () => {
       if (same && !confirm(T("El informe ya corresponde a esta partida: generar otro solo dará una variante y cuenta para el cupo diario. ¿Generar de todos modos?"))) return;
       generateAdvice(c, { force: !!same });
     };
+  }
+  // ---- "Ask an AI yourself": the advisor's context (and the current report) packed as text for the user's own chat (claude.ai with
+  // the prompt prefilled, or the clipboard for any AI). Costs the site nothing: the user's own subscription pays. Beta: moderators.
+  const ASK_BETA = "admins"; // "admins" | "all"
+  const askAllowed = () => Cloud.user() && (ASK_BETA === "all" || Cloud.isAdmin());
+  const ASK_URL_MAX = 7000; // claude.ai/new?q= takes a few KB; the clipboard takes everything
+  function askPane() {
+    return `<div class="pane frame ask"><h3>${T("Pregunta tú a una IA")}</h3><p class="help">${T("Prepara el estado de este personaje (lo mismo que recibe el consejero, más el informe actual) para pegarlo en tu propio chat. Con tu suscripción, no con la clave del sitio.")}</p>
+      <textarea id="askQ" rows="2" placeholder="${esc(T("Tu pregunta (opcional): p. ej. «¿qué me conviene hacer antes de entrar en Leyndell?»"))}"></textarea>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button class="btn primary" id="askClaude">${T("Abrir en Claude")}</button><button class="btn" id="askCopy">${T("Copiar contexto")}</button></div>
+      <p class="help" id="askMsg">${T("«Abrir en Claude» lleva un resumen (el enlace tiene límite); «Copiar» lleva todo, informe incluido, para pegarlo donde quieras.")}</p></div>`;
+  }
+  async function askText(c, full) {
+    const r = await Cloud.adviceContext(Marks.charKey(c)); if (!r || r.error) throw new Error(r && r.error || "no context");
+    const q = ($("#askQ") && $("#askQ").value.trim()) || "";
+    const pre = I18N.lang === "en" ? "You are my Elden Ring advisor. Below is the real state of my character, read from my save by Next Grace (nextgrace.app). Use it to answer; don't invent items I don't have. No story spoilers."
+      : "Eres mi consejero de Elden Ring. Abajo va el estado real de mi personaje, leído de mi partida por Next Grace (nextgrace.app). Úsalo para responder; no inventes objetos que no tengo. Sin spoilers de la historia.";
+    let ctx = r.context || "";
+    if (!full && ctx.length > ASK_URL_MAX) ctx = ctx.slice(0, ASK_URL_MAX) + "\n…";
+    const rep = full && r.advice ? "\n\n" + (I18N.lang === "en" ? "Latest report from the site's advisor" : "Último informe del consejero del sitio") + ":\n" + r.advice : "";
+    const ask = q ? "\n\n" + (I18N.lang === "en" ? "My question: " : "Mi pregunta: ") + q : "\n\n" + (I18N.lang === "en" ? "Say \"ready\" and wait for my question." : "Di «listo» y espera mi pregunta.");
+    return pre + "\n\n" + ctx + rep + ask;
+  }
+  function wireAsk(c) {
+    const a = $("#askClaude"), b = $("#askCopy"); if (!a) return;
+    a.onclick = async () => { const w = window.open("", "_blank"); /* opened on the tap, before the await, or the browser blocks it */ try { const t = await askText(c, false); const u = "https://claude.ai/new?q=" + encodeURIComponent(t); if (w) w.location = u; else location.href = u; } catch (e) { if (w) w.close(); $("#askMsg").textContent = T("No se pudo preparar el contexto: {0}", e.message); } };
+    b.onclick = async () => { try { const t = await askText(c, true); await navigator.clipboard.writeText(t); $("#askMsg").textContent = T("Copiado ({0} caracteres). Pégalo en tu chat.", t.length); } catch (e) { $("#askMsg").textContent = T("No se pudo copiar: {0}", e.message); } };
   }
   // The advisor spends the site's Claude key, so it is only for accounts that own Elden Ring on Steam (checked with the Steam Web
   // API at login) or that a moderator activated by hand. This screen explains the state and offers the re-check and the request.
