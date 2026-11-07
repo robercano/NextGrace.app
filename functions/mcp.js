@@ -55,7 +55,7 @@ class RpcError extends Error { constructor(code, message) { super(message); this
 
 async function handle(context, u, method, params) {
   switch (method) {
-    case "initialize": return { protocolVersion: PROTOCOL, capabilities: { tools: { listChanged: false } }, serverInfo: { name: "Next Grace", version: VERSION }, instructions: "Next Grace holds summaries of the user's Elden Ring characters read from their PC save. Start with list_characters, then get_character for the one they mean. Item, boss and place names are the English ones (as on the wiki). To draw a route on the user's map use find_places for exact names, then set_route. Avoid story spoilers." };
+    case "initialize": return { protocolVersion: PROTOCOL, capabilities: { tools: { listChanged: false } }, serverInfo: { name: "Next Grace", version: VERSION }, instructions: "Next Grace holds summaries of the user's Elden Ring characters read from their PC save. Start with list_characters, then get_character for the one they mean. Item, boss and place names are the English ones (as on the wiki). To draw a route on the user's map use find_places for exact names and prefer the ones marked "pinned" (many sites of grace have no coordinates in the map data: pick the dungeon, church, ruin or boss next to them instead), then set_route. Avoid story spoilers." };
     case "ping": return {};
     case "tools/list": return { tools: TOOLS };
     case "tools/call": {
@@ -129,8 +129,12 @@ const tools = {
     const idx = await stopIndex(context); const P = await asset(context, "/data/places.json"); const byName = new Map(P.places.map(p => [p.name.toLowerCase(), p]));
     const q = String(a.query || "").toLowerCase().trim(); if (!q) throw new ToolError("query is required");
     const limit = Math.min(Math.max(a.limit | 0 || 15, 1), 50); const out = [];
-    for (const v of idx.values()) { if (!v.name.toLowerCase().includes(q)) continue; const p = byName.get(v.name.toLowerCase()); const layer = p ? ((p.layer || "").includes("GUGR") ? "underground" : (p.layer || "").includes("SOTE") ? "DLC" : "overworld") : "?"; out.push(`- ${v.name} (${v.kind}, ${layer}${p && p.region ? ", region" : ""})`); if (out.length >= limit) break; }
-    return out.length ? out.join("\n") : "No place matches.";
+    const rows = [];
+    for (const v of idx.values()) { if (!v.name.toLowerCase().includes(q)) continue; const p = byName.get(v.name.toLowerCase()); const pinned = !!(p && !p.region);
+      const layer = p ? ((p.layer || "").includes("GUGR") ? "underground" : (p.layer || "").includes("SOTE") ? "DLC" : "overworld") : "-";
+      rows.push({ pinned, line: `- ${v.name} (${v.kind}${pinned ? ", " + layer + ", pinned" : p && p.region ? ", region name: no pin" : ", no coordinates: listed but not pinned"})` }); }
+    rows.sort((a, b) => b.pinned - a.pinned); const out = rows.slice(0, limit).map(r => r.line);
+    return out.length ? out.join("\n") + "\n(Prefer pinned names for route stops; a stop without coordinates is shown in the list but not on the map.)" : "No place matches.";
   },
   async get_route(context, u, a) {
     const row = await charRow(context, u, a.char_key); const r = await getRoute(context.env, row.char_key);
@@ -143,8 +147,9 @@ const tools = {
     if (a.stops.length > MAX_STOPS) throw new ToolError(`at most ${MAX_STOPS} stops`);
     let stops; try { stops = cleanStops(await stopIndex(context), a.stops); } catch (e) { throw new ToolError("no usable stops"); }
     await putRoute(context.env, row.char_key, u.steamid, { title: a.title || "", stops, source: "mcp" });
-    const unknown = stops.filter(s => s.kind === "text").map(s => s.name);
-    return `Route saved with ${stops.length} stops; the user sees it on the map.` + (unknown.length ? ` These names matched no map place and are listed without a pin: ${unknown.join(", ")} (use find_places for exact names).` : "");
+    const P = await asset(context, "/data/places.json"); const pinnable = new Set(P.places.filter(p => !p.region).map(p => p.name.toLowerCase()));
+    const unpinned = stops.filter(s => !pinnable.has(s.name.toLowerCase())).map(s => s.name);
+    return `Route saved with ${stops.length} stops; the user sees it on the map.` + (unpinned.length ? ` Listed without a map pin (no coordinates for them): ${unpinned.join(", ")}. Use find_places and prefer "pinned" names.` : "");
   },
   async add_stop(context, u, a) {
     needWrite(u); const row = await charRow(context, u, a.char_key); const r = (await getRoute(context.env, row.char_key)) || { title: "", stops: [], source: "mcp" };

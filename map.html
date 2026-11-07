@@ -286,7 +286,8 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   }
   // ---- Route: ordered stops from the account (advisor / user / agent), pinned by name and listed in a panel (functions/_routes.js)
   let ROUTE = null, routeMin = false; try { routeMin = localStorage.getItem("tl.routeMin") === "1"; } catch (e) {}
-  const resolveStop = s => { let p = findPlace(s.name); if (!p) { const b = F.bosses.find(x => x.name.toLowerCase() === s.name.toLowerCase()); if (b) p = findPlace(b.region) || null; } if (!p) { const g = F.graces.find(x => x.name.toLowerCase() === s.name.toLowerCase()); if (g) p = findPlace(g.name) || findPlace(g.region) || null; } return p; };
+  // a stop is pinned only at a place with its own coordinates: a region label (lakes, deserts…) would be a false pin
+  const resolveStop = s => { const p = findPlace(s.name); return p && !p.region ? p : null; };
   function drawRoute() {
     routeLayer.clearLayers(); const box = $("#route");
     if (!ROUTE || !ROUTE.stops || !ROUTE.stops.length) { box.hidden = true; return; }
