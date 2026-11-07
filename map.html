@@ -72,6 +72,19 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
 .legend .pin{box-shadow:none}
 .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
 .wrap{position:relative;flex:1;min-height:0;display:flex;flex-direction:column}
+.route{position:absolute;left:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:800;background:#0b0a0ae6;border:1px solid var(--gold-dim);width:min(340px,calc(100vw - 20px));max-height:46%;display:flex;flex-direction:column;font-size:.85rem}
+.route h4{margin:0;padding:8px 10px;font:600 .8rem/1.2 var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:8px;cursor:pointer}
+.route h4 span{flex:1}.route h4 small{font:inherit;color:var(--fg-2);text-transform:none;letter-spacing:0}
+.route ol{margin:0;padding:0 10px 8px;list-style:none;overflow:auto}
+.route li{display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-top:1px solid var(--line)}
+.route li input{accent-color:var(--gold);margin-top:2px;flex:none}
+.route li .n{flex:1;cursor:pointer}.route li .n b{display:block}.route li .n i{display:block;font-style:normal;color:var(--fg-2)}
+@media (max-width:600px){.wrap:has(.route:not([hidden])) .legend{display:none}.route{max-height:42%}}
+.route li.done .n{opacity:.5;text-decoration:line-through}.route li.text .n{opacity:.7}
+.route .rt{display:flex;gap:6px;padding:0 10px 8px}.route .rt .btn{padding:4px 8px;font-size:.78rem}
+.route.min ol,.route.min .rt{display:none}
+.rpin{width:24px;height:24px;border-radius:50%;background:var(--gold);color:#000;font:700 12px/24px var(--body);text-align:center;border:2px solid #000c;box-shadow:0 0 0 1px #fff6}
+.rpin.done{background:#6b6657;color:#000}
 </style>
 </head>
 <body>
@@ -103,6 +116,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   <div id="map"></div>
   <div class="hint" id="hint" hidden data-i18n="Toca el mapa donde está el objeto.">Toca el mapa donde está el objeto</div>
   <div class="legend" id="legend"></div>
+  <div class="route" id="route" hidden></div>
 </div>
 
 <div class="sheet" id="sheet" hidden>
@@ -178,8 +192,9 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   let bgLayer = null;
   function setBg(k) { if (bgLayer) map.removeLayer(bgLayer); bgLayer = L.imageOverlay(bgs[k], bounds).addTo(map); }
   setBg("tlb"); map.fitBounds(bounds);
-  $("#layerSel").onchange = e => { setBg(e.target.value); render(); };
+  $("#layerSel").onchange = e => { setBg(e.target.value); render(); drawRoute(); };
   const layers = { grace: L.layerGroup().addTo(map), boss: L.layerGroup().addTo(map), place: L.layerGroup(), miss: L.layerGroup().addTo(map), user: L.layerGroup().addTo(map) };
+  const routeLayer = L.layerGroup().addTo(map);
   const vis = { grace: true, boss: true, place: false, miss: true, user: true };
   // filters from the URL hash (set by the progress tab): l=grace,boss,... s=todo|done|all t=main|field|rem q=text
   let state = "all", bossType = null, hashQ = "";
@@ -268,6 +283,36 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
       L.marker([m.y, m.x], { icon: pin("user" + (m.status === "pending" ? " todo" : ""), "user") }).bindPopup(`<div class="popup"><h4>${m.item ? wl(m.item) : T("Marcador")}</h4><div class="m">${esc(m.note || "")}${own ? " · " + T("ya lo tienes") : ""}${m.by ? " · " + T("por {0}", esc(m.by)) : ""}${st}</div></div>`).addTo(layers.user); }
     for (const k in layers) { if (vis[k]) map.addLayer(layers[k]); else map.removeLayer(layers[k]); }
   }
+  // ---- Route: ordered stops from the account (advisor / user / agent), pinned by name and listed in a panel (functions/_routes.js)
+  let ROUTE = null, routeMin = false; try { routeMin = localStorage.getItem("tl.routeMin") === "1"; } catch (e) {}
+  const resolveStop = s => { let p = findPlace(s.name); if (!p) { const b = F.bosses.find(x => x.name.toLowerCase() === s.name.toLowerCase()); if (b) p = findPlace(b.region) || null; } if (!p) { const g = F.graces.find(x => x.name.toLowerCase() === s.name.toLowerCase()); if (g) p = findPlace(g.name) || findPlace(g.region) || null; } return p; };
+  function drawRoute() {
+    routeLayer.clearLayers(); const box = $("#route");
+    if (!ROUTE || !ROUTE.stops || !ROUTE.stops.length) { box.hidden = true; return; }
+    const layer = $("#layerSel").value, pts = [];
+    ROUTE.stops.forEach((s, i) => { const p = resolveStop(s); s._p = p; if (!p || layerOf(p) !== layer) return;
+      const m = L.marker(at(p), { icon: L.divIcon({ className: "", html: `<div class="rpin${s.done ? " done" : ""}">${i + 1}</div>`, iconSize: [24, 24], iconAnchor: [12, 12] }), zIndexOffset: 1000 });
+      m.bindPopup(`<div class="popup"><h4>${i + 1}. ${esc(s.name)}</h4><div class="m">${esc(s.why || "")}</div></div>`); routeLayer.addLayer(m); pts.push(at(p)); });
+    if (pts.length > 1) routeLayer.addLayer(L.polyline(pts, { color: "#d4b35a", weight: 2, opacity: .8, dashArray: "6 6" }));
+    const done = ROUTE.stops.filter(s => s.done).length;
+    box.hidden = false; box.className = "route" + (routeMin ? " min" : "");
+    box.innerHTML = `<h4 id="routeH"><span>${esc(ROUTE.title || T("Ruta"))}</span><small>${done}/${ROUTE.stops.length}${ROUTE.source === "advisor" ? " · " + T("del consejero") : ""}</small><small>${routeMin ? "▴" : "▾"}</small></h4>
+      <ol>${ROUTE.stops.map((s, i) => `<li class="${s.done ? "done" : ""}${s._p ? "" : " text"}"><input type="checkbox" data-i="${i}"${s.done ? " checked" : ""}><div class="n" data-go="${i}"><b>${i + 1}. ${esc(s.name)}</b>${s.why ? `<i>${esc(s.why)}</i>` : ""}${s._p ? "" : `<i>${T("(sin coordenadas en el mapa)")}</i>`}</div></li>`).join("")}</ol>
+      <div class="rt"><button class="btn" id="routeFit">${T("Ver toda la ruta")}</button><button class="btn" id="routeDel">${T("Borrar ruta")}</button></div>`;
+    $("#routeH").onclick = () => { routeMin = !routeMin; try { localStorage.setItem("tl.routeMin", routeMin ? "1" : "0"); } catch (e) {} drawRoute(); };
+    box.querySelectorAll("input[data-i]").forEach(cb => cb.onchange = async () => { const i = +cb.dataset.i; ROUTE.stops[i].done = cb.checked; drawRoute(); const r = await Cloud.routeDone(Marks.charKey(CUR), i, cb.checked); if (r && r.route) { ROUTE = r.route; drawRoute(); } });
+    box.querySelectorAll("[data-go]").forEach(el => el.onclick = () => { const s = ROUTE.stops[+el.dataset.go]; const p = s._p; if (!p) return; const lay = layerOf(p); if ($("#layerSel").value !== lay) { $("#layerSel").value = lay; setBg(lay); render(); drawRoute(); } map.setView(at(p), 0, { animate: true }); });
+    $("#routeFit").onclick = () => { const ps = ROUTE.stops.map(s => s._p).filter(p => p && layerOf(p) === $("#layerSel").value).map(at); if (ps.length) map.fitBounds(L.latLngBounds(ps).pad(0.3)); };
+    $("#routeDel").onclick = async () => { if (!confirm(T("¿Borrar la ruta de este personaje?"))) return; await Cloud.routeDelete(Marks.charKey(CUR)); ROUTE = null; drawRoute(); };
+  }
+  async function loadRoute(fit) {
+    if (!Cloud.user() || !CUR) { ROUTE = null; drawRoute(); return; }
+    const r = await Cloud.route(Marks.charKey(CUR)); const next = r && r.route || null;
+    if (JSON.stringify(next) === JSON.stringify(ROUTE && { ...ROUTE, stops: ROUTE.stops.map(s => { const { _p, ...o } = s; return o; }) })) return;
+    ROUTE = next; drawRoute(); if (fit && ROUTE) { const first = ROUTE.stops.map(resolveStop).find(Boolean); if (first) { const lay = layerOf(first); if ($("#layerSel").value !== lay) { $("#layerSel").value = lay; setBg(lay); render(); } drawRoute(); $("#routeFit").click(); } }
+  }
+  setInterval(() => { if (document.visibilityState === "visible") loadRoute(false); }, 30000); // an agent (MCP) may change the route while the map is open
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") loadRoute(false); });
   (function buildPlaceTypes() {
     const cnt = {}; for (const p of P.places) { if (p.region) continue; const k = GROUP_KIND[p.group] || "place"; cnt[k] = (cnt[k] || 0) + 1; }
     const kinds = Object.keys(cnt).filter(k => k !== "grace").sort((a, b) => cnt[b] - cnt[a]);
@@ -281,7 +326,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   document.addEventListener("click", e => { const b = e.target.closest("[data-mark]"); if (!b || !CUR) return; const [k, id] = b.dataset.mark.split("|"); const on = Marks.toggle(Marks.charKey(CUR), k, id); if (Cloud.user()) (on ? Cloud.syncMarks(Marks.charKey(CUR)) : Cloud.removeMark(Marks.charKey(CUR), k, id)); map.closePopup(); render(); });
   for (const b of document.querySelectorAll(".chip[data-l]")) b.onclick = () => { const k = b.dataset.l; vis[k] = !vis[k]; b.setAttribute("aria-pressed", vis[k]); if (k === "user" && vis[k]) openUser(); if (k === "place") $("#placeTypes").hidden = !vis[k]; render(); };
   $("#q").oninput = e => { q = e.target.value.trim().toLowerCase(); render(); };
-  sel.onchange = () => { CUR = chars[+sel.value]; try { localStorage.setItem("tl.cur", String(CUR.slot)); } catch (e) {} render(); syncMarks(); };
+  sel.onchange = () => { CUR = chars[+sel.value]; try { localStorage.setItem("tl.cur", String(CUR.slot)); } catch (e) {} render(); syncMarks(); loadRoute(false); };
 
   // ---- editor --------------------------------------------------------------
   $("#items").innerHTML = CATALOG.map(i => `<option value="${esc(i.name)}">`).join("");
@@ -308,6 +353,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   $("#legend").innerHTML = [["grace todo", "grace", "gracia pendiente"], ["grace", "grace", "visitada"], ["boss todo", "boss", "jefe pendiente"], ["boss", "boss", "vencido"], ["miss", "weapon", "objetos que te faltan"], ["place seen", "cave", "lugar visitado"], ["place todo", "cave", "lugar pendiente"], ["place", "cave", "lugar sin datos"], ["user", "user", "añadido"]].map(([c, k, t0]) => [c, k, T(t0)]).map(([c, k, t]) => `<span><span class="pin ${c}" style="display:inline-flex;width:16px;height:16px;vertical-align:middle;margin-right:5px">${glyph(k, 10)}</span>${t}</span>`).join("");
   render();
   syncMarks();
+  loadRoute(new URLSearchParams(location.hash.slice(1)).get("route") === "1"); // #route=1 (from the report): open on the route
   // #focus=<name>: centre on a place (from the report or the progress lists); bosses and graces resolve to their place
   (function focus() {
     const h = new URLSearchParams(location.hash.slice(1)); const name = h.get("focus"); if (!name) return;

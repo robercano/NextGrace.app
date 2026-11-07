@@ -44,7 +44,7 @@ The site is deployed as a **Cloudflare Worker with static assets** (`wrangler.to
 
 What the account stores: public Steam identity (SteamID, name, avatar), a summary per character (level, class, playtime, attributes, gear, progress, ids of the items you own; never the `.sl2`), your manual marks, the markers you propose and the advisor's reports. A character belongs to the Steam account that owns the save (`char_key = <steamid>:<slot>`), so nobody can sync marks of someone else's character. Users can delete their account and all its data from the account sheet.
 
-API: `GET|DELETE /api/me`, `PUT /api/characters`, `GET|PUT /api/marks/:char_key`, `GET|POST /api/markers`, `DELETE /api/markers/:id`, `GET|POST /api/admin/markers`, `GET|POST /api/advice/:char_key`, `GET /api/history/:char_key`, `GET /api/auth/steam` → `/api/auth/callback`, `POST /api/auth/logout`, `GET /api/health`. Session: cookie `tl_session` (HttpOnly, 30 days; only its hash is stored). Handlers follow the Pages Functions shape, so the same code works if the project is deployed as Pages (`functions/` folder).
+API: `GET|DELETE /api/me`, `PUT /api/characters`, `GET|PUT /api/marks/:char_key`, `GET|POST /api/markers`, `DELETE /api/markers/:id`, `GET|POST /api/admin/markers`, `GET|POST /api/advice/:char_key`, `GET|PUT|PATCH|DELETE /api/route/:char_key`, `GET /api/history/:char_key`, `GET /api/auth/steam` → `/api/auth/callback`, `POST /api/auth/logout`, `GET /api/health`. Session: cookie `tl_session` (HttpOnly, 30 days; only its hash is stored). Handlers follow the Pages Functions shape, so the same code works if the project is deployed as Pages (`functions/` folder).
 
 Local development with the API (local D1 under `.wrangler/`):
 
@@ -71,6 +71,8 @@ Enable it:
 `src/drive.js`: the browser reads `ER0000.sl2` from the user's own Google Drive (OAuth scope `drive.file` + Google Picker: only the picked file), checks its `modifiedTime` every minute while the page is open and reloads the sheet when it changed; the Worker never sees the file or the token. On the PC, Google Drive for desktop syncs the save folder. Setup: a Google Cloud project with the Drive API and Picker API enabled, an OAuth client id (Web, origin `https://nextgrace.app`) and an API key, written in `src/site.js` (`SITE.google`; public identifiers, not secrets). `DRIVE_BETA` in `src/app.js` limits the menu item to moderators until the OAuth app is verified.
 
 ## Map
+
+**Routes**: an ordered list of stops per character (`functions/_routes.js`, table `routes`), written by the advisor (its report ends with a ```` ```route ```` block that is split off and stored), by the user (map panel: tick, delete) or, later, by an agent through MCP. Stop names are matched against graces, bosses and map places; unmatched names are listed without a pin. The map pins them with numbers, draws the order and refreshes every 30 s while open; the advisor tab links to it (`map.html#route=1`).
 
 `map.html` uses the markers of the [eldenring.wiki.gg](https://eldenring.wiki.gg) interactive map (`tools/fetch_map.py` → `data/map.json`, CC BY-SA 4.0) and places every item you are missing at the place named in its location text (`tools/build_places.py` → `data/places.json`). Markers you add are kept in your browser and, when signed in, sent to the community map (visible to everyone once a moderator approves them). The map backgrounds (`icons/map/*.webp`) are game art, served from R2 like the icons (never committed).
 

@@ -510,7 +510,8 @@ async function main(DB, FLAGS, REQS, UNOBT){
     if (!Cloud.user()) { el.innerHTML = `<div class="pane frame"><p class="help">${T("Entra con Steam (botón de cuenta, arriba) y abre tu .sl2 una vez: el consejero trabaja sobre el resumen del personaje guardado en tu cuenta.")}</p><button class="btn primary" id="advLogin">${T("Entrar con Steam")}</button></div>`; $("#advLogin").onclick = () => Cloud.login(); return; }
     const ck = Marks.charKey(c);
     el.innerHTML = `<p class="help">${T("Cargando…")}</p>`;
-    const r = await Cloud.advice(ck); if (CUR !== c) return;
+    const [r, rt] = await Promise.all([Cloud.advice(ck), Cloud.route(ck).catch(() => null)]); if (CUR !== c) return;
+    const route = rt && rt.route && rt.route.stops && rt.route.stops.length ? rt.route : null;
     if (r.error) { el.innerHTML = `<div class="pane frame"><p class="help">${esc(r.status === 404 ? T("Este personaje aún no está en tu cuenta: vuelve a abrir el .sl2 con la sesión iniciada.") : (ERR_ES[r.error] || r.error))}</p></div>`; return; }
     if (r.enabled === false) { renderAdvisorGate(c, el); if (askAllowed()) el.insertAdjacentHTML("beforeend", askPane()); wireAsk(c); return; }
     if (r.globalFull && !Cloud.isAdmin()) r.cooldown = r.cooldown || 1; // the shared daily budget is spent: no button today
@@ -530,6 +531,7 @@ async function main(DB, FLAGS, REQS, UNOBT){
       ${why ? `<p class="help">${esc(why)}</p>` : ""}
       ${same && !busy ? `<p class="help">${T("Este informe ya corresponde a la partida abierta; se genera solo cuando abres un save nuevo.")}</p>` : ""}
       ${ADV.err && ADV.key === ck ? `<p class="err">${T("No se pudo generar el informe: {0}", esc(ADV.err))}</p>` : ""}
+      ${route ? `<p class="help"><a class="ml" href="map.html#route=1">${T("Ruta en el mapa: {0} paradas ({1} hechas)", route.stops.length, route.stops.filter(s => s.done).length)}</a>${route.source === "advisor" ? " · " + T("la propone el informe") : ""}</p>` : ""}
       ${r.advice ? `<div class="pane frame md">${md(r.advice.text)}</div>` : ""}${askAllowed() ? askPane() : ""}`;
     wireAsk(c);
     if (r.advice) { const link = await reportLinker(); const box = el.querySelector(".md"); if (box && CUR === c) { for (const n of [...box.querySelectorAll("h2, p, li")]) n.innerHTML = link(n.innerHTML); } }

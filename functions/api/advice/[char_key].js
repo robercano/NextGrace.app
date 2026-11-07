@@ -5,6 +5,7 @@
 //
 // The report is produced by Claude from the character summary stored in the account (never the save file),
 // the progress flags resolved to names, and a curated progression table (data/progression.json).
+import { splitRouteBlock, cleanStops, stopIndex, putRoute } from "../../_routes.js";
 import { handler, requireUser, json, bad, sha256, advisorEnabled } from "../../_lib.js";
 
 // Limits that bound what the Claude key can cost (see docs/ARCHITECTURE.md → "Advisor access"): per character, per user, and for
@@ -18,7 +19,7 @@ const maxTokensFor = model => MAX_TOKENS_BY_MODEL[model] || MAX_TOKENS_DEFAULT;
 const MAX_TOKENS = MAX_TOKENS_DEFAULT; // reported in ADVICE_LIMITS
 export const ADVICE_LIMITS = { cooldownH: COOLDOWN_H, dailyCap: DAILY_CAP, globalDailyCap: GLOBAL_DAILY_CAP, maxTokens: MAX_TOKENS };
 const DEFAULT_MODEL = "claude-opus-5-5";
-const PROMPT_VERSION = 3; // 3: "Hoy en 1 hora" section + compact weapon list for big inventories // bump when SYSTEM/buildContext change: the cached report is then considered stale
+const PROMPT_VERSION = 4; // 4: ```route block (stops for the map); 3: "Hoy en 1 hora" section + compact weapon list for big inventories // bump when SYSTEM/buildContext change: the cached report is then considered stale
 const JOB_TTL_S = 240; // a job older than this is assumed dead whatever it says
 const JOB_DEAD_S = 40; // a job that has not written its heartbeat (beat_at, every 10 s) for this long is dead: the Worker that ran it was
 // evicted (it happens when the browser that started it goes away mid-stream). Other tabs then stop waiting and the one that
@@ -101,12 +102,14 @@ export const SYSTEM_EN = `You are a veteran Elden Ring advisor (base game and Sh
 - Each weapon carries in braces its real requirements, its scaling (letters) and whether the character can use it now ("usable", "two-handed only" or "NOT usable, missing STR+N…"): don't recommend NOT usable weapons unless you propose raising exactly those attributes; if a weapon is "usable only thanks to" a talisman or helm, say so (it depends on keeping it equipped), and prefer weapons that scale with the character's high attributes; if an upgrade isn't possible with the current stones, say which stone is missing and where it's usually found or which bell bearing unlocks it.
 - No story spoilers; naming areas, bosses and items is fine.
 - Use exactly these sections (## headings): "Where you are", "What to level and why" (attributes and weapons, 3 weapons at most), "Next steps" (3–5, in order), "Challenges within reach" (bosses and optional areas reasonable for the level), "Things you may have missed" (pending items or graces in areas already explored), "Today in one hour" (what to do if the next session is only one hour long: one goal, the route, what to bring), and close with a "Note" line reminding this is guidance only.
+- After the "Note" line, append the route of "Today in one hour" as a fenced block for the map, exactly in this form (3 to 8 stops, in visiting order; each name must be the exact English name of a site of grace, a boss or a map place; "why" is a short line): \`\`\`route\n[{"name":"Site of Grace or boss or place","why":"what to do there"}]\n\`\`\`
 - Be direct and concise: about 350–500 words. No introduction or sign-off.`;
 export const SYSTEM = `Eres un consejero veterano de Elden Ring (juego base y Shadow of the Erdtree). Recibes el estado real de un personaje leído de su partida (atributos, equipo, inventario, piedras, jefes y gracias) y una tabla orientativa de progresión. Escribe en español, en markdown, un informe breve y concreto para la PRÓXIMA sesión de juego. Reglas:
 - Basa cada consejo en los datos recibidos: cita niveles, piedras y jefes tal como aparecen. No inventes objetos que el personaje no tiene ni afirmes dónde está si no se deduce de los datos.
 - Cada arma lleva entre llaves sus requisitos reales, su escalado (letras) y si el personaje puede usarla ahora ("usable", "solo a dos manos" o "NO usable, faltan FUE+N…"): no recomiendes armas NO usables salvo que propongas subir justo esos atributos; si una arma es "usable solo gracias a" un talismán o casco, dilo (depende de llevarlo equipado), y prioriza las que escalen con los atributos altos del personaje; si una mejora no es posible con las piedras actuales, di qué piedra falta y dónde suele conseguirse o qué bell bearing la desbloquea.
 - No reveles tramas ni giros de historia; sí puedes nombrar zonas, jefes y objetos.
 - Usa exactamente estas secciones (## títulos): "Dónde estás", "Qué subir y por qué" (atributos y armas, máximo 3 armas), "Siguientes pasos" (3-5, ordenados), "Retos a tu alcance" (jefes y zonas opcionales razonables para el nivel), "Cosas que se te pueden haber pasado" (objetos o gracias pendientes en zonas ya recorridas), "Hoy en 1 hora" (qué hacer si la próxima sesión dura solo una hora: un objetivo, la ruta y qué llevar), y cierra con una línea "Aviso" recordando que es orientativo.
+- Tras la línea "Aviso", añade la ruta de "Hoy en 1 hora" como bloque para el mapa, exactamente así (de 3 a 8 paradas en orden de visita; cada nombre debe ser el nombre exacto en inglés de una gracia, un jefe o un lugar del mapa; "why" es una línea corta): \`\`\`route\n[{"name":"Gracia o jefe o lugar","why":"qué hacer allí"}]\n\`\`\`
 - Sé directo y conciso: unas 350-500 palabras. Sin introducción ni despedida.`;
 
 // Streams the model's answer (SSE) so neither leg of the connection sits idle; onBeat is called as deltas arrive.
@@ -114,7 +117,7 @@ async function generate(context, row, S, onBeat, lang) {
   const [FLAGS, PROG] = await Promise.all([asset(context, "/data/flags.json"), asset(context, "/data/progression.json")]);
   const ctx = buildContext(row, S, FLAGS, PROG) + (lang === "en" ? "\n\n(Notes in the data above are in Spanish; answer in English.)" : "");
   const model = context.env.ADVICE_MODEL || DEFAULT_MODEL;
-  if (context.env.ADVICE_MOCK) { await new Promise(r => setTimeout(r, 1500)); return { text: "## Dónde estás\n(mock) " + ctx.slice(0, 200), model: "mock", usage: null, ctx }; }
+  if (context.env.ADVICE_MOCK) { await new Promise(r => setTimeout(r, 1500)); return { text: "## Dónde estás\n(mock) " + ctx.slice(0, 200) + "\n\nAviso: orientativo.\n\n```route\n[{\"name\":\"Gatefront\",\"why\":\"empezar aquí\"},{\"name\":\"Grace: Stormhill Shack\",\"why\":\"activar la gracia\"},{\"name\":\"Margit, the Fell Omen\",\"why\":\"jefe a tu alcance\"},{\"name\":\"Sitio inventado\",\"why\":\"no existe\"}]\n```", model: "mock", usage: null, ctx }; }
   if (!context.env.ANTHROPIC_API_KEY) throw bad("advisor not configured (ANTHROPIC_API_KEY)", 503);
   const r = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST", headers: { "content-type": "application/json", "x-api-key": context.env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
@@ -195,6 +198,8 @@ export const onRequestPost = handler(async context => {
     const db = setInterval(() => { context.env.DB.prepare("UPDATE advice_jobs SET beat_at = datetime('now'), progress = ? WHERE char_key = ?").bind(last, ck).run().catch(() => {}); }, 10000);
     try {
       const g = await generate(context, row, S, n => { if (n - last > 400) { last = n; send({ progress: n }); } }, lang);
+      const split = splitRouteBlock(g.text); g.text = split.text; // the ```route block goes to the routes table, not into the report
+      if (split.stops) { try { const stops = cleanStops(await stopIndex(context), split.stops); await putRoute(context.env, ck, u.steamid, { title: lang === "en" ? "Today in one hour" : "Hoy en 1 hora", stops, source: "advisor" }); } catch (e) { console.error("route block rejected", e && e.message); } }
       await context.env.DB.batch([
         context.env.DB.prepare("INSERT INTO advice (char_key, hash, model, text, created_at) VALUES (?, ?, ?, ?, datetime('now')) ON CONFLICT(char_key) DO UPDATE SET hash = excluded.hash, model = excluded.model, text = excluded.text, created_at = datetime('now')").bind(ck, hash, g.model, g.text),
         context.env.DB.prepare("INSERT INTO advice_log (steamid, char_key, model, in_tokens, out_tokens) VALUES (?, ?, ?, ?, ?)").bind(u.steamid, ck, g.model, g.usage ? g.usage.input_tokens : null, g.usage ? g.usage.output_tokens : null),

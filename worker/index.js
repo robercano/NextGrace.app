@@ -15,6 +15,7 @@ import * as authSteam from "../functions/api/auth/steam.js";
 import * as authCallback from "../functions/api/auth/callback.js";
 import * as authLogout from "../functions/api/auth/logout.js";
 import * as advice from "../functions/api/advice/[char_key].js";
+import * as route from "../functions/api/route/[char_key].js";
 import * as history from "../functions/api/history/[char_key].js";
 
 // [pattern, module]; ":name" captures one path segment into context.params.name
@@ -35,6 +36,7 @@ const ROUTES = [
   ["/api/auth/callback", authCallback],
   ["/api/auth/logout", authLogout],
   ["/api/advice/:char_key", advice],
+  ["/api/route/:char_key", route],
   ["/api/history/:char_key", history],
 ].map(([p, mod]) => ({ parts: p.split("/"), mod }));
 
