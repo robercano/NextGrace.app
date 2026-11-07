@@ -541,6 +541,13 @@ async function main(DB, FLAGS, REQS, UNOBT){
       generateAdvice(c, { force: !!same });
     };
   }
+  async function renderConnections() {
+    const box = $("#conns"); if (!box) return; const r = await Cloud.connections(); if (!box.isConnected) return;
+    if (!r || r.error) { box.textContent = T("Error: {0}", r && r.error || "?"); return; }
+    if (!r.connections.length) { box.textContent = T("Ninguna app conectada."); return; }
+    box.innerHTML = r.connections.map(c => `<div class="row"><div class="n"><b>${esc(c.name || c.client_id)}</b><span class="help"> · ${T("desde {0}", c.since.slice(0, 10))} · ${esc(c.scope || "")}</span></div><button class="btn" data-revoke="${esc(c.client_id)}">${T("Revocar")}</button></div>`).join("");
+    box.querySelectorAll("[data-revoke]").forEach(b => b.onclick = async () => { b.disabled = true; await Cloud.connectionRevoke(b.dataset.revoke); renderConnections(); });
+  }
   // ---- "Ask an AI yourself": the advisor's context (and the current report) packed as text for the user's own chat (claude.ai with
   // the prompt prefilled, or the clipboard for any AI). Costs the site nothing: the user's own subscription pays. Beta: moderators.
   const ASK_BETA = "admins"; // "admins" | "all"
@@ -682,8 +689,10 @@ async function main(DB, FLAGS, REQS, UNOBT){
       <div class="row"><div class="n">${T("Resumen de personajes de la partida abierta")}</div><button class="btn" id="doPush" ${SAVE ? "" : "disabled"}>${T("Guardar en la cuenta")}</button></div>
       ${Cloud.isAdmin() ? `<h3 style="margin-top:14px">${T("Moderación")}</h3><div id="modq" class="help">${T("Cargando propuestas…")}</div><h3 style="margin-top:14px">${T("Consejero: solicitudes y gasto")}</h3><div id="modadv" class="help">${T("Cargando…")}</div>
       <h3 style="margin-top:14px">${T("Iconos del servidor (R2)")}</h3><div id="modicons" class="help">${T("Cargando…")}</div>` : ""}
+      ${Cloud.isAdmin() ? `<h3 style="margin-top:14px">${T("Conexiones (MCP)")}</h3><p class="help">${T("Apps conectadas a tu cuenta con OAuth, como Claude. Para añadir una: en claude.ai, Ajustes → Conectores → Añadir conector personalizado → URL {0}", "https://nextgrace.app/mcp")}</p><div id="conns" class="help">${T("Cargando…")}</div>` : ""}
       <h3 style="margin-top:14px">${T("Privacidad")}</h3>
       <div class="row"><div class="n help">${T("Borra tu usuario, personajes, marcas e informes del servidor. Tus marcadores ya publicados en el mapa de la comunidad se conservan de forma anónima.")} <a href="privacy.html">${T("Política de privacidad")}</a></div><button class="btn" id="doDelete">${T("Borrar cuenta")}</button></div>`);
+    if ($("#conns")) renderConnections();
     $("#doDelete").onclick = async () => {
       if (!confirm(T("¿Borrar tu cuenta y todos sus datos del servidor? Esta acción no se puede deshacer. Lo guardado en este navegador (partida abierta, marcas) no se toca."))) return;
       const r = await Cloud.deleteAccount();

@@ -92,6 +92,7 @@ Signing in with Steam is free, so a session alone must not be enough to spend th
 | `overrides/*.json` | manual corrections that always win over the wiki (`locations.json`, `reqs.json`) | by hand; applied by the same tools |
 | `map.json`, `places.json` | wiki map markers; item → place links derived from the location texts | workflow `map` (`tools/fetch_map.py`), `tools/build_places.py` |
 | `progression.json` | curated progression table for the advisor (zones, levels, stones, bell bearings) | by hand |
+| (D1 `oauth_*`) | OAuth 2.1 server + MCP endpoint: `functions/_oauth.js` (register, authorize with Steam, token, bearer lookup, grants), `functions/mcp.js` (JSON-RPC, tools), routed in `worker/index.js` outside `/api` | — |
 | (D1 `routes`) | per-character route: `functions/_routes.js` (name resolution, `splitRouteBlock` for the advisor), `api/route/[char_key].js`, drawn by `map.html` (`drawRoute`) | advisor / user / MCP |
 | `unobtainable.json` | rules for items a playthrough can no longer obtain (`{boss}` closed after that boss, `{owns}` exclusive reward); the inventory's "No tengo" marks them (`computeGone` in `app.js`) | by hand, only documented cases |
 | `user_markers.json` | legacy static community markers | by hand (superseded by D1 `markers`) |

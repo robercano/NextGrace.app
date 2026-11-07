@@ -1,5 +1,5 @@
 // GET /api/auth/callback → verify Steam OpenID response, create session, fetch public profile (name, avatar).
-import { handler, bad, sha256, randomToken, setCookie, ensureSchema } from "../../_lib.js";
+import { handler, bad, sha256, randomToken, setCookie, ensureSchema, cookies } from "../../_lib.js";
 import { refreshOwnership } from "../../_steam.js";
 export const onRequestGet = handler(async ({ request, env }) => {
   const url = new URL(request.url);
@@ -37,5 +37,7 @@ export const onRequestGet = handler(async ({ request, env }) => {
   const tok = randomToken(), id = await sha256(tok), days = 30;
   await env.DB.prepare("INSERT INTO sessions (id, steamid, expires_at) VALUES (?, ?, datetime('now', ?))").bind(id, steamid, `+${days} days`).run();
   await env.DB.prepare("DELETE FROM sessions WHERE expires_at < datetime('now')").run();
-  return new Response(null, { status: 302, headers: { location: "/#status", "set-cookie": setCookie("tl_session", tok, days * 86400) } });
+  const next = cookies(request).tl_next || ""; const h = new Headers({ location: /^\/[^\/\\]/.test(next) ? next : "/#status" });
+  h.append("set-cookie", setCookie("tl_session", tok, days * 86400)); if (next) h.append("set-cookie", setCookie("tl_next", "", 0));
+  return new Response(null, { status: 302, headers: h });
 });

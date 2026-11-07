@@ -62,6 +62,9 @@
     async history(charKey) { const r = await api("/history/" + encodeURIComponent(charKey)); return r.history || []; },
     // Advisor (server-side report cached in the account)
     async advice(charKey) { return api("/advice/" + encodeURIComponent(charKey) + "?lang=" + (root.I18N ? root.I18N.lang : "es")); },
+    // OAuth connections (MCP clients such as claude.ai): list and revoke
+    async connections() { return api("/connections"); },
+    async connectionRevoke(client_id) { return api("/connections", { method: "POST", body: { action: "revoke", client_id } }); },
     // Route (ordered stops for the map): written by the advisor, the user or an agent; see functions/_routes.js
     async route(charKey) { return api("/route/" + encodeURIComponent(charKey)); },
     async routePut(charKey, body) { return api("/route/" + encodeURIComponent(charKey), { method: "PUT", body }); },
