@@ -185,7 +185,8 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   const haveSet = c => new Set((c.all || []).map(baseKey));
 
   // ---- map -----------------------------------------------------------------
-  const map = L.map("map", { crs: L.CRS.Simple, minZoom: -4, maxZoom: 2, zoomSnap: 0.25, attributionControl: true });
+  const map = L.map("map", { crs: L.CRS.Simple, minZoom: -4, maxZoom: 2, zoomSnap: 0.25, attributionControl: true, zoomControl: false });
+  if (!matchMedia("(pointer: coarse)").matches) L.control.zoom({ zoomInTitle: T("Acercar"), zoomOutTitle: T("Alejar") }).addTo(map); // touch screens pinch; the +/− buttons only confuse there
   map.attributionControl.setPrefix("").addAttribution('Lugares: <a href="https://eldenring.wiki.gg" target="_blank" rel="noopener">eldenring.wiki.gg</a> (CC BY-NC-SA)');
   const bounds = [[0, 0], [H, W]];
   const bgs = { tlb: "icons/map/tlb.webp", gugr: "icons/map/gugr.webp", sote: "icons/map/sote.webp" };
