@@ -72,6 +72,7 @@ async function main(DB, FLAGS, REQS, UNOBT, PICKUPS){ // PICKUPS: gamedata/picku
     return gone;
   }
   let hideGone = false; try { hideGone = localStorage.getItem("tl.hideGone") === "1"; } catch (e) {}
+  const FOLD = new Set(["head", "chest", "arms", "legs", "key_items"]); // categories folded in "No tengo · Todo" until tapped
 
   // ---- tabs ----------------------------------------------------------------
   let TAB = "status";
@@ -375,6 +376,13 @@ async function main(DB, FLAGS, REQS, UNOBT, PICKUPS){ // PICKUPS: gamedata/picku
       const meta = [CAT_ES[i.cat] || i.cat, subEs(i.sub), i.infusion && i.infusion !== "Standard" ? i.infusion : null, i.aow ? T("Ceniza: {0}", i.aow) : null, i.qty > 1 ? "×" + i.qty : null, i.stored ? T("en el cofre") : null, i.kind === "weapon" && i.maxLevel ? `+${i.level}/${i.maxLevel}` : null, useMeta(u)].filter(Boolean).join(" · ");
       const g = gone.get(i.id);
       return `<div class="cell${i.missing ? " miss" : ""}${g !== undefined ? " gone" : ""}${i.stored ? " stored" : ""}${useCls(u)}" data-item="${esc(JSON.stringify({ n: i.display, w: wikiName(i), d: meta, r: reqLine(u), g: g !== undefined ? T("Ya no se puede conseguir en esta partida.") + (g ? " " + g : "") : "", l: e && e.loc ? e.loc.replace(/\s+([.,;])/g, "$1").replace(/\s{2,}/g, " ") + (e.locd ? " " + T("(borrador generado por IA, sin verificar)") : "") : "", i: img || "" }))}" role="button" tabindex="0" title="${esc(i.display)}">${g !== undefined ? `<span class="gonetag">✕</span>` : ""}${img ? `<img src="${img}" alt="" loading="lazy">` : `<span class="nm">${esc(i.display)}</span>`}${i.qty > 1 ? `<span class="q">${i.qty}</span>` : ""}${i.kind === "weapon" && i.level ? `<span class="lv">+${i.level}</span>` : ""}</div>`; };
+    if (mode === "missing" && group === "Todo") {
+      // "No tengo · Todo" is long (hundreds): one header per category with its count; the big armor groups start folded
+      const byCat = new Map(); for (const i of items) (byCat.get(i.cat) || byCat.set(i.cat, []).get(i.cat)).push(i);
+      $("#inv").innerHTML = [...byCat].map(([cat, list]) => { const open = !FOLD.has(cat); return `<div class="cath" data-cat="${esc(cat)}" role="button" aria-expanded="${open}"><span>${open ? "▾" : "▸"}</span> ${esc(CAT_ES[cat] || cat)} <small>${list.length}</small></div>${open ? list.map(cell).join("") : ""}`; }).join("");
+      $("#inv").querySelectorAll(".cath").forEach(h => h.onclick = () => { const c = h.dataset.cat; if (FOLD.has(c)) FOLD.delete(c); else FOLD.add(c); renderInv(); });
+      $("#more").hidden = true; $("#invDetail").innerHTML = `<div class="d help">${T("Toca un objeto para ver el detalle.")}</div>`; return;
+    }
     $("#inv").innerHTML = items.slice(0, limit).map(cell).join("");
     const more = $("#more"); more.hidden = items.length <= limit; if (!more.hidden) more.textContent = T("Mostrar {0} más ({1} restantes)", Math.min(250, items.length - limit), items.length - limit);
     $("#invDetail").innerHTML = `<div class="d help">${T("Toca un objeto para ver el detalle.")}</div>`;
