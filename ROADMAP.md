@@ -89,14 +89,14 @@ Rob still has to: set the Anthropic spend limit and the Cloudflare rate-limiting
 ## Game data extraction plan (decided 2026-11-10)
 
 What the game's own files can give the site, in order of value (all extracted on the owner's PC from the UXM-unpacked game
-with Smithbox / soulstruct; see `tools/game/README.md`; numbers and names are data and live in the public repo, game text
-and art stay private):
+with Smithbox / soulstruct; see `tools/game/README.md`; everything extracted stays in the private assets repo and is served
+from R2 under `/gamedata/`, like the icons):
 
 1. [ ] **Graces with coordinates** (`BonfireWarpParam`): every site of grace, DLC included, pinned on the map → routes can
    stop at any grace. Scripts ready (`tools/game/graces_from_param.py`, `calibrate_map.py`); waiting for the CSV.
 2. [ ] **Item positions** (map `.msb` treasures + `ItemLotParam_map`): exact pin for ~2,900 items instead of the wiki's
    location text, and "picked up" by flag per item. Script ready (`tools/game/pickups_from_msb.py`); then wire
-   `data/pickups_pos.json` into the map (replace/complement the "No tengo" markers) and the inventory detail.
+   `gamedata/pickups_pos.json` into the map (replace/complement the "No tengo" markers) and the inventory detail.
 3. [ ] **Full equipment params** (`EquipParamWeapon`, `ReinforceParamWeapon`, `CalcCorrectGraph`, `EquipParamProtector`,
    `EquipParamAccessory`, `Magic`): exact requirements and scaling for everything incl. DLC, and a real attack-rating
    calculator for the smithing planner and the advisor.

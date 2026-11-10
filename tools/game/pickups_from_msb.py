@@ -8,7 +8,7 @@ read from the game's map files with soulstruct. Run on the PC with the game unpa
 
 Inputs: the mapstudio folder (m*.msb.dcx; soulstruct decompresses DCX with the game's oo2core DLL, which it finds in the
 game folder on Windows) and ItemLotParam_map exported from Smithbox as CSV (all rows).
-Output: data/game/pickups_world.json: [{ "map": "m60_42_36_00", "lot": 100230, "flag": 60100, "chest": true,
+Output: gamedata/pickups_world.json: [{ "map": "m60_42_36_00", "lot": 100230, "flag": 60100, "chest": true,
   "x": 1.2, "y": 3.4, "z": 5.6, "items": [{ "id": 1073742015, "n": 1 }] }]
 Item ids use the site's convention (goods = 0x40000000 + id, weapons raw, armor 0x10000000 + id, accessories 0x20000000 + id,
 ashes of war 0x80000000 + id), the same ids as data/items.json. Positions are local to the map file (tools/game/calibrate_map.py
@@ -17,6 +17,8 @@ turns them into map pixels).
 import csv, json, os, sys, glob
 
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(os.path.dirname(HERE))
+# Extracted game data stays out of the public repo: it goes to the private assets repo (NEXTGRACE_ASSETS or ../nextgrace-assets)/gamedata
+OUT = os.path.join(os.environ.get("NEXTGRACE_ASSETS") or os.path.join(os.path.dirname(ROOT), "nextgrace-assets"), "gamedata")
 CAT = {1: 0x00000000, 2: 0x10000000, 3: 0x20000000, 4: 0x40000000, 5: 0x80000000, 6: 0x80000000}  # lotItemCategory: 1 weapon, 2 protector, 3 accessory, 4 goods, 5/6 gem (ash of war)
 
 def read_param_csv(path):
@@ -63,7 +65,7 @@ def main():
             tr = part.translate
             out.append({"map": map_id, "lot": int(t.item_lot or 0), "flag": lot["flag"] if lot else 0, "chest": bool(t.is_in_chest),
                         "x": round(float(tr[0]), 3), "y": round(float(tr[1]), 3), "z": round(float(tr[2]), 3), "items": lot["items"] if lot else []})
-    dst = os.path.join(ROOT, "data", "game", "pickups_world.json")
+    os.makedirs(OUT, exist_ok=True); dst = os.path.join(OUT, "pickups_world.json")
     json.dump(out, open(dst, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
     print(f"{maps} maps, {len(out)} treasures ({sum(1 for e in out if e['items'])} with a known lot) → {dst}")
 

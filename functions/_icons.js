@@ -18,7 +18,8 @@ export async function listIcons(env) {
 
 /** GET /icons/* → edge cache, else R2 object, else the static asset. */
 export async function serveIcon(request, env, url, ctx) {
-  const key = url.pathname.slice(1); // "icons/x.webp" | "icons/map/tlb.webp" | "icons/index.json"
+  const key = url.pathname.slice(1); // "icons/x.webp" | "icons/map/tlb.webp" | "icons/index.json" | "gamedata/graces_pos.json"
+  const ttl = key.startsWith("gamedata/") ? "public, max-age=3600" : "public, max-age=2592000, immutable"; // data files get replaced in place
   if (key === "icons/index.json") {
     if (Date.now() - indexCache.at > INDEX_TTL_MS || !indexCache.body) {
       // union of the bucket and whatever the static assets still carry (during the migration both exist; after the purge only R2)
@@ -41,7 +42,7 @@ export async function serveIcon(request, env, url, ctx) {
   const obj = await env.ICONS.get(key);
   if (obj) {
     const ext = key.split(".").pop().toLowerCase();
-    const h = new Headers({ "content-type": obj.httpMetadata && obj.httpMetadata.contentType || TYPES[ext] || "application/octet-stream", "cache-control": "public, max-age=2592000, immutable", etag: obj.httpEtag, "x-source": "r2" });
+    const h = new Headers({ "content-type": obj.httpMetadata && obj.httpMetadata.contentType || TYPES[ext] || "application/octet-stream", "cache-control": ttl, etag: obj.httpEtag, "x-source": "r2" });
     const res = new Response(obj.body, { headers: h });
     const put = cache.put(cacheKey, res.clone()); if (ctx && ctx.waitUntil) ctx.waitUntil(put); else await put;
     if (request.headers.get("if-none-match") === obj.httpEtag) return new Response(null, { status: 304, headers: h });

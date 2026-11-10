@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-calibrate_map.py — turns the game's world positions (data/game/graces_world.json, data/game/pickups_world.json) into pixels of
-the site's map images, and writes data/graces_pos.json and data/pickups_pos.json.
+calibrate_map.py — turns the game's world positions (gamedata/graces_world.json, gamedata/pickups_world.json) into pixels of
+the site's map images, and writes gamedata/graces_pos.json and gamedata/pickups_pos.json.
 
 How: the wiki map already places some graces (data/places.json). Each game map frame (the overworld m60 tiles as one frame,
 the DLC m61 tiles as one frame, and every other map file — underground rivers, legacy dungeons — as its own frame) gets an
@@ -13,10 +13,14 @@ Frames without enough anchors are reported and skipped (add anchors to data/over
 import json, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(os.path.dirname(HERE))
+# Extracted game data stays out of the public repo: it goes to the private assets repo (NEXTGRACE_ASSETS or ../nextgrace-assets)/gamedata
+OUT = os.path.join(os.environ.get("NEXTGRACE_ASSETS") or os.path.join(os.path.dirname(ROOT), "nextgrace-assets"), "gamedata")
 TILE = 256.0  # metres per overworld tile (m60_gx_gz_00, m61_gx_gz_00)
 
 def load(p, default=None):
-    try: return json.load(open(os.path.join(ROOT, p), encoding="utf-8"))
+    """p under the public repo (data/…) or under the assets repo (gamedata/…)."""
+    base = OUT if p.startswith("gamedata/") else ROOT; p = p.split("/", 1)[1] if p.startswith("gamedata/") else p
+    try: return json.load(open(os.path.join(base, p), encoding="utf-8"))
     except FileNotFoundError: return default
 
 def frame_of(map_id, x, z):
@@ -49,8 +53,8 @@ def lstsq3(rows, ys):
     return [m[i][3] / m[i][i] for i in range(3)]
 
 def main():
-    graces = load("data/game/graces_world.json"); pickups = load("data/game/pickups_world.json", [])
-    if not graces: print("data/game/graces_world.json missing: run graces_from_param.py first"); sys.exit(1)
+    graces = load("gamedata/graces_world.json"); pickups = load("gamedata/pickups_world.json", [])
+    if not graces: print("gamedata/graces_world.json missing: run graces_from_param.py first"); sys.exit(1)
     places = load("data/places.json")["places"]
     anchors = {}
     for p in places:
@@ -79,7 +83,7 @@ def main():
         errs.sort(reverse=True); mean = sum(e for e, _ in errs) / len(errs)
         print(f"{fr}: {len(pts)} anchors, mean error {mean:.0f} px, worst {errs[0][0]:.0f} px ({errs[0][1]})")
         fits[fr] = {"ax": ax, "ay": ay, "anchors": len(pts), "mean_px": round(mean, 1), "worst_px": round(errs[0][0], 1), "layer": layer_of_frame(fr)}
-    json.dump(fits, open(os.path.join(ROOT, "data", "game", "map_calibration.json"), "w"), indent=1)
+    os.makedirs(OUT, exist_ok=True); json.dump(fits, open(os.path.join(OUT, "map_calibration.json"), "w"), indent=1)
     def to_px(map_id, x, z):
         fr, X, Z = frame_of(map_id, x, z); f = fits.get(fr)
         if not f: return None
@@ -90,8 +94,8 @@ def main():
         r = to_px(g["map"], g["x"], g["z"])
         if not r: miss += 1; continue
         gout.append({"flag": g["flag"], "name": g["name"], "x": r[0], "y": r[1], "layer": r[2]})
-    json.dump({"_source": "BonfireWarpParam of the game, calibrated against the wiki map (tools/game/calibrate_map.py)", "graces": gout}, open(os.path.join(ROOT, "data", "graces_pos.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=0)
-    print(f"graces: {len(gout)} placed, {miss} in frames without calibration → data/graces_pos.json")
+    json.dump({"_source": "BonfireWarpParam of the game, calibrated against the wiki map (tools/game/calibrate_map.py)", "graces": gout}, open(os.path.join(OUT, "graces_pos.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=0)
+    print(f"graces: {len(gout)} placed, {miss} in frames without calibration → gamedata/graces_pos.json")
     if pickups:
         pout, pmiss = [], 0
         for p in pickups:
@@ -99,8 +103,8 @@ def main():
             r = to_px(p["map"], p["x"], p["z"])
             if not r: pmiss += 1; continue
             pout.append({"lot": p["lot"], "flag": p["flag"], "chest": p["chest"], "x": r[0], "y": r[1], "layer": r[2], "items": p["items"]})
-        json.dump({"_source": "map files of the game (treasures) + ItemLotParam_map, calibrated like the graces", "pickups": pout}, open(os.path.join(ROOT, "data", "pickups_pos.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=0)
-        print(f"pickups: {len(pout)} placed, {pmiss} in frames without calibration → data/pickups_pos.json")
+        json.dump({"_source": "map files of the game (treasures) + ItemLotParam_map, calibrated like the graces", "pickups": pout}, open(os.path.join(OUT, "pickups_pos.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=0)
+        print(f"pickups: {len(pout)} placed, {pmiss} in frames without calibration → gamedata/pickups_pos.json")
 
 if __name__ == "__main__":
     main()

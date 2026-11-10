@@ -3,7 +3,7 @@
 graces_from_param.py — every site of grace with its world position, from the game's BonfireWarpParam (Smithbox → Param
 Editor → BonfireWarpParam → Export → CSV, all rows). Joined with data/flags.json (graces by event flag) for the names.
 
-  python tools/game/graces_from_param.py path/to/BonfireWarpParam.csv  →  data/game/graces_world.json
+  python tools/game/graces_from_param.py path/to/BonfireWarpParam.csv  →  gamedata/graces_world.json
 
 Output: [{ "flag": 71000, "name": "Godrick the Grafted", "map": "m10_00_00_00", "x": 12.3, "y": 45.6, "z": -7.8 }]
 "map" is the game map that owns the grace (m60_gx_gz_00 overworld tiles, m61 for the DLC, m12_* underground, legacy
@@ -13,6 +13,8 @@ tools/game/calibrate_map.py turns them into pixels of the site's map images.
 import csv, json, os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(os.path.dirname(HERE))
+# Extracted game data stays out of the public repo: it goes to the private assets repo (NEXTGRACE_ASSETS or ../nextgrace-assets)/gamedata
+OUT = os.path.join(os.environ.get("NEXTGRACE_ASSETS") or os.path.join(os.path.dirname(ROOT), "nextgrace-assets"), "gamedata")
 
 def read_param_csv(path):
     """Smithbox CSV: a header row with the field names (ID, Name, …); values may be quoted. Returns a list of dicts."""
@@ -54,7 +56,7 @@ def main():
         out.append({"flag": flag, "name": g["name"] if g else None, "region": g.get("region") if g else None, "map": map_id,
                     "x": round(num(get(r, "posX")), 3), "y": round(num(get(r, "posY")), 3), "z": round(num(get(r, "posZ")), 3)})
     out.sort(key=lambda e: e["flag"])
-    dst = os.path.join(ROOT, "data", "game", "graces_world.json")
+    os.makedirs(OUT, exist_ok=True); dst = os.path.join(OUT, "graces_world.json")
     json.dump(out, open(dst, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
     named = sum(1 for e in out if e["name"])
     print(f"{len(out)} graces in the param; {named} matched a name in flags.json, {unknown} unknown flags (DLC/unused) → {dst}")

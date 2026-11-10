@@ -157,7 +157,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   const wl = (name, text) => `<a href="${WIKI}${encodeURIComponent(name.replace(/ /g, "_"))}" target="_blank" rel="noopener">${text || esc(name)}</a>`;
   const W = 9645, H = 9119;
 
-  const [DB, P, F, MAPMETA, GPOS] = await Promise.all(["data/items.json", "data/places.json", "data/flags.json", "data/map.json", "data/graces_pos.json"].map(u => fetch(u).then(r => r.ok ? r.json() : null).catch(() => null)));
+  const [DB, P, F, MAPMETA, GPOS] = await Promise.all(["data/items.json", "data/places.json", "data/flags.json", "data/map.json", "gamedata/graces_pos.json"].map(u => fetch(u).then(r => r.ok ? r.json() : null).catch(() => null)));
   // graces placed from the game's own data (tools/game/calibrate_map.py) take precedence over the wiki's handful: add them as places
   if (GPOS && GPOS.graces) { const have = new Set(P.places.map(p => p.name.toLowerCase())); for (const g of GPOS.graces) { const k = g.name.toLowerCase(); const p = P.places.find(p => p.name.toLowerCase() === k && !p.region); if (p) { p.x = g.x; p.y = g.y; p.layer = g.layer; } else if (!have.has(k)) { P.places.push({ id: 100000 + g.flag, name: g.name, x: g.x, y: g.y, layer: g.layer, group: "SiteofGrace", article: g.name, region: false }); have.add(k); } } }
   let community = []; try { community = await fetch("data/user_markers.json").then(r => r.ok ? r.json() : []); } catch (e) {}
