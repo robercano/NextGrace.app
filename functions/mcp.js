@@ -126,13 +126,12 @@ const tools = {
     return `${out.length} missing${out.length > limit ? `, first ${limit}` : ""}:\n` + out.slice(0, limit).join("\n");
   },
   async find_places(context, u, a) {
-    const idx = await stopIndex(context); const P = await asset(context, "/data/places.json"); const byName = new Map(P.places.map(p => [p.name.toLowerCase(), p]));
+    const idx = await stopIndex(context);
     const q = String(a.query || "").toLowerCase().trim(); if (!q) throw new ToolError("query is required");
     const limit = Math.min(Math.max(a.limit | 0 || 15, 1), 50);
     const rows = [];
-    for (const v of idx.values()) { if (!v.name.toLowerCase().includes(q)) continue; const p = byName.get(v.name.toLowerCase()); const pinned = !!(p && !p.region);
-      const layer = p ? ((p.layer || "").includes("GUGR") ? "underground" : (p.layer || "").includes("SOTE") ? "DLC" : "overworld") : "-";
-      rows.push({ pinned, line: `- ${v.name} (${v.kind}${pinned ? ", " + layer + ", pinned" : p && p.region ? ", region name: no pin" : ", no coordinates: listed but not pinned"})` }); }
+    for (const v of idx.values()) { if (!v.name.toLowerCase().includes(q)) continue;
+      rows.push({ pinned: v.pinned, line: `- ${v.name} (${v.kind}${v.pinned ? ", " + v.layer + ", pinned" : ", no coordinates: listed but not pinned"})` }); }
     rows.sort((a, b) => b.pinned - a.pinned); const out = rows.slice(0, limit).map(r => r.line);
     return out.length ? out.join("\n") + "\n(Prefer pinned names for route stops; a stop without coordinates is shown in the list but not on the map.)" : "No place matches.";
   },
@@ -147,8 +146,7 @@ const tools = {
     if (a.stops.length > MAX_STOPS) throw new ToolError(`at most ${MAX_STOPS} stops`);
     let stops; try { stops = cleanStops(await stopIndex(context), a.stops); } catch (e) { throw new ToolError("no usable stops"); }
     await putRoute(context.env, row.char_key, u.steamid, { title: a.title || "", stops, source: "mcp" });
-    const P = await asset(context, "/data/places.json"); const pinnable = new Set(P.places.filter(p => !p.region).map(p => p.name.toLowerCase()));
-    const unpinned = stops.filter(s => !pinnable.has(s.name.toLowerCase())).map(s => s.name);
+    const idx = await stopIndex(context); const unpinned = stops.filter(s => { const v = [...idx.values()].find(v => v.name.toLowerCase() === s.name.toLowerCase()); return !(v && v.pinned); }).map(s => s.name);
     return `Route saved with ${stops.length} stops; the user sees it on the map.` + (unpinned.length ? ` Listed without a map pin (no coordinates for them): ${unpinned.join(", ")}. Use find_places and prefer "pinned" names.` : "");
   },
   async add_stop(context, u, a) {

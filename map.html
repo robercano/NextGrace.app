@@ -157,7 +157,8 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   const wl = (name, text) => `<a href="${WIKI}${encodeURIComponent(name.replace(/ /g, "_"))}" target="_blank" rel="noopener">${text || esc(name)}</a>`;
   const W = 9645, H = 9119;
 
-  const [DB, P, F, MAPMETA, GPOS] = await Promise.all(["data/items.json", "data/places.json", "data/flags.json", "data/map.json", "gamedata/graces_pos.json"].map(u => fetch(u).then(r => r.ok ? r.json() : null).catch(() => null)));
+  const [DB, P, F, MAPMETA, GPOS, PK] = await Promise.all(["data/items.json", "data/places.json", "data/flags.json", "data/map.json", "gamedata/graces_pos.json", "gamedata/pickups_pos.json"].map(u => fetch(u).then(r => r.ok ? r.json() : null).catch(() => null)));
+  const PICKUPS = PK && PK.pickups ? PK.pickups : null; // exact item spots extracted from the game (private assets repo → R2); null until the owner extracts them
   // graces placed from the game's own data (tools/game/calibrate_map.py) take precedence over the wiki's handful: add them as places
   if (GPOS && GPOS.graces) { const have = new Set(P.places.map(p => p.name.toLowerCase())); for (const g of GPOS.graces) { const k = g.name.toLowerCase(); const p = P.places.find(p => p.name.toLowerCase() === k && !p.region); if (p) { p.x = g.x; p.y = g.y; p.layer = g.layer; } else if (!have.has(k)) { P.places.push({ id: 100000 + g.flag, name: g.name, x: g.x, y: g.y, layer: g.layer, group: "SiteofGrace", article: g.name, region: false }); have.add(k); } } }
   let community = []; try { community = await fetch("data/user_markers.json").then(r => r.ok ? r.json() : []); } catch (e) {}
@@ -236,7 +237,8 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   const placeByName = new Map(P.places.map(p => [p.name.toLowerCase(), p]));
   const norm = s => s.toLowerCase().replace(/\s*\(.*\)\s*$/, "");
   const findPlace = name => placeByName.get(name.toLowerCase()) || placeByName.get(norm(name)) || null;
-  const layerOf = p => (p.layer || "").includes("GUGR") ? "gugr" : (p.layer || "").includes("SOTE") ? "sote" : "tlb";
+  const layerFromName = l => (l || "").includes("GUGR") ? "gugr" : (l || "").includes("SOTE") ? "sote" : "tlb";
+  const layerOf = p => layerFromName(p.layer);
   const layerName = k => { const o = $("#layerSel").querySelector(`option[value="${k}"]`); return o ? o.textContent : k; };
 
   // user markers
@@ -273,7 +275,17 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
       if (state === "done" && st !== "seen") continue; if (state === "todo" && st === "seen") continue;
       L.marker(at(p), { icon: pin("place " + st, GROUP_KIND[p.group] || "place") }).bindPopup(`<div class="popup"><h4>${wl(p.article || p.name, esc(p.name))}</h4><div class="m">${esc(KIND_ES[GROUP_KIND[p.group]] || p.group)}${seen.has(k) ? " · " + T("visitado (según el save)") : man ? " · " + T("visitado (marcado a mano)") : st === "todo" ? " · " + T("pendiente") : ""}</div>${CUR ? `<button class="chip" data-mark="place|${p.id}" aria-pressed="${man}" style="margin-top:6px">${man ? T("✓ Visitado") : T("Marcar como visitado")}</button>` : ""}</div>`).addTo(layers.place); }
     // missing items grouped by place
-    if (have) {
+    if (have && PICKUPS) {
+      // exact spots: one marker per treasure (chest, corpse, ground) that still holds something this character lacks
+      const pickedFlags = new Set(CUR && CUR.progress ? CUR.progress.pickedFlags || [] : []), catOk = new Set(CATALOG.map(it => it.id)), catById = new Map(CATALOG.map(it => [it.id, it]));
+      for (const pk of PICKUPS) {
+        if (layerFromName(pk.layer) !== layer || (pk.flag && pickedFlags.has(pk.flag))) continue;
+        const list = pk.items.map(x => catById.get(x.id)).filter(it => it && !have.has(baseKey({ name: it.name, kind: it.kind })) && !picked.has(it.id) && !manual.has("item:" + it.id) && (match(it.name) || !q));
+        if (!list.length) continue;
+        const kind = (() => { const n = {}; for (const it of list) { const k = CAT_KIND[it.cat] || "item"; n[k] = (n[k] || 0) + 1; } return Object.entries(n).sort((a, b) => b[1] - a[1])[0][0]; })();
+        L.marker([pk.y, pk.x], { icon: pin("miss", kind, list.length), zIndexOffset: 500 }).bindPopup(`<div class="popup"><h4>${pk.chest ? T("Cofre") : T("Objeto en el suelo")}</h4><div class="m">${T("{0} objeto{1} que te faltan", list.length, list.length > 1 ? "s" : "")}</div><ul>${list.map(it => `<li>${wl(it.name)} <button class="chip" data-mark="item|${it.id}" aria-pressed="false" style="font-size:.72rem;padding:1px 7px" title="${T("Marcar a mano que ya lo tienes (si el save no lo refleja)")}">✓ ${T("marcar conseguido")}</button></li>`).join("")}</ul></div>`, { maxWidth: 320 }).addTo(layers.miss);
+      }
+    } else if (have) {
       const byPlace = new Map();
       for (const it of CATALOG) { if (have.has(baseKey({ name: it.name, kind: it.kind })) || picked.has(it.id) || manual.has("item:" + it.id)) continue; const pls = P.items[it.id]; if (!pls) continue;
         for (const pi of pls) { const p = P.places[pi]; if (p.region || layerOf(p) !== layer) continue; if (!match(it.name) && !match(p.name)) continue; (byPlace.get(pi) || byPlace.set(pi, []).get(pi)).push(it); } }

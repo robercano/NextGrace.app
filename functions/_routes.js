@@ -14,15 +14,22 @@ export async function ensureRoutes(env) {
 
 const norm = s => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 
-/** Index of pinnable names: Map(normalized name → { name, kind }) from flags.json (bosses, graces) and places.json (places). */
+/** Index of stop names: Map(normalized name → { name, kind, pinned, layer }) from places.json (places with coordinates), the game's
+ * grace positions when extracted (gamedata/graces_pos.json in R2) and flags.json (graces, bosses: listed even without a pin). */
 export async function stopIndex(context) {
   const get = async p => { const r = await context.env.ASSETS.fetch(new Request(new URL(p, context.request.url))); return r.ok ? r.json() : null; };
-  const [F, P] = await Promise.all([get("/data/flags.json"), get("/data/places.json")]);
+  const [F, P, G] = await Promise.all([get("/data/flags.json"), get("/data/places.json"), gameGraces(context.env)]);
   const idx = new Map();
-  const add = (n, kind) => { const k = norm(n); if (k && !idx.has(k)) idx.set(k, { name: n, kind }); };
-  if (P) for (const p of P.places || []) add(p.name, "place");
-  if (F) { for (const g of F.graces || []) add(g.name, "grace"); for (const b of F.bosses || []) add(b.name, "boss"); }
+  const layerName = l => (l || "").includes("GUGR") ? "underground" : (l || "").includes("SOTE") ? "DLC" : "overworld";
+  const add = (n, kind, pinned, layer) => { const k = norm(n); if (!k) return; const cur = idx.get(k); if (!cur) idx.set(k, { name: n, kind, pinned, layer }); else if (pinned && !cur.pinned) { cur.pinned = true; cur.layer = layer; } };
+  if (P) for (const p of P.places || []) add(p.name, p.group === "SiteofGrace" ? "grace" : "place", !p.region, p.region ? null : layerName(p.layer));
+  if (G) for (const g of G.graces || []) add(g.name, "grace", true, layerName(g.layer));
+  if (F) { for (const g of F.graces || []) add(g.name, "grace", false, null); for (const b of F.bosses || []) add(b.name, "boss", false, null); }
   return idx;
+}
+/** gamedata/graces_pos.json from the bucket (null until the owner extracts it). */
+export async function gameGraces(env) {
+  try { if (!env.ICONS) return null; const o = await env.ICONS.get("gamedata/graces_pos.json"); return o ? await o.json() : null; } catch (e) { return null; }
 }
 
 /** Resolve a free-text name: exact (normalized), then "Grace: X" / "Boss: X" prefixes, then a unique substring match. */

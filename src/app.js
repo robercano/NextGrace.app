@@ -14,7 +14,7 @@
  * Conventions: every user-visible string is Spanish wrapped in T() (English in src/i18n.js); HTML is built with template
  * strings and esc() for any value that comes from the save; CUR is the character on screen, SAVE the parsed file.
  */
-async function main(DB, FLAGS, REQS, UNOBT){
+async function main(DB, FLAGS, REQS, UNOBT, PICKUPS){ // PICKUPS: gamedata/pickups_pos.json (positions extracted from the game, served from R2) or null
   // ---- state & helpers ---------------------------------------------------------
   const $ = s => document.querySelector(s);
   I18N.apply();
@@ -409,7 +409,9 @@ async function main(DB, FLAGS, REQS, UNOBT){
           : Object.assign({ kind: "goods", cat: "key_items", sub: "" }, GR[grFlag] ? (DB.items[GR_ID[grFlag]] ? { id: GR_ID[grFlag], loc: DB.items[GR_ID[grFlag]].loc } : {}) : {},
             { name: GR[grFlag] || T("Runa mayor (sin identificar, flag {0})", grFlag), display: GR[grFlag] || T("Runa mayor (sin identificar, flag {0})", grFlag) });
         c.progress = { graces: FLAGS.graces.filter(g => flag(g.id)).map(g => g.id), bosses: FLAGS.bosses.filter(b => flag(b.id)).map(b => b.id),
-          picked: Object.entries(FLAGS.pickups || {}).filter(([, f]) => flag(f)).map(([id]) => +id), regions: Object.keys(FLAGS.mapRegions || {}).filter(k => flag(+k)).map(Number) };
+          picked: Object.entries(FLAGS.pickups || {}).filter(([, f]) => flag(f)).map(([id]) => +id), regions: Object.keys(FLAGS.mapRegions || {}).filter(k => flag(+k)).map(Number),
+          // flags of the world pickups the game data knows (gamedata/pickups_pos.json): lets the map tell a looted spot from an untouched one
+          pickedFlags: PICKUPS && PICKUPS.pickups ? [...new Set(PICKUPS.pickups.map(p => p.flag).filter(f => f && flag(f)))] : [] };
         c.gone = computeGone(c, flag);
         delete c.eventFlags;
       }
@@ -752,5 +754,5 @@ async function main(DB, FLAGS, REQS, UNOBT){
   } catch (e) {}
 }
 
-Promise.all([fetch("data/items.json").then(r => r.json()), fetch("data/flags.json").then(r => r.json()), fetch("data/reqs.json").then(r => r.ok ? r.json() : null).catch(() => null), fetch("data/unobtainable.json").then(r => r.ok ? r.json() : null).catch(() => null)]).then(([db, fl, rq, un]) => main(db, fl, rq, un)).catch(e => { document.getElementById("msg").textContent = T("No se pudo cargar la base de datos de objetos: {0}", e.message); });
+Promise.all([fetch("data/items.json").then(r => r.json()), fetch("data/flags.json").then(r => r.json()), fetch("data/reqs.json").then(r => r.ok ? r.json() : null).catch(() => null), fetch("data/unobtainable.json").then(r => r.ok ? r.json() : null).catch(() => null), fetch("gamedata/pickups_pos.json").then(r => r.ok ? r.json() : null).catch(() => null)]).then(([db, fl, rq, un, pk]) => main(db, fl, rq, un, pk)).catch(e => { document.getElementById("msg").textContent = T("No se pudo cargar la base de datos de objetos: {0}", e.message); });
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
