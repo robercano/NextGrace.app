@@ -29,8 +29,7 @@ export async function serveIcon(request, env, url, ctx) {
         if (names.size) indexCache = { at: Date.now(), body: JSON.stringify([...names].sort()) };
       } catch (e) { console.error("icons list", e); }
     }
-    if (indexCache.body) return new Response(indexCache.body, { headers: { "content-type": "application/json", "cache-control": "public, max-age=300" } });
-    return env.ASSETS.fetch(request);
+    return new Response(indexCache.body || "[]", { headers: { "content-type": "application/json", "cache-control": "public, max-age=300" } }); // empty bucket (local dev) → no icons, not a 404
   }
   const cache = caches.default, cacheKey = new Request(url.toString(), { method: "GET" });
   const hit = await cache.match(cacheKey);

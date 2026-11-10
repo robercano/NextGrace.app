@@ -55,6 +55,10 @@ npx wrangler dev --port 8791
 
 Without the API any static server works (`python -m http.server 8080`). When you change served files, bump `VERSION` in `sw.js` so installed clients refresh their cache.
 
+## Tests
+
+`tests/run.sh` — API suite against a local Worker (runs in CI) and, with `TEST_SAVE=… TEST_STEAMID=…`, the browser suite. See `tests/README.md`.
+
 ## Advisor (report written by Claude)
 
 *Advisor* tab of the sheet: the Worker calls the Claude API with the character summary (the same thing the account stores: attributes, weapons and stones, bosses and graces, never the `.sl2`) plus `data/progression.json` (an indicative table of zones, levels and stones), and stores the report in D1 (`advice`). The report is generated automatically when you open a newer save while signed in (as soon as the summary is saved; you can keep browsing meanwhile). If the save hasn't changed, *Another opinion* asks for a new version (with a confirmation: same context, only the wording changes). Limits: 1 h between reports and 5 per day per user (moderators are unlimited). When the prompt changes, bump `PROMPT_VERSION` in the handler so stored reports count as stale. Code: `functions/api/advice/[char_key].js`.

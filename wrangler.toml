@@ -9,7 +9,7 @@ directory = "."
 binding = "ASSETS"
 html_handling = "none"          # rutas exactas (map.html, icons.html); "/" sigue sirviendo index.html
 # /icons/* pasa por el Worker aunque exista el fichero como asset: así R2 gana sobre los iconos antiguos y el index.json se genera del bucket
-run_worker_first = ["/icons/*"]
+run_worker_first = ["/icons/*", "/gamedata/*"]
 # ficheros que no se publican como assets: ver .assetsignore
 
 [[d1_databases]]

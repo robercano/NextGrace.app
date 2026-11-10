@@ -4,7 +4,9 @@ CREATE TABLE IF NOT EXISTS users (
   name TEXT, avatar TEXT,
   role TEXT NOT NULL DEFAULT 'user',          -- 'user' | 'admin'
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  last_seen TEXT NOT NULL DEFAULT (datetime('now'))
+  last_seen TEXT NOT NULL DEFAULT (datetime('now')),
+  -- advisor access (migration 003): unknown | unavailable | error | owner | private | none | requested | manual | denied
+  advisor TEXT NOT NULL DEFAULT 'unknown', advisor_checked_at TEXT, contact TEXT, advisor_note TEXT, advisor_requested_at TEXT, owns TEXT
 );
 CREATE TABLE IF NOT EXISTS sessions (
   id TEXT PRIMARY KEY,                         -- random token (hashed)
