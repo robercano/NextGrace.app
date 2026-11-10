@@ -27,8 +27,8 @@
 .btn.menub{display:flex;flex-direction:column;gap:4px;justify-content:center;padding:8px 9px;border-color:var(--line)}
 .btn.menub span{display:block;width:18px;height:2px;background:var(--gold)}
 .btn.menub[aria-expanded=true]{border-color:var(--gold)}
-.menuback{position:fixed;inset:0;background:#000a;z-index:40}
-.menu{position:fixed;top:0;right:0;bottom:0;width:min(86vw,340px);background:var(--bg);border-left:1px solid var(--gold-dim);z-index:41;overflow:auto;padding:calc(10px + env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) 14px;display:flex;flex-direction:column;gap:14px}
+.menuback{position:fixed;inset:0;background:#000a;z-index:1200}
+.menu{position:fixed;top:0;right:0;bottom:0;width:min(86vw,340px);background:var(--bg);border-left:1px solid var(--gold-dim);z-index:1201;overflow:auto;padding:calc(10px + env(safe-area-inset-top,0px)) max(14px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) 14px;display:flex;flex-direction:column;gap:14px}
 .menusec{display:flex;flex-direction:column;gap:6px}
 .menuh{font-family:var(--display);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);border-bottom:1px solid var(--line);padding-bottom:4px}
 .mitem{display:flex;flex-direction:column;gap:2px;background:var(--panel-s);border:1px solid var(--line);padding:8px 12px;text-decoration:none;color:var(--fg);text-align:left;font:inherit;cursor:pointer}
