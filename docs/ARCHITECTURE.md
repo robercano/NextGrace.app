@@ -13,13 +13,15 @@ browser                                  Cloudflare Worker (worker/index.js)
 │   ersave.js → parse .sl2     │ ──────▶ │   style handlers, D1 binding "DB")    │
 │   rules.js  → game rules     │         │   auth (Steam OpenID) · characters    │
 │   icons.js  → item pictures  │         │   marks · markers · advice · history  │
-│   cloud.js  → account API    │         └───────────────┬──────────────────────┘
-│ map.html   (Leaflet)         │                         │ ANTHROPIC_API_KEY
-│ about.html  privacy.html     │                         ▼
-│ sw.js (offline shell)        │                 Claude API (advisor report)
-└──────────────────────────────┘
-          ▲ data/*.json (items, flags, reqs, locations, map, places, progression)
+│   cloud.js  → account API    │         │   route · connections · advisor      │
+│   drive.js  → save from Drive│         ├──────────────────────────────────────┤
+│ map.html   (Leaflet, routes) │  /mcp   │ functions/mcp.js (MCP tools) behind   │
+│ about.html  privacy.html     │ ◀────── │ functions/_oauth.js (OAuth 2.1 server)│
+│ sw.js (offline shell)        │         └───────────────┬──────────────────────┘
+└──────────────────────────────┘           ANTHROPIC_API_KEY │        R2 "ICONS": icons/*, gamedata/*
+          ▲ data/*.json (items, flags, reqs, locations, map, places, progression, unobtainable)
           │ produced offline by tools/*.py, some via GitHub Actions workflows
+   claude.ai (connector) ──▶ /mcp with a bearer token: reads characters, writes routes
 ```
 
 ## Front end
@@ -64,6 +66,15 @@ The sheet and the map share state only through `localStorage`: `tl.last` (slimme
 | `GET /api/history/:char_key` | `history/[char_key].js` | snapshots for the session diary |
 
 `GET/POST /api/advisor` and `GET/POST /api/admin/advisor` (`advisor.js`, `admin/advisor.js`) manage **advisor access** (below).
+
+| `GET/PUT/PATCH/DELETE /api/route/:char_key` | `route/[char_key].js` + `_routes.js` | the character's route on the map: ordered stops matched by name against graces, bosses and places (`stopIndex`, `cleanStops`); written by the advisor (its report ends with a ```` ```route ```` block, split off by `splitRouteBlock`), by the user (map panel) or by an MCP client |
+| `GET /api/advice/:char_key?ctx=1` | `advice/[char_key].js` | the advisor's context as text, no model call (the "ask an AI yourself" pane) |
+| `GET/POST /api/connections` | `connections.js` | OAuth grants of the account (list / revoke) |
+| `GET /.well-known/oauth-*`, `POST /oauth/register`, `GET/POST /oauth/authorize`, `POST /oauth/token` | `_oauth.js` (routed in `worker/index.js`) | OAuth 2.1 server for MCP clients: PKCE S256 required, dynamic registration, consent page behind the Steam login (`/api/auth/steam?next=`), hashed access (1 day) + refresh (90 days, rotated) tokens, `MCP_BETA` gate |
+| `POST /mcp` | `mcp.js` | MCP server (Streamable HTTP, JSON-RPC over POST, JSON responses): `list_characters`, `get_character` (= `buildContext`), `get_report`, `pending_bosses`, `pending_graces`, `missing_items`, `find_places` (names with/without a pin), `get_route`, `set_route`, `add_stop`, `mark_stop`, `clear_route` |
+| `GET /icons/*`, `GET /gamedata/*.json` | `_icons.js` | R2 objects behind the edge cache (`x-source: edge|r2|assets`); `run_worker_first` in `wrangler.toml` must list both prefixes or the assets layer answers 404 first |
+
+**Google Drive** (`src/drive.js`, gated by `DRIVE_BETA` in `app.js`): the browser itself downloads the save from the user's Drive (scope `drive.file` + Picker; public ids in `src/site.js`), polls `modifiedTime` every minute while open; the Worker is not involved.
 
 `functions/_lib.js` has `handler` (error wrapper), `json/bad`, `getUser/requireUser`, cookies and hashing. The schema is in `db/schema.sql` (+ `db/migrations/`); `history` and `advice_jobs` are created lazily by the Worker. A character belongs to the Steam account whose id is in the save (`char_key = <steamid>:<slot>`), so only that account can upload or read it.
 
@@ -115,7 +126,11 @@ Everything taken from eldenring.wiki.gg is CC BY-SA 4.0 (see `about.html`). `too
 
 **Refresh data from the wiki.** Actions → `reqs` / `locations` / `map` → *Run workflow* (with the repo private while it writes game art). To correct a single item, edit `data/overrides/*.json` and run `python tools/apply_locations.py` or `python tools/fetch_reqs.py --apply-only`.
 
-**Ship a change.** Bump `VERSION` in `sw.js` if a served file changed, commit (Spanish commit messages are the convention so far), push to `main`; Workers Builds deploys.
+**Add an MCP tool.** An entry in `TOOLS` (name, description for the model, `inputSchema`) and a function in `tools` in `functions/mcp.js`; throw `ToolError` for a message the model should read, call `needWrite(u)` for anything that changes data; add it to the `oauth + mcp` test.
+
+**Place a route stop.** Names resolve through `stopIndex` (server) and `findPlace` (map): a place with its own coordinates, a game-placed grace (`gamedata/graces_pos.json`) or, unpinned, any grace/boss name. Region names never pin (the label would sit in a lake).
+
+**Ship a change.** Bump `VERSION` in `sw.js` if a served file changed, run `tests/run.sh` (or let the `tests` workflow do it), commit (Spanish commit messages are the convention so far), push to `main`; Workers Builds deploys — check the deployment, a build error leaves the previous version live (the `check` workflow imports every module to catch syntax errors first).
 
 ## Local development
 
@@ -123,7 +138,7 @@ Everything taken from eldenring.wiki.gg is CC BY-SA 4.0 (see `about.html`). `too
 npx wrangler d1 execute DB --local --file db/schema.sql
 npx wrangler dev --port 8791 --var ADVICE_MOCK:1      # ADVICE_MOCK returns the prompt context instead of calling Claude
 ```
-To test with a logged-in user, insert a row in the local `users` table and one in `sessions` with `id = sha256(<cookie value>)`, then send `tl_session=<cookie value>`. Test saves live outside the repo (`*.sl2` is git-ignored). A quick smoke test is to open the sheet with Playwright, load a save, click through every tab in `?lang=es` and `?lang=en` and check for page errors.
+`tests/run.sh` does all of this (local D1 + R2, seeded accounts, mock advisor) and runs the suite; `tests/README.md` explains the accounts and the browser tests. By hand: insert a row in the local `users` table and one in `sessions` with `id = sha256(<cookie value>)`, then send `tl_session=<cookie value>`. Test saves live outside the repo (`*.sl2` is git-ignored). A quick smoke test is to open the sheet with Playwright, load a save, click through every tab in `?lang=es` and `?lang=en` and check for page errors.
 
 ## Things to know before going public
 
