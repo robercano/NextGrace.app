@@ -177,6 +177,7 @@ main{padding:14px max(14px,env(safe-area-inset-right,0px)) 40px max(14px,env(saf
 .plan input{width:4.5em;text-align:center;font-weight:600}
 .need div{display:grid;grid-template-columns:1fr auto;gap:10px;font-variant-numeric:tabular-nums;padding:2px 0}
 .need .no{color:var(--bad)}.need .yes{color:var(--ok)}
+.need.ar:not(:empty){margin-top:10px;padding-top:8px;border-top:1px solid var(--line)}.need.ar b{color:var(--fg)}
 .help{color:var(--muted);font-size:.9rem;margin:0}
 details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:6px 0}
 .drop{padding:30px 18px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
@@ -322,6 +323,7 @@ details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font
           <input id="planTo" type="number" inputmode="numeric" min="1" max="25" aria-label="Nivel objetivo">
         </div>
         <div class="need" id="need"></div>
+        <div class="need ar" id="ar"></div>
       </div>
       <div class="pane frame"><h3 data-i18n="Armas a medias">Armas a medias</h3><p class="help" data-i18n="Toca una para planificarla.">Toca una para planificarla.</p><div class="list" id="upgradeable"></div></div>
       <div class="pane frame"><h3 data-i18n="Cenizas de espíritu · gloveworts">Cenizas de espíritu · gloveworts</h3><p class="help" data-i18n="Roderika (Mesa Redonda) sube cada ceniza hasta +10: un glovewort del número del nivel y uno &quot;Great&quot; para el +10. Las cenizas con nombre (Mimic Tear, Tiche, Oleg…) usan Ghost Glovewort; el resto, Grave Glovewort.">Roderika (Mesa Redonda) sube cada ceniza hasta +10: un glovewort del número del nivel y uno "Great" para el +10. Las cenizas con nombre (Mimic Tear, Tiche, Oleg…) usan Ghost Glovewort; el resto, Grave Glovewort.</p><div class="stones" id="gloveN"></div><div class="stones" id="gloveS" style="margin-top:6px"></div></div>
@@ -347,6 +349,7 @@ details summary{cursor:pointer;color:var(--fg-2);font-family:var(--display);font
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="src/ersave.js"></script>
 <script src="src/rules.js"></script>
+<script src="src/ar.js"></script>
 <script src="src/icons.js"></script>
 <script src="src/i18n.js"></script>
 <script src="src/site.js"></script>

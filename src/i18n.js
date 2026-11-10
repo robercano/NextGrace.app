@@ -60,6 +60,8 @@
     "Requisitos: {0}": "Requirements: {0}", "Sin requisitos": "No requirements", "Escalado: {0}": "Scaling: {0}", "huecos {0}": "slots {0}",
     // forge
     "Dragón": "Dragon", "(máx +{0})": "(max +{0})", "Ninguna arma a medias: todo lo que has tocado está al máximo.": "No weapons in progress: everything you've touched is maxed.", "{0} armas al máximo": "{0} weapons at max",
+    "Poder de ataque": "Attack power", "Escalado": "Scaling", "según los datos del juego": "from the game's data", "ahora (+{0})": "now (+{0})", "a +{0}": "at +{0}", "2 manos": "two-handed", "requisitos sin cumplir: {0}": "requirements not met: {0}",
+    "Fís": "Phys", "Mag": "Mag", "Fue": "Fire", "Ray": "Ltn", "Sag": "Holy", "FUE": "STR", "DES": "DEX", "INT": "INT", "FE": "FAI", "ARC": "ARC",
     "Ya está al máximo.": "Already at max.", "De +{0} a +{1}": "From +{0} to +{1}", " (está en el cofre)": " (it's in the chest)", "✓ tienes todo": "✓ you have everything", "faltan piedras": "missing stones",
     "Qué armas puedes subir de nivel con las piedras que llevas (inventario y cofre).": "Which weapons you can upgrade with the stones you carry (inventory and chest).",
     "Piedras de forja · armas normales (hasta +25)": "Smithing stones · regular weapons (up to +25)", "Piedras sombrías · armas especiales (hasta +10)": "Somber stones · special weapons (up to +10)",

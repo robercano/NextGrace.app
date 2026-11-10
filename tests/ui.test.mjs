@@ -33,6 +33,15 @@ test("progress: the collection pane counts and jumps to the inventory", async ()
   assert.match(await page.textContent("#count"), /por conseguir/);
 });
 
+test("smithing: the planner shows the attack power when gamedata/ar.json is published", async () => {
+  await page.click('#tabs .tab[data-t="forge"]'); await page.waitForTimeout(800);
+  const ids = await page.$$eval("#planWeapon option", os => os.length); if (!ids) return;
+  // the fixture only knows the Dagger family and Unarmed; a save that has a dagger shows the block, any other weapon shows nothing
+  const txt = await page.evaluate(() => { const sel = document.querySelector("#planWeapon"); const w = [...sel.options].findIndex(o => /^Dagger|Heavy Dagger|Magic Dagger/.test(o.textContent)); if (w < 0) return null; sel.value = w; sel.dispatchEvent(new Event("change")); return document.querySelector("#ar").textContent; });
+  if (txt === null) { console.log("ar block skipped: no dagger in the save"); return; }
+  assert.match(txt, /Poder de ataque|Attack power/); assert.match(txt, /ahora|now/);
+});
+
 test("inventory: owned mode lists items with pictures or names", async () => {
   await page.click('#tabs .tab[data-t="inv"]'); await page.waitForTimeout(300); await page.click('#mode [data-m="have"]'); await page.click('#chips [data-g="Todo"]'); await page.waitForTimeout(500);
   const n = await page.$$eval("#inv .cell", cs => cs.length); assert.ok(n > 20, "cells: " + n);

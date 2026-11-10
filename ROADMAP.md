@@ -96,10 +96,16 @@ from R2 under `/gamedata/`, like the icons):
    stop at any grace. Site side done (map merges `gamedata/graces_pos.json`, MCP `find_places` marks them pinned); waiting for the CSV.
 2. [ ] **Item positions** (map `.msb` treasures + `ItemLotParam_map`): exact pin for ~2,900 items instead of the wiki's
    location text, and "picked up" by flag per item. Site side done: the map draws one marker per treasure that still holds something the character lacks (chest / ground) from `gamedata/pickups_pos.json`, skipping looted spots by flag (`progress.pickedFlags`); the places-based markers remain the fallback. Waiting for the extraction.
-3. [ ] **Full equipment params** (`EquipParamWeapon`, `ReinforceParamWeapon`, `CalcCorrectGraph`, `EquipParamProtector`,
-   `EquipParamAccessory`, `Magic`): exact requirements and scaling for everything incl. DLC, and a real attack-rating
-   calculator for the smithing planner and the advisor.
-4. [ ] **Smithing costs** (`EquipMtrlSetParam`): exact stones and runes per level and weapon type.
+3. [ ] **Full equipment params** (`EquipParamWeapon`, `ReinforceParamWeapon`, `CalcCorrectGraph`, `AttackElementCorrectParam`,
+   `EquipParamProtector`, `EquipParamAccessory`, `Magic`): exact requirements and scaling for everything incl. DLC, and a real
+   attack-rating calculator for the smithing planner and the advisor. Site side done: `tools/game/equip_from_params.py` reads
+   the Smithbox CSVs → `gamedata/ar.json` (lean) + `gamedata/equip.json`; `src/ar.js` computes the AR (base × reinforce rate,
+   scaling × CalcCorrectGraph curve per element, −40 % per unmet requirement, two-handed 1.5× STR) and the smithing planner
+   shows "Poder de ataque" now / at the target level, one- and two-handed, with the scaling letters, as soon as `ar.json` is in
+   the bucket. Waiting for the CSVs. Next: status build-up (bleed/poison from `SpEffectParam`), replace `data/reqs.json`
+   (wiki) with the params, armor/talisman/spell numbers in the sheet, AR in the advisor context.
+4. [ ] **Smithing costs** (`EquipMtrlSetParam` + `ReinforceParamWeapon.reinforcePriceRate`, already in `equip.json`): exact
+   stones and runes per level and weapon type instead of the hand-written table in `src/rules.js`.
 5. [ ] **Shops and bell bearings** (`ShopLineupParam`): where each item is bought and what each bearing unlocks.
 6. [ ] **Crafting** (`EquipMtrlSetParam` + cookbooks): what the character can craft with what it carries.
 7. [ ] **Game text** (`.fmg`): official Spanish names (full Spanish UI, English kept as alias for the wiki) and item

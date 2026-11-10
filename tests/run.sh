@@ -18,6 +18,7 @@ if [ -n "${TEST_STEAMID:-}" ]; then
   $WR d1 execute DB --local --persist-to "$STATE" --command "INSERT OR REPLACE INTO users (steamid, name, role, advisor) VALUES ('$TEST_STEAMID', 'Save owner', 'admin', 'owner'); INSERT OR REPLACE INTO sessions (id, steamid, expires_at) VALUES ('$H', '$TEST_STEAMID', datetime('now', '+1 day'));" >/dev/null
 fi
 $WR r2 object put nextgrace-assets/gamedata/graces_pos.json --file tests/fixtures/graces_pos.json --local --persist-to "$STATE" >/dev/null
+$WR r2 object put nextgrace-assets/gamedata/ar.json --file tests/fixtures/ar.json --local --persist-to "$STATE" >/dev/null # built from tests/fixtures/params with tools/game/equip_from_params.py
 $WR dev --local --port "$PORT" --persist-to "$STATE" --var ADVICE_MOCK:1 --var ADMIN_STEAMIDS:76561198000000001,${TEST_STEAMID:-0} --var ADVISOR_MODE:closed >"$STATE/wrangler.log" 2>&1 &
 WPID=$!
 trap 'kill $WPID 2>/dev/null; pkill -P $WPID 2>/dev/null || true' EXIT

@@ -246,6 +246,7 @@ async function main(DB, FLAGS, REQS, UNOBT, PICKUPS){ // PICKUPS: gamedata/picku
     $("#planTo").oninput = () => planUpdate("typing"); $("#planTo").onchange = planUpdate;
     sel.selectedIndex = Math.max(0, weapons.findIndex(w => w.level > 0 && w.level < w.maxLevel));
     c.weapons = weapons; planUpdate(true);
+    if (self.AR && !AR.ready && !AR.asked) { AR.asked = true; AR.load().then(ok => { if (ok && CUR) planUpdate(); }); } // game numbers (gamedata/ar.json): optional
     renderSpirits(c);
     // name + level bar on the first line; usability / ash of war tags below, so long names don't get squeezed
     const wrow = w => { const tags = useTag(canUse(c, w)) + (w.level >= w.maxLevel ? `<span class="tag max">${T("máx")}</span>` : "") + (w.aow ? `<span class="tag">${esc(w.aow)}</span>` : "");
@@ -356,6 +357,21 @@ async function main(DB, FLAGS, REQS, UNOBT, PICKUPS){ // PICKUPS: gamedata/picku
     const lines = Object.entries(need).map(([n, q]) => { const h = have[n] || 0; return `<div class="${h >= q ? "yes" : "no"}"><span>${esc(n)}</span><span>${h} / ${q}</span></div>`; });
     const ok = Object.entries(need).every(([n, q]) => (have[n] || 0) >= q);
     $("#need").innerHTML = (w.level >= w.maxLevel ? `<div class="yes"><span>${T("Ya está al máximo.")}</span><span></span></div>` : `<div class="muted small"><span>${T("De +{0} a +{1}", w.level, to)}${w.stored ? T(" (está en el cofre)") : ""}</span><span>${ok ? T("✓ tienes todo") : T("faltan piedras")}</span></div>` + lines.join(""));
+    $("#ar").innerHTML = arBlock(c, w, to);
+  }
+
+  // attack rating from the game's params (src/ar.js), one-handed and two-handed, now and at the target level; empty when the data is not published
+  const AR_T = { phys: "Fís", mag: "Mag", fire: "Fue", ltn: "Ray", holy: "Sag" }, AR_S = { str: "FUE", dex: "DES", int: "INT", fai: "FE", arc: "ARC" };
+  function arBlock(c, w, to) {
+    if (!self.AR || !AR.ready) return "";
+    const st = effStats(c), now1 = AR.compute(w.id, w.level, st, false); if (!now1) return "";
+    const now2 = AR.compute(w.id, w.level, st, true), later1 = to > w.level ? AR.compute(w.id, to, st, false) : null, later2 = later1 && AR.compute(w.id, to, st, true);
+    const twoH = now2 && now2.total !== now1.total;
+    const types = r => r.types.map(t => `${T(AR_T[t.k])} ${t.total}`).join(" · ");
+    const sc = Object.entries(now1.scaling).filter(([, l]) => l !== "-").map(([k, l]) => `${T(AR_S[k])} ${l}`).join(" · ");
+    const unmet = now1.unmet.length ? `<span class="tag no">${T("requisitos sin cumplir: {0}", now1.unmet.map(k => T(AR_S[k])).join(", "))}</span>` : "";
+    const line = (lbl, r1, r2) => `<div class="${r1.unmet.length ? "no" : "yes"}"><span>${lbl}</span><span><b>${r1.total}</b>${twoH && r2 ? ` · ${T("2 manos")} <b>${r2.total}</b>` : ""}</span></div><div class="muted small"><span>${types(r1)}</span><span></span></div>`;
+    return `<div class="muted small"><span>${T("Poder de ataque")}</span><span>${T("según los datos del juego")}</span></div>` + line(T("ahora (+{0})", w.level), now1, now2) + (later1 ? line(T("a +{0}", to), later1, later2) : "") + (sc ? `<div class="muted small"><span>${T("Escalado")}</span><span>${sc}</span></div>` : "") + (unmet ? `<div class="muted small"><span>${unmet}</span><span></span></div>` : "");
   }
 
   function renderInv() {

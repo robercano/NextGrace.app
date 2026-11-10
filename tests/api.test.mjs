@@ -115,3 +115,17 @@ test("i18n: every Spanish key used in the pages has an English translation", () 
   for (const f of files) { const s = readFileSync(f, "utf8"); for (const m of s.matchAll(/\bT\("((?:[^"\\]|\\.)*)"/g)) { try { used.add(JSON.parse('"' + m[1] + '"')); } catch (e) { used.add(m[1]); } } for (const m of s.matchAll(/data-i18n(?:-title)?="([^"]+)"/g)) used.add(m[1]); }
   const missing = [...used].filter(k => !(k in en)); assert.deepEqual(missing, [], "missing EN for: " + missing.slice(0, 20).join(" | "));
 });
+
+test("ar: the attack-rating calculator reads gamedata/ar.json and applies the game's formula", async () => {
+  const r = await fetch(BASE + "/gamedata/ar.json"); assert.equal(r.status, 200); const data = await r.json(); assert.ok(data.weapons["1000000"], "Dagger row in the fixture");
+  const sb = { self: null, fetch: async () => ({ ok: true, json: async () => data }) }; sb.self = sb; vm.createContext(sb); vm.runInContext(readFileSync("src/ar.js", "utf8"), sb);
+  assert.equal(await sb.AR.load(), true);
+  const st = { strength: 60, dexterity: 13, intelligence: 9, faith: 9, arcane: 7 };
+  const dagger = sb.AR.compute(1000000, 0, st, false); // 74 base; STR 27.5 % × curve(60)=75 % → 15.3; DEX 65 % × curve(13)≈16.5 % → 7.9
+  assert.equal(dagger.total, 97); assert.equal(JSON.stringify(dagger.scaling), JSON.stringify({ str: "D", dex: "C", int: "-", fai: "-", arc: "-" })); assert.equal(dagger.unmet.length, 0);
+  const heavy25 = sb.AR.compute(1000125, 25, st, false); // the save's id carries infusion (×100) and level: 1000125 = Heavy Dagger +25
+  assert.equal(heavy25.types[0].base, 167); assert.equal(heavy25.scaling.str, "A"); assert.equal(heavy25.maxLevel, 25);
+  const magic = sb.AR.compute(1000400, 0, { strength: 4, dexterity: 4, intelligence: 60, faith: 1, arcane: 1 }, true); // two-handed: STR 6 ≥ 5 ok, DEX 4 < 9 → −40 % of the physical base
+  assert.equal(JSON.stringify(magic.unmet), JSON.stringify(["dex"])); assert.equal(magic.types[0].bonus, -22); assert.equal(magic.types[1].total, 83);
+  assert.equal(sb.AR.compute(999, 0, st), null);
+});

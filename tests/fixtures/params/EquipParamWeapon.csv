@@ -1,0 +1,5 @@
+ID,Name,attackBasePhysics,attackBaseMagic,attackBaseFire,attackBaseThunder,attackBaseDark,correctStrength,correctAgility,correctMagic,correctFaith,correctLuck,correctType_Physics,correctType_Magic,correctType_Fire,correctType_Thunder,correctType_Dark,properStrength,properAgility,properMagic,properFaith,properLuck,reinforceTypeId,attackElementCorrectId,weight,wepType,gemMountType,materialSetId,sortId,iconId,disableGemAttr
+1000000,Dagger,74,0,0,0,0,27.5,65,0,0,0,0,0,0,0,0,5,9,0,0,0,0,10000,1.5,1,2,10001,100,1,0
+1000100,Heavy Dagger,67,0,0,0,0,80,20,0,0,0,0,0,0,0,0,5,9,0,0,0,100,10000,1.5,1,2,10001,101,1,0
+1000400,Magic Dagger,55,55,0,0,0,20,30,60,0,0,0,4,0,0,0,5,9,10,0,0,400,10000,1.5,1,2,10001,104,1,0
+110000,Unarmed,38,0,0,0,0,30,30,0,0,0,0,0,0,0,0,0,0,0,0,0,0,10000,0,0,0,0,1,0,1

@@ -1,4 +1,4 @@
-# Game data extraction (positions of graces and items)
+# Game data extraction (graces, items, equipment numbers)
 
 The game's own files give what the wiki map lacks: the position of every site of grace and of every item lying in the world.
 Everything runs on the PC that has the game unpacked with UXM (see `tools/EXTRACT.md`). Like the icons, what comes out of the
@@ -28,3 +28,15 @@ there (`functions/_icons.js`). Only `data/overrides/map_anchors.json` (hand-made
 
 Underground rivers and legacy dungeons are separate frames: each needs 3 graces (or anchors) that the wiki map places; the
 calibration report says which ones are still missing.
+
+## 3. Equipment numbers → attack-rating calculator (10 minutes)
+
+1. Smithbox → *Param Editor* → export each of these with *Export → CSV → All rows*, into one folder, with the param's name as
+   the file name: `EquipParamWeapon`, `ReinforceParamWeapon`, `CalcCorrectGraph`, `AttackElementCorrectParam` (these four make
+   the calculator), and optionally `EquipParamProtector`, `EquipParamAccessory`, `Magic`, `EquipMtrlSetParam` (for the next steps).
+2. `py tools\game\equip_from_params.py C:\ruta\a\la\carpeta` → `gamedata/ar.json` (what the browser downloads: ~1 MB before
+   gzip) and `gamedata/equip.json` (everything else, for later). The script prints the fields it kept per param; if one of the
+   four is missing it says so and writes no `ar.json`.
+3. Commit and push `gamedata/` in `nextgrace-assets`. The smithing planner then shows "Poder de ataque" (now and at the target
+   level, one- and two-handed, scaling letters) under the stones it needs; without `ar.json` the block simply does not appear.
+   `tests/fixtures/params/` holds a four-weapon sample of the same CSV shape, for the tests.
