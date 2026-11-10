@@ -1,0 +1,20 @@
+# Loads every Worker module with Node (ESM) so a syntax error never reaches Workers Builds unnoticed (node --check does not
+# catch everything in ESM files), and parses the page scripts.
+name: check
+on: [push, pull_request]
+jobs:
+  modules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Import every module under functions/ and worker/
+        run: |
+          set -e
+          for f in $(find functions worker -name '*.js'); do node -e "import('./$f').then(()=>console.log('ok $f')).catch(e=>{console.error('FAIL $f:', e.message); process.exit(1)})"; done
+      - name: Parse the browser scripts
+        run: |
+          set -e
+          for f in src/*.js sw.js; do node --check "$f"; done
+          node -e 'const fs=require("fs");for (const f of ["index.html","map.html"]) { const s=fs.readFileSync(f,"utf8"); for (const m of s.matchAll(/<script>([\s\S]*?)<\/script>/g)) new Function(m[1]); console.log("ok", f); }'

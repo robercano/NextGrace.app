@@ -55,7 +55,7 @@ class RpcError extends Error { constructor(code, message) { super(message); this
 
 async function handle(context, u, method, params) {
   switch (method) {
-    case "initialize": return { protocolVersion: PROTOCOL, capabilities: { tools: { listChanged: false } }, serverInfo: { name: "Next Grace", version: VERSION }, instructions: "Next Grace holds summaries of the user's Elden Ring characters read from their PC save. Start with list_characters, then get_character for the one they mean. Item, boss and place names are the English ones (as on the wiki). To draw a route on the user's map use find_places for exact names and prefer the ones marked "pinned" (many sites of grace have no coordinates in the map data: pick the dungeon, church, ruin or boss next to them instead), then set_route. Avoid story spoilers." };
+    case "initialize": return { protocolVersion: PROTOCOL, capabilities: { tools: { listChanged: false } }, serverInfo: { name: "Next Grace", version: VERSION }, instructions: "Next Grace holds summaries of the user's Elden Ring characters read from their PC save. Start with list_characters, then get_character for the one they mean. Item, boss and place names are the English ones (as on the wiki). To draw a route on the user's map use find_places for exact names and prefer the ones marked 'pinned' (many sites of grace have no coordinates in the map data: pick the dungeon, church, ruin or boss next to them instead), then set_route. Avoid story spoilers." };
     case "ping": return {};
     case "tools/list": return { tools: TOOLS };
     case "tools/call": {
@@ -128,7 +128,7 @@ const tools = {
   async find_places(context, u, a) {
     const idx = await stopIndex(context); const P = await asset(context, "/data/places.json"); const byName = new Map(P.places.map(p => [p.name.toLowerCase(), p]));
     const q = String(a.query || "").toLowerCase().trim(); if (!q) throw new ToolError("query is required");
-    const limit = Math.min(Math.max(a.limit | 0 || 15, 1), 50); const out = [];
+    const limit = Math.min(Math.max(a.limit | 0 || 15, 1), 50);
     const rows = [];
     for (const v of idx.values()) { if (!v.name.toLowerCase().includes(q)) continue; const p = byName.get(v.name.toLowerCase()); const pinned = !!(p && !p.region);
       const layer = p ? ((p.layer || "").includes("GUGR") ? "underground" : (p.layer || "").includes("SOTE") ? "DLC" : "overworld") : "-";

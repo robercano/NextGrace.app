@@ -235,6 +235,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
   const norm = s => s.toLowerCase().replace(/\s*\(.*\)\s*$/, "");
   const findPlace = name => placeByName.get(name.toLowerCase()) || placeByName.get(norm(name)) || null;
   const layerOf = p => (p.layer || "").includes("GUGR") ? "gugr" : (p.layer || "").includes("SOTE") ? "sote" : "tlb";
+  const layerName = k => { const o = $("#layerSel").querySelector(`option[value="${k}"]`); return o ? o.textContent : k; };
 
   // user markers
   let userMarkers = []; try { userMarkers = JSON.parse(localStorage.getItem("tl.markers") || "[]"); } catch (e) {}
@@ -299,12 +300,14 @@ body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px
     const done = ROUTE.stops.filter(s => s.done).length;
     box.hidden = false; box.className = "route" + (routeMin ? " min" : "");
     box.innerHTML = `<h4 id="routeH"><span>${esc(ROUTE.title || T("Ruta"))}</span><small>${done}/${ROUTE.stops.length}${ROUTE.source === "advisor" ? " · " + T("del consejero") : ""}</small><small>${routeMin ? "▴" : "▾"}</small></h4>
-      <ol>${ROUTE.stops.map((s, i) => `<li class="${s.done ? "done" : ""}${s._p ? "" : " text"}"><input type="checkbox" data-i="${i}"${s.done ? " checked" : ""}><div class="n" data-go="${i}"><b>${i + 1}. ${esc(s.name)}</b>${s.why ? `<i>${esc(s.why)}</i>` : ""}${s._p ? "" : `<i>${T("(sin coordenadas en el mapa)")}</i>`}</div></li>`).join("")}</ol>
+      <ol>${ROUTE.stops.map((s, i) => `<li class="${s.done ? "done" : ""}${s._p ? "" : " text"}"><input type="checkbox" data-i="${i}"${s.done ? " checked" : ""}><div class="n" data-go="${i}"><b>${i + 1}. ${esc(s.name)}</b>${s.why ? `<i>${esc(s.why)}</i>` : ""}${s._p ? (layerOf(s._p) !== layer ? `<i>${T("(en {0})", layerName(layerOf(s._p)))}</i>` : "") : `<i>${T("(sin coordenadas en el mapa)")}</i>`}</div></li>`).join("")}</ol>
       <div class="rt"><button class="btn" id="routeFit">${T("Ver toda la ruta")}</button><button class="btn" id="routeDel">${T("Borrar ruta")}</button></div>`;
     $("#routeH").onclick = () => { routeMin = !routeMin; try { localStorage.setItem("tl.routeMin", routeMin ? "1" : "0"); } catch (e) {} drawRoute(); };
     box.querySelectorAll("input[data-i]").forEach(cb => cb.onchange = async () => { const i = +cb.dataset.i; ROUTE.stops[i].done = cb.checked; drawRoute(); const r = await Cloud.routeDone(Marks.charKey(CUR), i, cb.checked); if (r && r.route) { ROUTE = r.route; drawRoute(); } });
     box.querySelectorAll("[data-go]").forEach(el => el.onclick = () => { const s = ROUTE.stops[+el.dataset.go]; const p = s._p; if (!p) return; const lay = layerOf(p); if ($("#layerSel").value !== lay) { $("#layerSel").value = lay; setBg(lay); render(); drawRoute(); } map.setView(at(p), 0, { animate: true }); });
-    $("#routeFit").onclick = () => { const ps = ROUTE.stops.map(s => s._p).filter(p => p && layerOf(p) === $("#layerSel").value).map(at); if (ps.length) map.fitBounds(L.latLngBounds(ps).pad(0.3)); };
+    $("#routeFit").onclick = () => { const ps = ROUTE.stops.map(s => s._p).filter(p => p && layerOf(p) === $("#layerSel").value).map(at); if (!ps.length) return;
+      const ph = routeMin ? 40 : Math.min(box.getBoundingClientRect().height, innerHeight * 0.46); // keep the pins clear of the panel and the top controls
+      map.fitBounds(L.latLngBounds(ps).pad(0.15), { paddingTopLeft: [20, 20], paddingBottomRight: [20, ph + 30] }); };
     $("#routeDel").onclick = async () => { if (!confirm(T("¿Borrar la ruta de este personaje?"))) return; await Cloud.routeDelete(Marks.charKey(CUR)); ROUTE = null; drawRoute(); };
   }
   async function loadRoute(fit) {
