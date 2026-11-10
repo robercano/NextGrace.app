@@ -86,6 +86,29 @@ Inventory of what the repo contains and what Rob decided about each item. Not le
 
 Rob still has to: set the Anthropic spend limit and the Cloudflare rate-limiting rule on `/api/advice*`, turn on Hotlink Protection, and remove Cloudflare Access when opening. Secrets, contact address, icons: done.
 
+## Game data extraction plan (decided 2026-11-10)
+
+What the game's own files can give the site, in order of value (all extracted on the owner's PC from the UXM-unpacked game
+with Smithbox / soulstruct; see `tools/game/README.md`; numbers and names are data and live in the public repo, game text
+and art stay private):
+
+1. [ ] **Graces with coordinates** (`BonfireWarpParam`): every site of grace, DLC included, pinned on the map → routes can
+   stop at any grace. Scripts ready (`tools/game/graces_from_param.py`, `calibrate_map.py`); waiting for the CSV.
+2. [ ] **Item positions** (map `.msb` treasures + `ItemLotParam_map`): exact pin for ~2,900 items instead of the wiki's
+   location text, and "picked up" by flag per item. Script ready (`tools/game/pickups_from_msb.py`); then wire
+   `data/pickups_pos.json` into the map (replace/complement the "No tengo" markers) and the inventory detail.
+3. [ ] **Full equipment params** (`EquipParamWeapon`, `ReinforceParamWeapon`, `CalcCorrectGraph`, `EquipParamProtector`,
+   `EquipParamAccessory`, `Magic`): exact requirements and scaling for everything incl. DLC, and a real attack-rating
+   calculator for the smithing planner and the advisor.
+4. [ ] **Smithing costs** (`EquipMtrlSetParam`): exact stones and runes per level and weapon type.
+5. [ ] **Shops and bell bearings** (`ShopLineupParam`): where each item is bought and what each bearing unlocks.
+6. [ ] **Crafting** (`EquipMtrlSetParam` + cookbooks): what the character can craft with what it carries.
+7. [ ] **Game text** (`.fmg`): official Spanish names (full Spanish UI, English kept as alias for the wiki) and item
+   descriptions; served from R2 like the icons.
+8. [ ] **Bosses and enemies with positions** (`.msb`), DLC Scadutree / Revered Spirit Ash fragment positions.
+9. [ ] **NPC quests** (`.esd` talk scripts + `.emevd` events, decompiled): per-NPC state chains from flag checks, labelled by
+   hand with the dialogue text → a real quest tracker. A project of its own; after 1–3.
+
 ## Pending / ideas
 
 - Collection / checklist (decided 2026-11-05, inspired by CyberGiant's Automatic Checklist; no new tab, no checkboxes — the save decides):
