@@ -31,6 +31,9 @@
         weapons: (c.all || []).filter(i => i.kind === "weapon" && i.maxLevel > 0 && i.cat !== "arrows_and_bolts").map(i => { const u = root.TL_USE ? root.TL_USE(c, i) : null; return { n: i.name.replace(/\s*\+\d+$/, ""), inf: i.infusion && i.infusion !== "Standard" ? i.infusion : undefined, lvl: i.level, max: i.maxLevel, cat: i.sub || i.cat, stored: i.stored || undefined,
           req: u ? u.req : undefined, sc: u && u.scale ? u.scale : undefined, use: u ? (u.boosted ? "boost" : u.ok ? "ok" : u.twoHand ? "2h" : "no") : undefined, via: u && u.boosted ? u.via.join(" + ") : undefined, miss: u && !u.ok && !u.twoHand ? u.missing.map(m => m.k + "+" + (m.need - m.have)).join(" ") : undefined }; }),
         talismans: (c.all || []).filter(i => i.kind === "talisman").map(i => i.name),
+        // armor owned, by slot, with weight (the advisor and the MCP list them; the equipped set is in `equipped`)
+        armor: (c.all || []).filter(i => ["head", "chest", "arms", "legs"].includes(i.cat)).map(i => ({ n: i.name, s: i.cat, w: root.TL_WEIGHT ? root.TL_WEIGHT(i) : undefined, stored: i.stored || undefined })),
+        load: root.TL_LOAD ? (l => ({ load: Math.round(l.load * 10) / 10, max: Math.round(l.max * 10) / 10, roll: l.roll }))(root.TL_LOAD(c)) : undefined,
         spells: (c.enriched && c.enriched.spells || []).map(n).filter(Boolean),
         spellsOwned: (c.all || []).filter(i => i.cat === "sorceries" || i.cat === "incantations").map(i => { const u = root.TL_USE ? root.TL_USE(c, i) : null; return u && !u.ok ? i.name + " (faltan " + u.missing.map(m => m.k + "+" + (m.need - m.have)).join(" ") + ")" : i.name; }),
         ashes: (c.all || []).filter(i => i.cat === "ashes" || i.cat === "ashes_of_war").map(i => i.name),

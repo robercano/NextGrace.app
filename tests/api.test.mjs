@@ -15,7 +15,8 @@ const j = async (path, opts = {}, cookie = "test-admin") => {
   return { status: r.status, body, headers: r.headers };
 };
 const summary = (level, extra = {}) => ({ level, class: "Prophet", ng: 0, playtime: 3600, deaths: 3, stats: { vig: 20, min: 15, end: 12, str: 10, dex: 10, int: 7, fai: 24, arc: 8 }, hp: 700, fp: 100, sp: 100,
-  equipped: { rh: ["Finger Seal"], lh: [], talismans: [], greatRune: null }, progress: { bosses: [], graces: [], picked: [], regions: [] }, itemCount: 2, haveKeys: [1073742015], weapons: [{ n: "Finger Seal", lvl: 0, max: 25 }], talismans: [], spells: [], spellsOwned: [], ashes: [], stones: {}, keyItems: ["Godrick's Great Rune"], ...extra });
+  equipped: { rh: ["Finger Seal"], lh: [], talismans: [], greatRune: null }, progress: { bosses: [], graces: [], picked: [], regions: [] }, itemCount: 4, haveKeys: [1073742015, 268475456, 268485456, 1000125], weapons: [{ n: "Finger Seal", lvl: 0, max: 25 }], talismans: [], spells: [], spellsOwned: [], ashes: [], stones: {}, keyItems: ["Godrick's Great Rune"],
+  armor: [{ n: "Iron Helmet", s: "head", w: 3.8 }, { n: "Kaiden Helm", s: "head", w: 4.6, stored: true }], load: { load: 12.3, max: 48.2, roll: "light" }, ...extra });
 
 test("health", async () => { const r = await j("/api/health", {}, ""); assert.equal(r.status, 200); assert.equal(r.body.ok, true); assert.equal(r.body.db, true); });
 
@@ -86,7 +87,7 @@ test("oauth + mcp: registration, consent, PKCE, tools, revocation", async () => 
   const rpc = async (method, params, id = 1) => (await fetch(BASE + "/mcp", { method: "POST", headers: { authorization: "Bearer " + tok.access_token, "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id, method, params }) })).json();
   const unauth = await fetch(BASE + "/mcp", { method: "POST", body: "{}" }); assert.equal(unauth.status, 401); assert.match(unauth.headers.get("www-authenticate"), /resource_metadata/);
   const init = await rpc("initialize", { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "t", version: "1" } }); assert.equal(init.result.serverInfo.name, "Next Grace");
-  const tools = await rpc("tools/list", {}); const names = tools.result.tools.map(t => t.name); for (const n of ["list_characters", "get_character", "missing_items", "find_places", "set_route"]) assert.ok(names.includes(n), n);
+  const tools = await rpc("tools/list", {}); const names = tools.result.tools.map(t => t.name); for (const n of ["list_characters", "get_character", "owned_items", "missing_items", "find_places", "set_route"]) assert.ok(names.includes(n), n);
   const list = await rpc("tools/call", { name: "list_characters", arguments: {} }); assert.match(list.result.content[0].text, /Arcano/);
   const fp = await rpc("tools/call", { name: "find_places", arguments: { query: "altus highway" } }); assert.match(fp.result.content[0].text, /Altus Highway Junction \(grace, overworld, pinned\)/, "game-placed grace is pinned");
   const set = await rpc("tools/call", { name: "set_route", arguments: { char_key: CK, title: "MCP", stops: [{ name: "Altus Highway Junction", why: "x" }, { name: "Margit, the Fell Omen", why: "y" }] } }); assert.match(set.result.content[0].text, /Route saved with 2 stops/);
@@ -94,6 +95,10 @@ test("oauth + mcp: registration, consent, PKCE, tools, revocation", async () => 
   const foreign = await rpc("tools/call", { name: "get_route", arguments: { char_key: CK2 } }); assert.equal(foreign.result.isError, true);
   const bosses = await rpc("tools/call", { name: "pending_bosses", arguments: { char_key: CK, region: "Limgrave" } }); assert.match(bosses.result.content[0].text, /Tree Sentinel|Agheel/);
   const miss = await rpc("tools/call", { name: "missing_items", arguments: { char_key: CK, category: "talisman", limit: 3 } }); assert.match(miss.result.content[0].text, /missing/);
+  const own = await rpc("tools/call", { name: "owned_items", arguments: { char_key: CK, category: "armor" } }); const ot = own.result.content[0].text;
+  assert.match(ot, /^2 owned/); assert.match(ot, /Iron Helmet \(helm, weight 3\.8\)/); assert.match(ot, /Kaiden Helm \(helm, weight 4\.6, in the chest\)/);
+  const ownW = await rpc("tools/call", { name: "owned_items", arguments: { char_key: CK, category: "weapon" } }); assert.match(ownW.result.content[0].text, /Heavy Dagger \+25 \(weapon\)/);
+  const ch = await rpc("tools/call", { name: "get_character", arguments: { char_key: CK } }); assert.match(ch.result.content[0].text, /Armaduras que posee \(2 piezas.*Carga de equipo actual: 12\.3\/48\.2 \(light\).*cabeza: Iron Helmet \(3\.8\), Kaiden Helm \(4\.6\) \[cofre\]/);
   const refreshed = await (await fetch(BASE + "/oauth/token", { method: "POST", body: new URLSearchParams({ grant_type: "refresh_token", refresh_token: tok.refresh_token, client_id: reg.client_id }) })).json(); assert.ok(refreshed.access_token);
   const conns = await j("/api/connections"); assert.ok(conns.body.connections.some(c => c.client_id === reg.client_id));
   const rev = await j("/api/connections", { method: "POST", body: { action: "revoke", client_id: reg.client_id } }); assert.equal(rev.status, 200);

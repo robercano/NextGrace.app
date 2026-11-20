@@ -85,6 +85,8 @@ export function buildContext(row, S, FLAGS, PROG) {
   lines.push(`\n# Armas en inventario (${all.length}${omitted ? `, se listan ${weapons.length}: las mejoradas, equipadas o usables con buen escalado; ${omitted} más sin mejorar omitidas` : ""}): ${weapons.map(fmtW).join("; ")}`);
   lines.push(`# Piedras de forja: ${Object.entries(S.stones || {}).map(([k, v]) => k.replace("Smithing Stone", "SS") + " ×" + v).join(", ") || "ninguna"}`);
   lines.push(`# Talismanes (${(S.talismans || []).length}): ${(S.talismans || []).join(", ")}`);
+  if (S.armor && S.armor.length) { const SL = { head: "cabeza", chest: "torso", arms: "brazos", legs: "piernas" }; const fmtA = a => a.n + (a.w ? " (" + a.w + ")" : "") + (a.stored ? " [cofre]" : "");
+    lines.push(`# Armaduras que posee (${S.armor.length} piezas, peso entre paréntesis)${S.load ? `. Carga de equipo actual: ${S.load.load}/${S.load.max} (${S.load.roll})` : ""}: ` + ["head", "chest", "arms", "legs"].map(k => `${SL[k]}: ${S.armor.filter(a => a.s === k).map(fmtA).join(", ") || "-"}`).join("; ")); }
   lines.push(`# Hechizos/encantamientos que posee (${(S.spellsOwned || []).length}): ${(S.spellsOwned || []).join(", ")}`);
   lines.push(`# Cenizas (espíritus y de guerra) (${(S.ashes || []).length}): ${(S.ashes || []).slice(0, 80).join(", ")}`);
   lines.push(`# Objetos clave: ${(S.keyItems || []).join(", ")}`);

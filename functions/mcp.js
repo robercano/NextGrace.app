@@ -3,7 +3,7 @@
 // functions/_oauth.js (identity = the site's Steam login). Only JSON-RPC over POST; GET (server-initiated streams) is not offered.
 //
 // Tools (all take char_key from list_characters unless noted): list_characters · get_character · get_report · pending_bosses ·
-// pending_graces · missing_items · find_places · get_route · set_route · add_stop · mark_stop · clear_route
+// pending_graces · owned_items · missing_items · find_places · get_route · set_route · add_stop · mark_stop · clear_route
 import { json } from "./_lib.js";
 import { bearerUser } from "./_oauth.js";
 import { buildContext } from "./api/advice/[char_key].js";
@@ -11,14 +11,16 @@ import { stopIndex, cleanStops, getRoute, putRoute, ensureRoutes, MAX_STOPS } fr
 
 const PROTOCOL = "2025-06-18", VERSION = "1.0";
 const CATALOG_CATS = new Set(["melee_armaments", "ranged_and_catalysts", "shields", "head", "chest", "arms", "legs", "talismans", "ashes_of_war", "ashes", "sorceries", "incantations", "key_items"]);
+const INFUSIONS = ["", "Heavy", "Keen", "Quality", "Fire", "Flame Art", "Lightning", "Sacred", "Magic", "Cold", "Poison", "Blood", "Occult"];
 const CAT_LABEL = { melee_armaments: "weapon", ranged_and_catalysts: "ranged/catalyst", shields: "shield", head: "helm", chest: "chest armor", arms: "gauntlets", legs: "greaves", talismans: "talisman", ashes_of_war: "ash of war", ashes: "spirit ash", sorceries: "sorcery", incantations: "incantation", key_items: "key item" };
 
 const TOOLS = [
   { name: "list_characters", description: "The user's Elden Ring characters known to Next Grace (summaries uploaded from their save). Returns char_key, name, class, level, playtime and when the summary was last updated. Call this first.", inputSchema: { type: "object", properties: {} } },
-  { name: "get_character", description: "Full state of one character as the site's advisor sees it: attributes, HP/FP, flasks, equipped gear, usable weapons with real requirements and scaling, talismans, spells, spirit ashes, smithing stones, bosses and graces by region, last grace, and an indicative progression table. Big (10–30k characters); call once per conversation.", inputSchema: { type: "object", properties: { char_key: { type: "string" } }, required: ["char_key"] } },
+  { name: "get_character", description: "Full state of one character as the site's advisor sees it: attributes, HP/FP, flasks, equipped gear and equip load, usable weapons with real requirements and scaling, armor owned by slot with weights, talismans, spells, spirit ashes, smithing stones, bosses and graces by region, last grace, and an indicative progression table. Big (10–30k characters); call once per conversation.", inputSchema: { type: "object", properties: { char_key: { type: "string" } }, required: ["char_key"] } },
   { name: "get_report", description: "The latest report the site's advisor wrote for this character (Markdown) and when.", inputSchema: { type: "object", properties: { char_key: { type: "string" } }, required: ["char_key"] } },
   { name: "pending_bosses", description: "Bosses not yet defeated, grouped by region (main bosses, field bosses, remembrance holders). Optional region filter (substring, e.g. 'Caelid').", inputSchema: { type: "object", properties: { char_key: { type: "string" }, region: { type: "string" } }, required: ["char_key"] } },
   { name: "pending_graces", description: "Sites of grace not yet discovered, by region. Optional region filter (substring).", inputSchema: { type: "object", properties: { char_key: { type: "string" }, region: { type: "string" } }, required: ["char_key"] } },
+  { name: "owned_items", description: "Items the character owns (inventory and chest), by category: weapons (with upgrade level), armor (helms, chest armor, gauntlets, greaves, with weight), talismans, ashes, spells, key items. Filter by category (weapon, shield, armor, helm, chest, gauntlets, greaves, talisman, ash of war, spirit ash, sorcery, incantation, key item), by a text query on the name, and limit (default 60). For armor this is the full list; get_character only names the equipped set.", inputSchema: { type: "object", properties: { char_key: { type: "string" }, category: { type: "string" }, query: { type: "string" }, limit: { type: "integer" } }, required: ["char_key"] } },
   { name: "missing_items", description: "Collectible items the character does not own (weapons, armor, talismans, ashes, spells, key items) with where to find them. Filter by category (weapon, shield, armor, talisman, ash of war, spirit ash, sorcery, incantation, key item), by a text query on the name or location (e.g. a region or dungeon name), and limit (default 40).", inputSchema: { type: "object", properties: { char_key: { type: "string" }, category: { type: "string" }, query: { type: "string" }, limit: { type: "integer" } }, required: ["char_key"] } },
   { name: "find_places", description: "Search the map's places, graces and bosses by name. Use it to get exact names for route stops. Returns name, kind and map layer (overworld / underground / DLC).", inputSchema: { type: "object", properties: { query: { type: "string" }, limit: { type: "integer" } }, required: ["query"] } },
   { name: "get_route", description: "The character's current route on the map (ordered stops, done flags, who wrote it).", inputSchema: { type: "object", properties: { char_key: { type: "string" } }, required: ["char_key"] } },
@@ -106,6 +108,21 @@ const tools = {
     const by = {}; for (const g of F.graces) { if (seen.has(g.id) || !regionOk(g.region, a.region)) continue; (by[g.region] = by[g.region] || []).push(g.name); }
     const keys = Object.keys(by); if (!keys.length) return "No pending graces" + (a.region ? ` in "${a.region}"` : "") + ".";
     return keys.map(r => `${r} (${by[r].length}): ${by[r].join("; ")}`).join("\n");
+  },
+  async owned_items(context, u, a) {
+    const row = await charRow(context, u, a.char_key); const DB = await asset(context, "/data/items.json");
+    const cat = (a.category || "").toLowerCase(), q = (a.query || "").toLowerCase(), limit = Math.min(Math.max(a.limit | 0 || 60, 1), 400);
+    const catKeys = Object.keys(CAT_LABEL).filter(k => !cat || CAT_LABEL[k].includes(cat) || k.includes(cat) || (cat === "armor" && ["head", "chest", "arms", "legs"].includes(k)));
+    const armorW = new Map((row.S.armor || []).map(a => [a.n, a])), seen = new Set(), out = [];
+    for (const id of row.S.haveKeys || []) {
+      const e = DB.items[id] || (id >= 1000000 ? DB.items[Math.floor(id / 10000) * 10000] : null); if (!e || !CATALOG_CATS.has(e.c) || !catKeys.includes(e.c)) continue;
+      let name = e.n; if (e.k === "weapon" && !DB.items[id]) { const inf = Math.floor((id % 10000) / 100), lvl = id % 100; name = (INFUSIONS[inf] ? INFUSIONS[inf] + " " : "") + e.n + (lvl ? " +" + lvl : ""); }
+      if (q && !name.toLowerCase().includes(q)) continue; if (seen.has(name)) continue; seen.add(name);
+      const a2 = armorW.get(e.n); const extra = a2 ? (a2.w ? ", weight " + a2.w : "") + (a2.stored ? ", in the chest" : "") : "";
+      out.push(`- ${name} (${CAT_LABEL[e.c]}${e.dlc ? ", DLC" : ""}${extra})`);
+    }
+    if (!out.length) return "Nothing owned for that filter.";
+    return `${out.length} owned${out.length > limit ? `, first ${limit}` : ""}:\n` + out.slice(0, limit).join("\n");
   },
   async missing_items(context, u, a) {
     const row = await charRow(context, u, a.char_key); const DB = await asset(context, "/data/items.json");

@@ -3,7 +3,7 @@ import { handler, requireUser, readJson, json, bad } from "../_lib.js";
 // The summary is built by the browser (Cloud.summarize) and cannot be verified against the save, so it is bounded here: a real
 // character never exceeds these sizes, and a fabricated one must not be able to inflate the advisor's prompt.
 // A finished character (Gabriell, level 220) has ~450 weapons, 150 talismans, 200 spells, 170 ashes, 230 key items, 2200 ids: 135 KB.
-const CAPS = { weapons: 900, talismans: 200, spells: 14, spellsOwned: 300, ashes: 450, keyItems: 400, haveKeys: 4000 }, STR = 80, MAX_BYTES = 320 * 1024;
+const CAPS = { weapons: 900, talismans: 200, spells: 14, spellsOwned: 300, ashes: 450, keyItems: 400, armor: 800, haveKeys: 4000 }, STR = 80, MAX_BYTES = 320 * 1024;
 function sanitizeSummary(S) {
   if (!S || typeof S !== "object" || Array.isArray(S)) return {};
   const str = v => typeof v === "string" ? v.slice(0, STR) : v;
@@ -14,7 +14,7 @@ function sanitizeSummary(S) {
     else out[k] = str(v);
   }
   let json = JSON.stringify(out);
-  if (json.length > MAX_BYTES) { for (const k of ["ashes", "keyItems", "spellsOwned", "weapons", "talismans"]) { if (json.length <= MAX_BYTES) break; if (Array.isArray(out[k])) out[k] = out[k].slice(0, Math.ceil(out[k].length / 2)); json = JSON.stringify(out); } }
+  if (json.length > MAX_BYTES) { for (const k of ["ashes", "keyItems", "spellsOwned", "armor", "weapons", "talismans"]) { if (json.length <= MAX_BYTES) break; if (Array.isArray(out[k])) out[k] = out[k].slice(0, Math.ceil(out[k].length / 2)); json = JSON.stringify(out); } }
   return out;
 }
 export const onRequestPut = handler(async context => {

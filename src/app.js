@@ -101,7 +101,7 @@ async function main(DB, FLAGS, REQS, UNOBT, PICKUPS){ // PICKUPS: gamedata/picku
 
   // ---- requirement tags (data from src/rules.js canUse) ------------------------
   const STAT_SHORT0 = { str: "FUE", dex: "DES", int: "INT", fai: "FE", arc: "ARC" }; const STAT_SHORT = new Proxy(STAT_SHORT0, { get: (o, k) => o[k] ? T(o[k]) : o[k] });
-  self.TL_USE = (c, it) => canUse(c, it); // used by cloud.js when building the account summary
+  self.TL_USE = (c, it) => canUse(c, it); self.TL_WEIGHT = it => weightOf(it); self.TL_LOAD = c => R.equipLoad(c); // used by cloud.js when building the account summary
   const useCls = u => !u ? "" : u.boosted ? " boost" : u.ok ? "" : u.twoHand ? " use2h" : " nope";
   const useTag = u => !u ? "" : u.boosted ? `<span class="tag boost">${T("con {0}", esc(u.via.join(" + ")))}${u.twoHand ? T(", a dos manos") : ""}</span>` : u.ok ? "" : u.twoHand ? `<span class="tag use2h">${T("a dos manos")}</span>` : `<span class="tag nope">${T("faltan {0}", u.missing.map(m => `${STAT_SHORT[m.k]} ${m.need - m.have}`).join(", "))}</span>`;
   const useMeta = u => !u ? "" : u.boosted ? T("solo gracias a {0}{1}: tus atributos base no llegan", u.via.join(I18N.lang === "en" ? " and " : " y "), u.twoHand ? T(" (y a dos manos)") : "") : u.ok ? "" : u.twoHand ? T("solo a dos manos") : T("no cumples: {0}", u.missing.map(m => T("{0} {1} (tienes {2})", STAT_SHORT[m.k], m.need, m.have)).join(", "));
