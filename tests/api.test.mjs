@@ -16,7 +16,7 @@ const j = async (path, opts = {}, cookie = "test-admin") => {
 };
 const summary = (level, extra = {}) => ({ level, class: "Prophet", ng: 0, playtime: 3600, deaths: 3, stats: { vig: 20, min: 15, end: 12, str: 10, dex: 10, int: 7, fai: 24, arc: 8 }, hp: 700, fp: 100, sp: 100,
   equipped: { rh: ["Finger Seal"], lh: [], talismans: [], greatRune: null }, progress: { bosses: [], graces: [], picked: [], regions: [] }, itemCount: 4, haveKeys: [1073742015, 268475456, 268485456, 1000125], weapons: [{ n: "Finger Seal", lvl: 0, max: 25 }], talismans: [], spells: [], spellsOwned: [], ashes: [], stones: {}, keyItems: ["Godrick's Great Rune"],
-  armor: [{ n: "Iron Helmet", s: "head", w: 3.8 }, { n: "Kaiden Helm", s: "head", w: 4.6, stored: true }], load: { load: 12.3, max: 48.2, roll: "light" }, ...extra });
+  armor: [{ n: "Iron Helmet", s: "head", w: 3.8 }, { n: "Kaiden Helm", s: "head", w: 4.6, stored: true }], load: { load: 52.3, max: 85.9, roll: "medium", pct: 61, boosts: ["Great-Jar's Arsenal"], base: { max: 72.2, roll: "heavy", pct: 72 } }, ...extra });
 
 test("health", async () => { const r = await j("/api/health", {}, ""); assert.equal(r.status, 200); assert.equal(r.body.ok, true); assert.equal(r.body.db, true); });
 
@@ -98,7 +98,7 @@ test("oauth + mcp: registration, consent, PKCE, tools, revocation", async () => 
   const own = await rpc("tools/call", { name: "owned_items", arguments: { char_key: CK, category: "armor" } }); const ot = own.result.content[0].text;
   assert.match(ot, /^2 owned/); assert.match(ot, /Iron Helmet \(helm, weight 3\.8\)/); assert.match(ot, /Kaiden Helm \(helm, weight 4\.6, in the chest\)/);
   const ownW = await rpc("tools/call", { name: "owned_items", arguments: { char_key: CK, category: "weapon" } }); assert.match(ownW.result.content[0].text, /Heavy Dagger \+25 \(weapon\)/);
-  const ch = await rpc("tools/call", { name: "get_character", arguments: { char_key: CK } }); assert.match(ch.result.content[0].text, /Armaduras que posee \(2 piezas.*Carga de equipo actual: 12\.3\/48\.2 \(light\).*cabeza: Iron Helmet \(3\.8\), Kaiden Helm \(4\.6\) \[cofre\]/);
+  const ch = await rpc("tools/call", { name: "get_character", arguments: { char_key: CK } }); assert.match(ch.result.content[0].text, /Armaduras que posee \(2 piezas.*Carga de equipo actual: 52\.3\/85\.9 = 61 % \(medium\); sin Great-Jar's Arsenal sería 52\.3\/72\.2 = 72 % \(heavy\).*cabeza: Iron Helmet \(3\.8\), Kaiden Helm \(4\.6\) \[cofre\]/);
   const refreshed = await (await fetch(BASE + "/oauth/token", { method: "POST", body: new URLSearchParams({ grant_type: "refresh_token", refresh_token: tok.refresh_token, client_id: reg.client_id }) })).json(); assert.ok(refreshed.access_token);
   const conns = await j("/api/connections"); assert.ok(conns.body.connections.some(c => c.client_id === reg.client_id));
   const rev = await j("/api/connections", { method: "POST", body: { action: "revoke", client_id: reg.client_id } }); assert.equal(rev.status, 200);

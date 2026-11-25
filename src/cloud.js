@@ -33,7 +33,8 @@
         talismans: (c.all || []).filter(i => i.kind === "talisman").map(i => i.name),
         // armor owned, by slot, with weight (the advisor and the MCP list them; the equipped set is in `equipped`)
         armor: (c.all || []).filter(i => ["head", "chest", "arms", "legs"].includes(i.cat)).map(i => ({ n: i.name, s: i.cat, w: root.TL_WEIGHT ? root.TL_WEIGHT(i) : undefined, stored: i.stored || undefined })),
-        load: root.TL_LOAD ? (l => ({ load: Math.round(l.load * 10) / 10, max: Math.round(l.max * 10) / 10, roll: l.roll }))(root.TL_LOAD(c)) : undefined,
+        load: root.TL_LOAD ? (l => ({ load: Math.round(l.load * 10) / 10, max: Math.round(l.max * 10) / 10, roll: l.roll, pct: Math.round(l.ratio * 100),
+          boosts: l.boosts.map(b => b.src), base: l.boosts.length ? { max: Math.round(l.base.max * 10) / 10, roll: l.base.roll, pct: Math.round(l.base.ratio * 100) } : undefined }))(root.TL_LOAD(c)) : undefined,
         spells: (c.enriched && c.enriched.spells || []).map(n).filter(Boolean),
         spellsOwned: (c.all || []).filter(i => i.cat === "sorceries" || i.cat === "incantations").map(i => { const u = root.TL_USE ? root.TL_USE(c, i) : null; return u && !u.ok ? i.name + " (faltan " + u.missing.map(m => m.k + "+" + (m.need - m.have)).join(" ") + ")" : i.name; }),
         ashes: (c.all || []).filter(i => i.cat === "ashes" || i.cat === "ashes_of_war").map(i => i.name),

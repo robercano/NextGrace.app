@@ -47,6 +47,8 @@
     "Albinauric Mask": { arcane: 4 }, "Marais Mask": { arcane: 1 }, "Imp Head (Cat)": { arcane: 1 }, "Queen's Crescent Crown": { intelligence: 3 }, "Twinsage Glintstone Crown": { intelligence: 6 },
     "Olivinus Glintstone Crown": { intelligence: 2 }, "Lazuli Glintstone Crown": { intelligence: 2 }, "Karolos Glintstone Crown": { intelligence: 3 }, "Hierodas Glintstone Crown": { intelligence: 2, faith: 2 }, "Haima Glintstone Crown": { strength: 2, intelligence: 2 }, "Haligtree Knight Helm": { faith: 1 },
   };
+  /** Talismans that raise the maximum equip load (wiki values; they multiply, like in the game). */
+  const LOAD_BOOST = { "Arsenal Charm": .15, "Arsenal Charm +1": .17, "Great-Jar's Arsenal": .19, "Erdtree's Favor": .05, "Erdtree's Favor +1": .065, "Erdtree's Favor +2": .08 };
   const GODRICK_RUNE = { vigor: 5, mind: 5, endurance: 5, strength: 5, dexterity: 5, intelligence: 5, faith: 5, arcane: 5 };
   /** {attribute: [{src, v}]} from worn armor, talismans and an active Godrick's Great Rune. */
   function statBonuses(c) {
@@ -132,15 +134,18 @@
       if (eff && (eff.ok || eff.twoHand)) { const via = [...new Set(Object.keys(B).filter(k => base.missing.some(m => STAT_KEY[m.k] === k)).flatMap(k => B[k].map(x => x.src)))]; return Object.assign(eff, { boosted: true, via, req: rq.req, scale: rq.scale || null, info: rq }); }
       return Object.assign(base, { boosted: false, req: rq.req, scale: rq.scale || null, info: rq });
     }
-    /** Equip load of what is worn: {load, max, ratio, roll}. */
+    /** Equip load of what is worn: {load, max, ratio, roll, boosts:[{src, pct}], base:{max, ratio, roll}}; `base` is the same
+     *  without the load talismans (what the character would be at if they took them off). */
     function equipLoad(c) {
       const E = c.enriched.equipped;
       const worn = [E.head, E.chest, E.arms, E.legs].concat(E.rh, E.lh, E.talismans, E.arrows, E.bolts).filter(x => x && real(x));
-      const load = worn.reduce((a, it) => a + weightOf(it), 0), max = maxEquipLoad(effStats(c).endurance | 0), ratio = load / max;
-      return { load, max, ratio, roll: rollClass(ratio) };
+      const load = worn.reduce((a, it) => a + weightOf(it), 0), baseMax = maxEquipLoad(effStats(c).endurance | 0);
+      const boosts = (E.talismans || []).filter(t => t && LOAD_BOOST[t.name]).map(t => ({ src: t.name, pct: LOAD_BOOST[t.name] }));
+      const max = boosts.reduce((m, b) => m * (1 + b.pct), baseMax), ratio = load / max, baseRatio = load / baseMax;
+      return { load, max, ratio, roll: rollClass(ratio), boosts, base: { max: baseMax, ratio: baseRatio, roll: rollClass(baseRatio) } };
     }
     return { DB, RQ, STONE, stoneCounts, weightOf, reqOf, canUse, equipLoad,
-      wikiName, baseKey, INFUSION_WORDS, STAT_KEY, STAT_ORDER, SOFT_CAPS, levelCost, STAT_BOOST, statBonuses, effStats, maxEquipLoad, rollClass,
+      wikiName, baseKey, INFUSION_WORDS, STAT_KEY, STAT_ORDER, SOFT_CAPS, levelCost, STAT_BOOST, LOAD_BOOST, statBonuses, effStats, maxEquipLoad, rollClass,
       costStep, costRange, spiritInfo, gloveName, RUNE_VALUE, PLACEHOLDER, real };
   }
 

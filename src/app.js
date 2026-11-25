@@ -127,9 +127,10 @@ async function main(DB, FLAGS, REQS, UNOBT, PICKUPS){ // PICKUPS: gamedata/picku
     const B = c.buildups;
     $("#resist").innerHTML = kvr(T("Veneno"), B.poison, null, "poison") + kvr(T("Putrefacción"), B.rot, null, "rot") + kvr(T("Hemorragia"), B.bleed, null, "bleed") + kvr(T("Congelación"), B.frost, null, "frost") + kvr(T("Sueño"), B.sleep, null, "sleep") + kvr(T("Locura"), B.madness, null, "madness") + kvr(T("Muerte"), B.deathblight, null, "deathblight");
     const E = c.enriched.equipped;
-    const { load, max: maxLoad, ratio, roll: rollK } = R.equipLoad(c);
+    const { load, max: maxLoad, ratio, roll: rollK, boosts, base } = R.equipLoad(c);
     const ROLL = { light: [T("Carga ligera"), "#7fc8ff"], medium: [T("Carga media"), "var(--fg)"], heavy: [T("Carga pesada"), "#e0b23c"], over: [T("Sobrecargado"), "var(--bad)"] }; // the game's colours
-    $("#misc").innerHTML = kvr(T("Carga de equipo"), `${load.toFixed(1)} / ${maxLoad.toFixed(1)}`, `<span style="color:${ROLL[rollK][1]};font-weight:600">${ROLL[rollK][0]}</span> · ${Math.round(ratio * 100)} % ${T("(aprox.)")}`, "load") + kvr(T("Frasco carmesí"), c.crimsonFlasks, null, "crimson") + kvr(T("Frasco cerúleo"), c.ceruleanFlasks, null, "cerulean") + kvr(T("Hechizos memorizados"), c.enriched.spells.length, null, "spells");
+    const loadNote = `<span style="color:${ROLL[rollK][1]};font-weight:600">${ROLL[rollK][0]}</span> · ${Math.round(ratio * 100)} % ${T("(aprox.)")}` + (boosts.length ? `<br><span class="muted">${T("Sin {0}: {1} · {2} %", boosts.map(b => b.src).join(" + "), ROLL[base.roll][0].toLowerCase(), Math.round(base.ratio * 100))}</span>` : "");
+    $("#misc").innerHTML = kvr(T("Carga de equipo"), `${load.toFixed(1)} / ${maxLoad.toFixed(1)}`, loadNote, "load") + kvr(T("Frasco carmesí"), c.crimsonFlasks, null, "crimson") + kvr(T("Frasco cerúleo"), c.ceruleanFlasks, null, "cerulean") + kvr(T("Hechizos memorizados"), c.enriched.spells.length, null, "spells");
 
     renderUnused(c);
     PLAN.add = {}; renderPlanner(c);
