@@ -19,7 +19,7 @@ export async function listIcons(env) {
 /** GET /icons/* → edge cache, else R2 object, else the static asset. */
 export async function serveIcon(request, env, url, ctx) {
   const key = url.pathname.slice(1); // "icons/x.webp" | "icons/map/tlb.webp" | "icons/index.json" | "gamedata/graces_pos.json"
-  const ttl = key.startsWith("gamedata/") ? "public, max-age=3600" : "public, max-age=2592000, immutable"; // data files get replaced in place
+  const ttl = key.startsWith("gamedata/") ? "public, max-age=600" : "public, max-age=2592000, immutable"; // data files get replaced in place: ten minutes at the edge and in the browser
   if (key === "icons/index.json") {
     if (Date.now() - indexCache.at > INDEX_TTL_MS || !indexCache.body) {
       // union of the bucket and whatever the static assets still carry (during the migration both exist; after the purge only R2)
