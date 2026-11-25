@@ -1,5 +1,18 @@
 # Game data extraction (graces, items, equipment numbers)
 
+**Shortcut (no Smithbox):** `tools/game/params_from_regulation.py` reads `regulation.bin` straight from the game folder and
+writes the same CSVs Smithbox would export (`pip install soulstruct cryptography`, plus `pip install pyooz` outside Windows):
+
+    python tools/game/params_from_regulation.py "…/ELDEN RING/Game/regulation.bin" /some/work/dir
+    python tools/game/graces_from_param.py /some/work/dir/BonfireWarpParam.csv
+    python tools/game/calibrate_map.py
+    python tools/game/equip_from_params.py /some/work/dir
+
+Only the world objects (section 2) still need the unpacked game (the MSB files live inside Data1.bdt).
+Frames the wiki map does not anchor (the DLC inset, for now) can carry a hand-made transform in `data/overrides/map_frames.json`;
+graces in an uncalibrated frame whose name the wiki map pins (caves, catacombs, towers) take that pin as their entrance.
+
+
 The game's own files give what the wiki map lacks: the position of every site of grace and of every item lying in the world.
 Everything runs on the PC that has the game unpacked with UXM (see `tools/EXTRACT.md`). Like the icons, what comes out of the
 game stays out of the public repo: the scripts write to the private assets repo (`../nextgrace-assets/gamedata/`, or the folder

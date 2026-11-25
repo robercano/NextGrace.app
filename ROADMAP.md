@@ -92,17 +92,20 @@ What the game's own files can give the site, in order of value (all extracted on
 with Smithbox / soulstruct; see `tools/game/README.md`; everything extracted stays in the private assets repo and is served
 from R2 under `/gamedata/`, like the icons):
 
-1. [ ] **Graces with coordinates** (`BonfireWarpParam`): every site of grace, DLC included, pinned on the map → routes can
-   stop at any grace. Site side done (map merges `gamedata/graces_pos.json`, MCP `find_places` marks them pinned); waiting for the CSV.
+1. [~] **Graces with coordinates** (`BonfireWarpParam`): every site of grace, DLC included, pinned on the map → routes can
+   stop at any grace. Published 25 Nov 2025: 272 of 396 graces placed (overworld 14 px mean error, Stormveil, Nokstella,
+   32 dungeon entrances at the wiki pin, the DLC inset by eye ±50 px). Pending: real anchors for the DLC map (m61), the
+   underground frames (Siofra, Deeproot, Nokron, Mohgwyn) and the legacy dungeons (Leyndell, Farum Azula, Haligtree,
+   Volcano Manor, Raya Lucaria, DLC dungeons): 3 pins per frame in `data/overrides/map_anchors.json`.
 2. [ ] **Item positions** (map `.msb` treasures + `ItemLotParam_map`): exact pin for ~2,900 items instead of the wiki's
-   location text, and "picked up" by flag per item. Site side done: the map draws one marker per treasure that still holds something the character lacks (chest / ground) from `gamedata/pickups_pos.json`, skipping looted spots by flag (`progress.pickedFlags`); the places-based markers remain the fallback. Waiting for the extraction.
+   location text, and "picked up" by flag per item. Site side done: the map draws one marker per treasure that still holds something the character lacks (chest / ground) from `gamedata/pickups_pos.json`, skipping looted spots by flag (`progress.pickedFlags`); the places-based markers remain the fallback. Waiting for the MSB files: they live inside `Data1.bdt`, so the game has to be unpacked with UXM first (`ItemLotParam_map.csv` already comes out of `regulation.bin`).
 3. [ ] **Full equipment params** (`EquipParamWeapon`, `ReinforceParamWeapon`, `CalcCorrectGraph`, `AttackElementCorrectParam`,
    `EquipParamProtector`, `EquipParamAccessory`, `Magic`): exact requirements and scaling for everything incl. DLC, and a real
    attack-rating calculator for the smithing planner and the advisor. Site side done: `tools/game/equip_from_params.py` reads
    the Smithbox CSVs → `gamedata/ar.json` (lean) + `gamedata/equip.json`; `src/ar.js` computes the AR (base × reinforce rate,
    scaling × CalcCorrectGraph curve per element, −40 % per unmet requirement, two-handed 1.5× STR) and the smithing planner
    shows "Poder de ataque" now / at the target level, one- and two-handed, with the scaling letters, as soon as `ar.json` is in
-   the bucket. Waiting for the CSVs. Next: status build-up (bleed/poison from `SpEffectParam`), replace `data/reqs.json`
+   the bucket. Done 25 Nov 2025 from `regulation.bin` (`tools/game/params_from_regulation.py`, no Smithbox needed). Next: status build-up (bleed/poison from `SpEffectParam`), replace `data/reqs.json`
    (wiki) with the params, armor/talisman/spell numbers in the sheet, AR in the advisor context.
 4. [ ] **Smithing costs** (`EquipMtrlSetParam` + `ReinforceParamWeapon.reinforcePriceRate`, already in `equip.json`): exact
    stones and runes per level and weapon type instead of the hand-written table in `src/rules.js`.

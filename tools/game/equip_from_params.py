@@ -81,10 +81,12 @@ def main():
     # ar.json: only the fields the calculator reads, no names (the site has them), so the browser downloads as little as possible
     AR_W = re.compile(r"^(attackBase(Physics|Magic|Fire|Thunder|Dark)|correct(Strength|Agility|Magic|Faith|Luck)$|correctType_|proper(Strength|Agility|Magic|Faith|Luck)|reinforceTypeId|attackElementCorrectId|wepType|gemMountType)")
     AR_R = re.compile(r"^((physics|magic|fire|thunder|dark)AtkRate|correct(Strength|Agility|Magic|Faith|Luck)Rate|maxReinforceLevel)")
-    def pick(d, pat): return {k: {f: v for f, v in e.items() if pat.search(f)} for k, e in d.items()} if d else {}
+    def table(d, pat=None):  # columnar: {"fields": [...], "rows": {id: [values]}} — a quarter of the size of one object per row
+        fields = sorted({f for e in d.values() for f in e if (pat is None or pat.search(f)) and f != "Name"})
+        return {"fields": fields, "rows": {k: [e.get(f, 0) for f in fields] for k, e in d.items()}}
     if all(k in data for k in ("EquipParamWeapon", "ReinforceParamWeapon", "CalcCorrectGraph", "AttackElementCorrectParam")):
-        ar = {"_source": data["_source"], "weapons": pick(data["EquipParamWeapon"], AR_W), "reinforce": pick(data["ReinforceParamWeapon"], AR_R),
-              "graphs": data["CalcCorrectGraph"], "aec": data["AttackElementCorrectParam"]}
+        ar = {"_source": data["_source"], "weapons": table(data["EquipParamWeapon"], AR_W), "reinforce": table(data["ReinforceParamWeapon"], AR_R),
+              "graphs": table(data["CalcCorrectGraph"]), "aec": table(data["AttackElementCorrectParam"])}
         dst = os.path.join(OUT, "ar.json")
         json.dump(ar, open(dst, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
         print(f"→ {dst} ({os.path.getsize(dst) // 1024} KB)")

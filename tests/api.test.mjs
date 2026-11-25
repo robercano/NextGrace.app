@@ -122,7 +122,7 @@ test("i18n: every Spanish key used in the pages has an English translation", () 
 });
 
 test("ar: the attack-rating calculator reads gamedata/ar.json and applies the game's formula", async () => {
-  const r = await fetch(BASE + "/gamedata/ar.json"); assert.equal(r.status, 200); const data = await r.json(); assert.ok(data.weapons["1000000"], "Dagger row in the fixture");
+  const r = await fetch(BASE + "/gamedata/ar.json"); assert.equal(r.status, 200); const data = await r.json(); assert.ok(data.weapons.rows["1000000"], "Dagger row in the fixture (columnar)");
   const sb = { self: null, fetch: async () => ({ ok: true, json: async () => data }) }; sb.self = sb; vm.createContext(sb); vm.runInContext(readFileSync("src/ar.js", "utf8"), sb);
   assert.equal(await sb.AR.load(), true);
   const st = { strength: 60, dexterity: 13, intelligence: 9, faith: 9, arcane: 7 };

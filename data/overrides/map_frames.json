@@ -1,0 +1,9 @@
+{
+ "_comment": "Frames without three anchors, placed by hand: scale (px per metre) and offset of px = scale*X + tx, py = scale*Z + ty (py up). Replace with real anchors in map_anchors.json when available.",
+ "m61": {
+  "scale": 0.405,
+  "tx": -2980.7,
+  "ty": -2802.1,
+  "note": "DLC inset, placed by eye from Main Gate Cross, Scadutree Base and Greatbridge North; error up to ~50 px"
+ }
+}

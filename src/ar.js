@@ -67,7 +67,11 @@
     if (D.p) return D.p;
     return (D.p = fetch("gamedata/ar.json").then(r => r.ok ? r.json() : null).then(j => {
       if (!j || !j.weapons) return false;
-      D.data = j; D.ready = true; return true;
+      const expand = t => { // columnar {fields, rows} → {id: {field: value}}; an older one-object-per-row file passes through
+        if (!t || !t.fields) return t || {};
+        const out = {}; for (const id in t.rows) { const o = {}, r = t.rows[id]; t.fields.forEach((f, i) => { o[f] = r[i]; }); out[id] = o; } return out;
+      };
+      D.data = { weapons: expand(j.weapons), reinforce: expand(j.reinforce), graphs: expand(j.graphs), aec: expand(j.aec) }; D.ready = true; return true;
     }).catch(() => false));
   }
 
