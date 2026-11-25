@@ -1,9 +1,9 @@
 {
- "_comment": "Frames without three anchors, placed by hand: scale (px per metre) and offset of px = scale*X + tx, py = scale*Z + ty (py up). Replace with real anchors in map_anchors.json when available.",
+ "_comment": "Frames without three anchors, placed by hand, in MAP units (data/map.json: 9645\u00d79119, the same system as places.json): px = scale*X + tx, py = scale*Z + ty (py up). Replace with real anchors in map_anchors.json when available.",
  "m61": {
-  "scale": 0.405,
-  "tx": -2980.7,
-  "ty": -2802.1,
-  "note": "DLC inset, placed by eye from Main Gate Cross, Scadutree Base and Greatbridge North; error up to ~50 px"
+  "scale": 0.9536,
+  "tx": -7018.8,
+  "ty": -6597.6,
+  "note": "DLC inset, placed by eye from Main Gate Cross, Scadutree Base and Greatbridge North on sote.webp (4096 px) and rescaled to map units; error up to ~120 map px"
  }
 }
