@@ -57,7 +57,7 @@ test("routes: put/patch/delete, ownership", async () => {
 });
 
 test("gamedata and icons are served from the bucket, with the asset fallback", async () => {
-  const g = await fetch(BASE + "/gamedata/graces_pos.json"); assert.equal(g.status, 200); assert.equal(g.headers.get("x-source"), "r2"); assert.match(g.headers.get("cache-control"), /max-age=3600/);
+  const g = await fetch(BASE + "/gamedata/graces_pos.json"); assert.equal(g.status, 200); assert.equal(g.headers.get("x-source"), "r2"); assert.match(g.headers.get("cache-control"), /max-age=600/);
   const edge = await fetch(BASE + "/gamedata/graces_pos.json"); assert.ok(["edge", "r2"].includes(edge.headers.get("x-source")));
   const miss = await fetch(BASE + "/gamedata/nope.json"); assert.equal(miss.status, 404);
   const idx = await fetch(BASE + "/icons/index.json"); assert.equal(idx.status, 200); assert.ok(Array.isArray(await idx.json()));
