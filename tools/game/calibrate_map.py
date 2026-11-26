@@ -6,7 +6,8 @@ the site's map images, and writes gamedata/graces_pos.json and gamedata/pickups_
 How: the wiki map already places some graces (data/places.json). Each game map frame (the overworld m60 tiles as one frame,
 the DLC m61 tiles as one frame, and every other map file — underground rivers, legacy dungeons — as its own frame) gets an
 affine fit  px = a·X + b·Z + c,  py = d·X + e·Z + f  from the graces that exist on both sides (≥ 3 anchors, least squares).
-Frames without enough anchors are reported and skipped (add anchors to data/overrides/map_anchors.json: name → {x, y, layer}).
+Frames without enough anchors are reported and skipped (add anchors to data/overrides/map_anchors.json: name → {x, y, layer});
+their graces and treasures go to the wiki pin of the place's entrance when one of its graces has a pin ("entrance" in the output).
 
   python tools/game/calibrate_map.py            # prints the fit quality per frame and writes the outputs
 """
@@ -104,6 +105,8 @@ def main():
         fr, X, Z = frame_of(map_id, x, z); f = fits.get(fr)
         if not f: return None
         return round(f["ax"][0] * X + f["ax"][1] * Z + f["ax"][2], 1), round(f["ay"][0] * X + f["ay"][1] * Z + f["ay"][2], 1), f["layer"], bool(f.get("provisional"))
+    # entrance pin per uncalibrated frame (a cave, a catacomb, a tower): the wiki pin of a grace inside it; its treasures go there
+    entrance = {fr: (pts[0][2], pts[0][3], layer_of_frame(fr), pts[0][4]) for fr, pts in per.items() if fr not in fits and pts}
     gout, miss, at_place = [], 0, 0
     for g in graces:
         if not g.get("name"): continue
@@ -112,7 +115,9 @@ def main():
             # a grace in an uncalibrated frame whose name the wiki map already pins (a cave, a catacomb, a tower: the grace is at
             # the entrance, which is what the map shows) takes that pin
             a = anchors.get(g["name"].lower())
-            if a: gout.append({"flag": g["flag"], "name": g["name"], "x": a[0], "y": a[1], "layer": a[2], "entrance": True}); at_place += 1
+            if a:
+                gout.append({"flag": g["flag"], "name": g["name"], "x": a[0], "y": a[1], "layer": a[2], "entrance": True}); at_place += 1
+                entrance.setdefault(frame_of(g["map"], g["x"], g["z"])[0], (a[0], a[1], a[2], g["name"]))
             else: miss += 1
             continue
         e = {"flag": g["flag"], "name": g["name"], "x": r[0], "y": r[1], "layer": r[2]}
@@ -121,14 +126,21 @@ def main():
     json.dump({"_source": "BonfireWarpParam of the game, calibrated against the wiki map (tools/game/calibrate_map.py)", "graces": gout}, open(os.path.join(OUT, "graces_pos.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=0)
     print(f"graces: {len(gout)} placed ({at_place} at the wiki pin of a dungeon entrance), {miss} in frames without calibration → gamedata/graces_pos.json")
     if pickups:
-        pout, pmiss = [], 0
+        pout, pmiss, at_ent = [], 0, 0
         for p in pickups:
             if not p.get("items"): continue
             r = to_px(p["map"], p["x"], p["z"])
-            if not r: pmiss += 1; continue
-            pout.append({"lot": p["lot"], "flag": p["flag"], "chest": p["chest"], "x": r[0], "y": r[1], "layer": r[2], "items": p["items"]})
+            if not r:
+                # uncalibrated frame with a known entrance: the treasure goes to the entrance pin, marked so the map groups them
+                en = entrance.get(frame_of(p["map"], p["x"], p["z"])[0])
+                if not en: pmiss += 1; continue
+                pout.append({"lot": p["lot"], "flag": p["flag"], "chest": p["chest"], "x": en[0], "y": en[1], "layer": en[2], "items": p["items"], "entrance": en[3]}); at_ent += 1
+                continue
+            e = {"lot": p["lot"], "flag": p["flag"], "chest": p["chest"], "x": r[0], "y": r[1], "layer": r[2], "items": p["items"]}
+            if r[3]: e["provisional"] = True
+            pout.append(e)
         json.dump({"_source": "map files of the game (treasures) + ItemLotParam_map, calibrated like the graces", "pickups": pout}, open(os.path.join(OUT, "pickups_pos.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=0)
-        print(f"pickups: {len(pout)} placed, {pmiss} in frames without calibration → gamedata/pickups_pos.json")
+        print(f"pickups: {len(pout)} placed ({at_ent} at the entrance pin of their cave/catacomb/tower), {pmiss} in frames without calibration → gamedata/pickups_pos.json")
 
 if __name__ == "__main__":
     main()

@@ -97,8 +97,16 @@ from R2 under `/gamedata/`, like the icons):
    32 dungeon entrances at the wiki pin, the DLC inset by eye ±50 px). Pending: real anchors for the DLC map (m61), the
    underground frames (Siofra, Deeproot, Nokron, Mohgwyn) and the legacy dungeons (Leyndell, Farum Azula, Haligtree,
    Volcano Manor, Raya Lucaria, DLC dungeons): 3 pins per frame in `data/overrides/map_anchors.json`.
-2. [ ] **Item positions** (map `.msb` treasures + `ItemLotParam_map`): exact pin for ~2,900 items instead of the wiki's
-   location text, and "picked up" by flag per item. Site side done: the map draws one marker per treasure that still holds something the character lacks (chest / ground) from `gamedata/pickups_pos.json`, skipping looted spots by flag (`progress.pickedFlags`); the places-based markers remain the fallback. Waiting for the MSB files: they live inside `Data1.bdt`, so the game has to be unpacked with UXM first (`ItemLotParam_map.csv` already comes out of `regulation.bin`).
+2. [~] **Item positions** (map `.msb` treasures + `ItemLotParam_map`): exact pin per treasure instead of the wiki's location
+   text, and "picked up" by flag per item. Published 26 Nov 2026: 1,347 maps read, 3,850 treasures (3,672 with a lot in
+   `ItemLotParam_map`; the rest presumably use other lot tables) → 2,003 at their exact spot (overworld, Stormveil, Nokstella;
+   the DLC through the provisional inset transform, flagged `provisional`), plus the treasures of caves, catacombs, tunnels and
+   towers with a single anchor placed at that place's entrance pin (`entrance` = place name; the map shows one marker per
+   entrance listing what is inside). soulstruct 2.6 cannot read the current MSBs (list version 74; it asserts 73), so
+   `tools/game/pickups_from_msb.py` has its own minimal reader (layout from SoulsFormats); soulstruct only decompresses the DCX.
+   The map keeps the place-based markers (wiki location text) for every item no treasure covers (boss drops, shops, maps
+   without calibration), so nothing disappears when `pickups_pos.json` is published. Pending: anchors for the legacy dungeons
+   and underground frames (same as the graces), lots outside `ItemLotParam_map` (`ItemLotParam_enemy`?).
 3. [ ] **Full equipment params** (`EquipParamWeapon`, `ReinforceParamWeapon`, `CalcCorrectGraph`, `AttackElementCorrectParam`,
    `EquipParamProtector`, `EquipParamAccessory`, `Magic`): exact requirements and scaling for everything incl. DLC, and a real
    attack-rating calculator for the smithing planner and the advisor. Site side done: `tools/game/equip_from_params.py` reads
