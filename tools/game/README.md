@@ -1,7 +1,11 @@
 # Game data extraction (graces, items, equipment numbers)
 
 **Shortcut (no Smithbox):** `tools/game/params_from_regulation.py` reads `regulation.bin` straight from the game folder and
-writes the same CSVs Smithbox would export (`pip install soulstruct cryptography`, plus `pip install pyooz` outside Windows):
+writes the same CSVs Smithbox would export (`pip install soulstruct cryptography`, plus `pip install pyooz` outside Windows).
+**Python 3.13** is the version to use: soulstruct ≥ 2.4 needs ≥ 3.13 (on 3.11/3.12 pip silently falls back to 2.3.2, whose wheel lacks
+`ds1-common.emedf.json` and fails on import), and on 3.14+ `zstandard` may have no prebuilt wheel yet (pip then asks for MSVC).
+A virtual environment in the repo works well: `py -3.13 -m venv .venv`, `.venv\Scripts\Activate.ps1` (`.venv/` is git-ignored).
+Check with `python -m pip show soulstruct` (2.4 or later):
 
     python tools/game/params_from_regulation.py "…/ELDEN RING/Game/regulation.bin" /some/work/dir
     python tools/game/graces_from_param.py /some/work/dir/BonfireWarpParam.csv
