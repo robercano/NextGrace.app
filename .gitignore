@@ -16,3 +16,5 @@ tools/lab/results/
 tools/lab/advice_lab_log.txt
 node_modules/
 tests/.state/
+# local Python environment for tools/ (see tools/game/README.md)
+.venv/
