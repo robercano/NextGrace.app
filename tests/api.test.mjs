@@ -60,6 +60,7 @@ test("gamedata and icons are served from the bucket, with the asset fallback", a
   const g = await fetch(BASE + "/gamedata/graces_pos.json"); assert.equal(g.status, 200); assert.equal(g.headers.get("x-source"), "r2"); assert.match(g.headers.get("cache-control"), /max-age=600/);
   const edge = await fetch(BASE + "/gamedata/graces_pos.json"); assert.ok(["edge", "r2"].includes(edge.headers.get("x-source")));
   const miss = await fetch(BASE + "/gamedata/nope.json"); assert.equal(miss.status, 404);
+  const dump = await fetch(BASE + "/gamedata/graces_world.json"); assert.equal(dump.status, 404, "intermediate *_world.json dumps are never served, even when present in the bucket");
   const idx = await fetch(BASE + "/icons/index.json"); assert.equal(idx.status, 200); assert.ok(Array.isArray(await idx.json()));
 });
 

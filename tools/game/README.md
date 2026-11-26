@@ -20,7 +20,7 @@ graces in an uncalibrated frame whose name the wiki map pins (caves, catacombs, 
 The game's own files give what the wiki map lacks: the position of every site of grace and of every item lying in the world.
 Everything runs on the PC that has the game unpacked with UXM (see `tools/EXTRACT.md`). Like the icons, what comes out of the
 game stays out of the public repo: the scripts write to the private assets repo (`../nextgrace-assets/gamedata/`, or the folder
-in `NEXTGRACE_ASSETS`), its `sync-r2` workflow uploads `gamedata/` to the bucket, and the Worker serves `/gamedata/*.json` from
+in `NEXTGRACE_ASSETS`), its `sync-r2` workflow uploads `gamedata/` to the bucket, and the Worker serves the calibrated `/gamedata/*_pos.json` (plus `ar.json`, `equip.json`; nothing else, see `GAMEDATA_PUBLIC`) from
 there (`functions/_icons.js`). Only `data/overrides/map_anchors.json` (hand-made anchors) lives here.
 
 ## 1. Graces (10 minutes)

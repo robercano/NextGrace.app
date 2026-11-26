@@ -60,6 +60,9 @@ function match(pathname) {
 }
 const METHOD = { GET: "onRequestGet", HEAD: "onRequestGet", POST: "onRequestPost", PUT: "onRequestPut", DELETE: "onRequestDelete", PATCH: "onRequestPatch", OPTIONS: "onRequestOptions" };
 
+/** The game-data files the site may serve from the bucket: everything else under /gamedata/ stays private. */
+const GAMEDATA_PUBLIC = /^\/gamedata\/(\w+_pos|ar|equip)\.json$/;
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
@@ -81,8 +84,11 @@ export default {
       case "/mcp": return handler(mcp)(ctxOf());
     }
     // item icons and map backgrounds: from the R2 bucket when it is configured (functions/_icons.js), else from the assets
-    // /gamedata/*.json (positions extracted from the game, private assets repo → R2) is served the same way as the icons
-    if ((url.pathname.startsWith("/icons/") || url.pathname === "/icons/index.json" || /^\/gamedata\/[\w.-]+\.json$/.test(url.pathname)) && iconsEnabled(env) && (request.method === "GET" || request.method === "HEAD")) return serveIcon(request, env, url, ctx);
+    // /gamedata/: only the files the site reads (calibrated positions *_pos.json, ar.json, equip.json; private assets repo → R2),
+    // served the same way as the icons. Anything else under /gamedata/ is a 404 even if it reaches the bucket by mistake
+    // (e.g. the intermediate *_world.json dumps, which must never be public).
+    if (url.pathname.startsWith("/gamedata/") && !GAMEDATA_PUBLIC.test(url.pathname)) return new Response("Not found", { status: 404 });
+    if ((url.pathname.startsWith("/icons/") || url.pathname === "/icons/index.json" || url.pathname.startsWith("/gamedata/")) && iconsEnabled(env) && (request.method === "GET" || request.method === "HEAD")) return serveIcon(request, env, url, ctx);
     // html_handling = "none" keeps exact paths (map.html, icons.html); only map "/" (and "dir/") to index.html here.
     if (url.pathname.endsWith("/")) { url.pathname += "index.html"; return env.ASSETS.fetch(new Request(url, request)); }
     return env.ASSETS.fetch(request);
