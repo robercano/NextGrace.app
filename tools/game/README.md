@@ -36,7 +36,8 @@ there (`functions/_icons.js`). Only `data/overrides/map_anchors.json` (hand-made
 
 ## 2. Items in the world (30 minutes, mostly the script running)
 
-1. `py -m pip install soulstruct` (once; on Windows it finds the game's `oo2core_6_win64.dll` to read `.dcx`).
+1. `py -m pip install soulstruct` (once, Python 3.13; only its `.dcx` decompression is used: the `.msb` is read by our own minimal
+   reader in the script, because soulstruct 2.6 rejects the current game's MSB list version 74).
 2. Smithbox → *Param Editor* → `ItemLotParam_map` → *Export* → *CSV* → *All rows* → `ItemLotParam_map.csv`.
 3. `py tools\game\pickups_from_msb.py "C:\...\ELDEN RING\Game\map\mapstudio" ItemLotParam_map.csv` → `gamedata/pickups_world.json`
    (every treasure: map, position, lot, flag, items).
